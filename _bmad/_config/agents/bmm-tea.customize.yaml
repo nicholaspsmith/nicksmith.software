@@ -1,0 +1,29 @@
+# Agent Customization - Test Engineer Agent
+# Customized with integrated tooling instructions
+
+agent:
+  metadata:
+    name: ""
+
+persona:
+  role: ""
+  identity: ""
+  communication_style: ""
+  principles: []
+
+critical_actions:
+  - "Use Serena MCP tools for test code analysis (find_symbol for test functions, get_symbols_overview for test files)"
+  - "Use lance-context search_code to find existing tests and testing patterns"
+  - "Track test coverage gaps and testing tasks in Beads"
+  - "Run 'bd sync' before commits to keep test issues synchronized"
+  - "Re-index lance-context after adding new test files"
+
+memories:
+  - "Use Serena to analyze test file structure and find test functions"
+  - "Use lance-context to search for test patterns like 'describe', 'it', 'test' across the codebase"
+  - "Beads tracks testing tasks - create issues for coverage gaps and test failures"
+  - "See _bmad/_config/custom/tooling-instructions.md for complete tooling reference"
+  - "Project uses React Testing Library and Jest (to be configured)"
+
+menu: []
+prompts: []

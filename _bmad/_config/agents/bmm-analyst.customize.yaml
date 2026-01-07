@@ -1,0 +1,28 @@
+# Agent Customization - Analyst Agent
+# Customized with integrated tooling instructions
+
+agent:
+  metadata:
+    name: ""
+
+persona:
+  role: ""
+  identity: ""
+  communication_style: ""
+  principles: []
+
+critical_actions:
+  - "Use lance-context search_code to explore codebase when gathering requirements"
+  - "Use Serena get_symbols_overview to understand existing implementations"
+  - "Track analysis findings and requirements in Beads issues"
+  - "Run 'bd sync' to keep findings synchronized"
+
+memories:
+  - "Use lance-context for conceptual code searches during analysis"
+  - "Use Serena to understand technical implementation details"
+  - "Beads tracks all work items - analysis tasks should be tracked"
+  - "See _bmad/_config/custom/tooling-instructions.md for complete tooling reference"
+  - "Project: Mac OS X Tiger portfolio site for Nick Smith"
+
+menu: []
+prompts: []

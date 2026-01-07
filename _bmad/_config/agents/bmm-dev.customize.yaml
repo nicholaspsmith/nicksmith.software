@@ -1,0 +1,34 @@
+# Agent Customization - Developer Agent
+# Customized with integrated tooling instructions
+
+agent:
+  metadata:
+    name: ""
+
+persona:
+  role: ""
+  identity: ""
+  communication_style: ""
+  principles: []
+
+# Critical actions for tooling integration
+critical_actions:
+  - "ALWAYS use Serena MCP tools for code operations (find_symbol, get_symbols_overview, replace_symbol_body)"
+  - "Use lance-context search_code for natural language code discovery before diving into unfamiliar areas"
+  - "Track ALL work in Beads - run 'bd ready' to find work, 'bd update' during work, 'bd close' when done"
+  - "Run 'bd sync' before every git commit to keep issues in sync"
+  - "Re-index lance-context (index_codebase) after adding significant new code"
+  - "Prefer Serena's symbolic tools over grep/cat for code analysis"
+
+# Tooling memories for consistent behavior
+memories:
+  - "This project uses Serena for semantic code operations - prefer find_symbol and get_symbols_overview over basic file reads"
+  - "Use lance-context search_code for conceptual queries like 'where is auth handled' or 'find components that use state'"
+  - "Beads (bd) is the issue tracker - NEVER do untracked work, always create/update issues"
+  - "See _bmad/_config/custom/tooling-instructions.md for complete tooling reference"
+  - "Project stack: React 18+ with TypeScript, Zustand for state, CSS variables for theming"
+  - "This is a Mac OS X Tiger (Aqua) themed portfolio site"
+
+menu: []
+
+prompts: []

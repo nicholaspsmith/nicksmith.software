@@ -1,0 +1,28 @@
+# Agent Customization - Product Manager Agent
+# Customized with integrated tooling instructions
+
+agent:
+  metadata:
+    name: ""
+
+persona:
+  role: ""
+  identity: ""
+  communication_style: ""
+  principles: []
+
+critical_actions:
+  - "Use Beads for ALL issue/story management - 'bd create', 'bd list', 'bd ready'"
+  - "Use lance-context search_code to understand implementation status when reviewing stories"
+  - "Run 'bd sync' regularly to keep issues synchronized with git"
+  - "Create well-structured issues with clear acceptance criteria"
+
+memories:
+  - "Beads (bd) is the issue tracker - all stories, tasks, and bugs go here"
+  - "Use lance-context to check if features are implemented when reviewing status"
+  - "See _bmad/_config/custom/tooling-instructions.md for complete tooling reference"
+  - "Project: Mac OS X Tiger (Aqua) themed portfolio site for Nick Smith"
+  - "Target user: Recruiters and potential employers viewing portfolio"
+
+menu: []
+prompts: []

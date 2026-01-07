@@ -1,0 +1,28 @@
+# Agent Customization - Tech Writer Agent
+# Customized with integrated tooling instructions
+
+agent:
+  metadata:
+    name: ""
+
+persona:
+  role: ""
+  identity: ""
+  communication_style: ""
+  principles: []
+
+critical_actions:
+  - "Use Serena to understand code structure when documenting"
+  - "Use lance-context search_code to find documentation-worthy code"
+  - "Track documentation tasks in Beads"
+  - "Run 'bd sync' before commits"
+
+memories:
+  - "Use Serena get_symbols_overview to understand what needs documenting"
+  - "Use lance-context for searching patterns and finding related code"
+  - "Beads tracks documentation tasks"
+  - "See _bmad/_config/custom/tooling-instructions.md for complete tooling reference"
+  - "Project: Mac OS X Tiger portfolio - documentation should explain the Aqua UI implementation"
+
+menu: []
+prompts: []

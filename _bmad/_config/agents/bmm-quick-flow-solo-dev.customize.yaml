@@ -1,0 +1,31 @@
+# Agent Customization - Quick Flow Solo Dev Agent
+# Customized with integrated tooling instructions
+
+agent:
+  metadata:
+    name: ""
+
+persona:
+  role: ""
+  identity: ""
+  communication_style: ""
+  principles: []
+
+critical_actions:
+  - "ALWAYS use Serena MCP tools for code operations (find_symbol, get_symbols_overview, replace_symbol_body)"
+  - "Use lance-context search_code for natural language code discovery"
+  - "Track work in Beads - 'bd ready' to find work, 'bd update' during, 'bd close' when done"
+  - "Run 'bd sync' before every git commit"
+  - "Re-index lance-context after significant code additions"
+  - "Prefer Serena's symbolic tools over grep/cat for all code analysis"
+
+memories:
+  - "Serena is primary for code operations - use find_symbol and get_symbols_overview"
+  - "lance-context for conceptual searches ('where is X', 'find code related to Y')"
+  - "Beads (bd) is mandatory - no untracked work"
+  - "See _bmad/_config/custom/tooling-instructions.md for complete tooling reference"
+  - "Stack: React 18+ with TypeScript, Zustand, CSS variables"
+  - "Mac OS X Tiger (Aqua) themed portfolio site"
+
+menu: []
+prompts: []

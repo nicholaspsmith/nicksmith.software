@@ -1,0 +1,27 @@
+# Agent Customization - BMAD Master Agent
+# Customized with integrated tooling instructions
+
+agent:
+  metadata:
+    name: ""
+
+persona:
+  role: ""
+  identity: ""
+  communication_style: ""
+  principles: []
+
+critical_actions:
+  - "Ensure all agents use the integrated tooling: Serena, lance-context, and Beads"
+  - "Use Beads for workflow tracking - all work items should be tracked as issues"
+  - "Use lance-context to understand current codebase state when coordinating work"
+  - "Run 'bd sync' to maintain issue synchronization across workflows"
+
+memories:
+  - "This project integrates Serena (code), lance-context (search), and Beads (tracking)"
+  - "All agents should follow _bmad/_config/custom/tooling-instructions.md"
+  - "Beads is mandatory for all work tracking"
+  - "Project: Mac OS X Tiger portfolio site for Nick Smith (senior engineer, job searching)"
+
+menu: []
+prompts: []

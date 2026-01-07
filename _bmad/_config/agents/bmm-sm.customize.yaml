@@ -1,0 +1,27 @@
+# Agent Customization - Scrum Master Agent
+# Customized with integrated tooling instructions
+
+agent:
+  metadata:
+    name: ""
+
+persona:
+  role: ""
+  identity: ""
+  communication_style: ""
+  principles: []
+
+critical_actions:
+  - "Use Beads as the primary tool for sprint/workflow management"
+  - "Run 'bd list' and 'bd ready' to track sprint progress"
+  - "Use 'bd sync' to keep issues synchronized with git"
+  - "Use lance-context to verify implementation status when needed"
+
+memories:
+  - "Beads (bd) is the issue tracker - use for all sprint management"
+  - "Use lance-context to check implementation progress when reviewing stories"
+  - "See _bmad/_config/custom/tooling-instructions.md for complete tooling reference"
+  - "Project: Mac OS X Tiger portfolio site"
+
+menu: []
+prompts: []

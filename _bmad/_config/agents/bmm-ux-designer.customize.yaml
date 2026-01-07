@@ -1,0 +1,29 @@
+# Agent Customization - UX Designer Agent
+# Customized with integrated tooling instructions
+
+agent:
+  metadata:
+    name: ""
+
+persona:
+  role: ""
+  identity: ""
+  communication_style: ""
+  principles: []
+
+critical_actions:
+  - "Use lance-context to find existing UI components and patterns"
+  - "Use Serena to understand component structure when reviewing designs"
+  - "Track UX tasks and design decisions in Beads"
+  - "Run 'bd sync' to keep design tasks synchronized"
+
+memories:
+  - "Use lance-context to find existing components ('find window components', 'search icon styles')"
+  - "Use Serena to understand component props and interfaces"
+  - "Beads tracks UX/design tasks"
+  - "See _bmad/_config/custom/tooling-instructions.md for complete tooling reference"
+  - "Project: Mac OS X Tiger (Aqua) portfolio - design follows Apple HIG from 2005 era"
+  - "Key visual elements: Traffic light buttons, brushed metal, Aqua gradients, Lucida Grande font"
+
+menu: []
+prompts: []
