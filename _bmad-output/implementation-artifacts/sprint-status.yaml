@@ -68,11 +68,11 @@ development_status:
   epic-3-retrospective: optional
 
   # Epic 4: Desktop Navigation (MVP)
-  epic-4: in-progress
+  epic-4: done
   4-1-create-desktop-icon-component: done
   4-2-implement-icon-selection-state: done
   4-3-implement-double-click-to-open-window: done
-  4-4-implement-menu-bar-app-name-updates: backlog
+  4-4-implement-menu-bar-app-name-updates: done
   epic-4-retrospective: optional
 
   # Epic 5: Portfolio Content (MVP)
