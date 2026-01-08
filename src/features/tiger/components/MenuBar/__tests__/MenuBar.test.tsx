@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { MenuBar } from '../MenuBar';
 import { useWindowStore } from '@/stores/windowStore';
 
@@ -114,5 +114,79 @@ describe('MenuBar', () => {
     render(<MenuBar />);
     const menuBar = screen.getByTestId('menu-bar');
     expect(menuBar.className).toContain('menuBar');
+  });
+
+  describe('Apple Menu Dropdown', () => {
+    it('opens dropdown when Apple logo is clicked', () => {
+      render(<MenuBar />);
+      const appleButton = screen.getByTestId('apple-menu-button');
+
+      expect(screen.queryByTestId('apple-menu-dropdown')).not.toBeInTheDocument();
+
+      fireEvent.click(appleButton);
+
+      expect(screen.getByTestId('apple-menu-dropdown')).toBeInTheDocument();
+    });
+
+    it('closes dropdown when clicked again', () => {
+      render(<MenuBar />);
+      const appleButton = screen.getByTestId('apple-menu-button');
+
+      fireEvent.click(appleButton);
+      expect(screen.getByTestId('apple-menu-dropdown')).toBeInTheDocument();
+
+      fireEvent.click(appleButton);
+      expect(screen.queryByTestId('apple-menu-dropdown')).not.toBeInTheDocument();
+    });
+
+    it('displays About This Mac menu item', () => {
+      render(<MenuBar />);
+      fireEvent.click(screen.getByTestId('apple-menu-button'));
+
+      expect(screen.getByRole('menuitem', { name: 'About This Mac' })).toBeInTheDocument();
+    });
+
+    it('displays Restart menu item', () => {
+      render(<MenuBar />);
+      fireEvent.click(screen.getByTestId('apple-menu-button'));
+
+      expect(screen.getByRole('menuitem', { name: /Restart/ })).toBeInTheDocument();
+    });
+
+    it('closes dropdown when Escape is pressed', () => {
+      render(<MenuBar />);
+      fireEvent.click(screen.getByTestId('apple-menu-button'));
+      expect(screen.getByTestId('apple-menu-dropdown')).toBeInTheDocument();
+
+      act(() => {
+        fireEvent.keyDown(document, { key: 'Escape' });
+      });
+
+      expect(screen.queryByTestId('apple-menu-dropdown')).not.toBeInTheDocument();
+    });
+
+    it('closes dropdown when clicking outside', () => {
+      render(<MenuBar />);
+      fireEvent.click(screen.getByTestId('apple-menu-button'));
+      expect(screen.getByTestId('apple-menu-dropdown')).toBeInTheDocument();
+
+      // Click outside the dropdown
+      act(() => {
+        fireEvent.mouseDown(document.body);
+      });
+
+      expect(screen.queryByTestId('apple-menu-dropdown')).not.toBeInTheDocument();
+    });
+
+    it('has correct aria attributes', () => {
+      render(<MenuBar />);
+      const appleButton = screen.getByTestId('apple-menu-button');
+
+      expect(appleButton).toHaveAttribute('aria-haspopup', 'menu');
+      expect(appleButton).toHaveAttribute('aria-expanded', 'false');
+
+      fireEvent.click(appleButton);
+      expect(appleButton).toHaveAttribute('aria-expanded', 'true');
+    });
   });
 });
