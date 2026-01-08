@@ -1,5 +1,6 @@
 import { useAppStore } from '@/stores/appStore';
 import { useWindowStore } from '@/stores/windowStore';
+import { useKeyboardShortcuts } from '@/hooks';
 import { Desktop } from '@/features/tiger/components/Desktop';
 import { DesktopIconGrid } from '@/features/tiger/components/DesktopIconGrid';
 import { DesktopIcon } from '@/features/tiger/components/DesktopIcon';
@@ -49,6 +50,9 @@ function WindowContent({ app }: { app: string }) {
  * Double-clicking an icon opens a window for that app.
  */
 export function App() {
+  // Enable Tiger keyboard shortcuts (⌘W, ⌘M)
+  useKeyboardShortcuts();
+
   const selectedIconId = useAppStore((s) => s.selectedIconId);
   const selectIcon = useAppStore((s) => s.selectIcon);
   const windows = useWindowStore((s) => s.windows);
