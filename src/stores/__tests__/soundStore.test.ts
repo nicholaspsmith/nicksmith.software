@@ -4,10 +4,28 @@ import { useSoundStore } from '../soundStore';
 // Mock AudioContext as a proper constructor class
 class MockAudioContext {
   destination = {};
+  currentTime = 0;
   createBufferSource = vi.fn(() => ({
     buffer: null,
     connect: vi.fn(),
     start: vi.fn(),
+  }));
+  createOscillator = vi.fn(() => ({
+    type: 'sine',
+    frequency: {
+      setValueAtTime: vi.fn(),
+    },
+    connect: vi.fn(),
+    start: vi.fn(),
+    stop: vi.fn(),
+  }));
+  createGain = vi.fn(() => ({
+    gain: {
+      setValueAtTime: vi.fn(),
+      linearRampToValueAtTime: vi.fn(),
+      exponentialRampToValueAtTime: vi.fn(),
+    },
+    connect: vi.fn(),
   }));
 }
 
@@ -20,6 +38,7 @@ describe('soundStore', () => {
       audioContext: null,
       buffers: new Map(),
       initialized: false,
+      startupChimePlayed: false,
     });
     vi.clearAllMocks();
   });
@@ -80,6 +99,49 @@ describe('soundStore', () => {
       useSoundStore.getState().play('startup');
 
       expect(ctx.createBufferSource).toHaveBeenCalled();
+    });
+  });
+
+  describe('playStartupChime', () => {
+    it('should have startupChimePlayed as false initially', () => {
+      expect(useSoundStore.getState().startupChimePlayed).toBe(false);
+    });
+
+    it('should play chime and set startupChimePlayed to true', () => {
+      useSoundStore.getState().playStartupChime();
+
+      expect(useSoundStore.getState().startupChimePlayed).toBe(true);
+    });
+
+    it('should create AudioContext if not initialized', () => {
+      useSoundStore.getState().playStartupChime();
+
+      expect(useSoundStore.getState().audioContext).toBeInstanceOf(MockAudioContext);
+      expect(useSoundStore.getState().initialized).toBe(true);
+    });
+
+    it('should only play once per session', () => {
+      useSoundStore.getState().playStartupChime();
+      expect(useSoundStore.getState().startupChimePlayed).toBe(true);
+
+      // Reset the mock to track new calls
+      vi.clearAllMocks();
+
+      // Try to play again
+      useSoundStore.getState().playStartupChime();
+
+      // AudioContext should not be created again (no new oscillators)
+      const ctx = useSoundStore.getState().audioContext as unknown as MockAudioContext;
+      expect(ctx.createOscillator).not.toHaveBeenCalled();
+    });
+
+    it('should create oscillators for chord notes', () => {
+      useSoundStore.getState().playStartupChime();
+
+      const ctx = useSoundStore.getState().audioContext as unknown as MockAudioContext;
+      // 4 notes in the F# major chord
+      expect(ctx.createOscillator).toHaveBeenCalledTimes(4);
+      expect(ctx.createGain).toHaveBeenCalledTimes(4);
     });
   });
 });

@@ -1,6 +1,6 @@
 import { useAppStore } from '@/stores/appStore';
 import { useWindowStore } from '@/stores/windowStore';
-import { useKeyboardShortcuts } from '@/hooks';
+import { useKeyboardShortcuts, useStartupChime } from '@/hooks';
 import { Desktop } from '@/features/tiger/components/Desktop';
 import { DesktopIconGrid } from '@/features/tiger/components/DesktopIconGrid';
 import { DesktopIcon } from '@/features/tiger/components/DesktopIcon';
@@ -52,6 +52,8 @@ function WindowContent({ app }: { app: string }) {
 export function App() {
   // Enable Tiger keyboard shortcuts (⌘W, ⌘M)
   useKeyboardShortcuts();
+  // Play startup chime on first user interaction
+  useStartupChime();
 
   const selectedIconId = useAppStore((s) => s.selectedIconId);
   const selectIcon = useAppStore((s) => s.selectIcon);
