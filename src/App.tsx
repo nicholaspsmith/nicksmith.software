@@ -5,6 +5,10 @@ import { DesktopIconGrid } from '@/features/tiger/components/DesktopIconGrid';
 import { DesktopIcon } from '@/features/tiger/components/DesktopIcon';
 import { Window } from '@/features/tiger/components/Window';
 import { DocumentIcon } from '@/features/tiger/components/icons';
+import { AboutMe } from '@/features/apps/AboutMe';
+import { Projects } from '@/features/apps/Projects';
+import { Resume } from '@/features/apps/Resume';
+import { Contact } from '@/features/apps/Contact';
 
 /**
  * Portfolio app configuration
@@ -16,6 +20,24 @@ const PORTFOLIO_APPS = [
   { id: 'about', label: 'About Me', color: '#ff9500', abbrev: 'ME' },
   { id: 'contact', label: 'Contact', color: '#ff5f57', abbrev: '@' },
 ] as const;
+
+/**
+ * Renders the appropriate content for a window based on its app type
+ */
+function WindowContent({ app }: { app: string }) {
+  switch (app) {
+    case 'about':
+      return <AboutMe />;
+    case 'projects':
+      return <Projects />;
+    case 'resume':
+      return <Resume />;
+    case 'contact':
+      return <Contact />;
+    default:
+      return <div style={{ padding: 16 }}>{app} content</div>;
+  }
+}
 
 /**
  * App - Root application component
@@ -57,9 +79,7 @@ export function App() {
         .filter((w) => w.state !== 'closed')
         .map((w) => (
           <Window key={w.id} id={w.id} title={w.title}>
-            <div style={{ padding: 16 }}>
-              <p>{w.app} content coming soon...</p>
-            </div>
+            <WindowContent app={w.app} />
           </Window>
         ))}
     </Desktop>

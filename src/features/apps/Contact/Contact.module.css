@@ -1,0 +1,84 @@
+/**
+ * Contact.module.css - Tiger-styled contact info
+ *
+ * Clean layout with prominent links.
+ * Optimized for 400x300px window default.
+ */
+
+.container {
+  padding: var(--aqua-spacing-md);
+  font-family: var(--aqua-font-family);
+  color: #333;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: var(--aqua-font-weight-bold);
+  margin: 0 0 4px 0;
+  color: #222;
+}
+
+.subtitle {
+  font-size: var(--aqua-font-size-sm);
+  color: #666;
+  margin: 0 0 var(--aqua-spacing-md) 0;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--aqua-spacing-sm);
+  flex: 1;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: var(--aqua-spacing-sm);
+  padding: var(--aqua-spacing-sm);
+  background: linear-gradient(180deg, #ffffff 0%, #f8f8f8 100%);
+  border: 1px solid #c0c0c0;
+  border-radius: 6px;
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 0.15s ease;
+}
+
+.link:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.link:focus {
+  outline: 2px solid var(--aqua-focus-ring);
+  outline-offset: 2px;
+}
+
+.icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.linkText {
+  display: flex;
+  flex-direction: column;
+}
+
+.linkText strong {
+  font-size: var(--aqua-font-size-md);
+  color: var(--aqua-blue-dark);
+}
+
+.linkText span {
+  font-size: var(--aqua-font-size-xs);
+  color: #666;
+}
+
+.footer {
+  font-size: var(--aqua-font-size-xs);
+  color: #888;
+  text-align: center;
+  margin: var(--aqua-spacing-sm) 0 0 0;
+}

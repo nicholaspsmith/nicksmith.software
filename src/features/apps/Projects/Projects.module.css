@@ -1,0 +1,76 @@
+/**
+ * Projects.module.css - Tiger-styled project showcase
+ *
+ * Card-based layout with Aqua aesthetic.
+ * Optimized for 700x500px window default.
+ */
+
+.container {
+  padding: var(--aqua-spacing-md);
+  font-family: var(--aqua-font-family);
+  color: #333;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: var(--aqua-font-weight-bold);
+  margin: 0 0 4px 0;
+  color: #222;
+}
+
+.subtitle {
+  font-size: var(--aqua-font-size-md);
+  color: #666;
+  margin: 0 0 var(--aqua-spacing-md) 0;
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--aqua-spacing-sm);
+}
+
+.card {
+  background: linear-gradient(180deg, #ffffff 0%, #f8f8f8 100%);
+  border: 1px solid #c0c0c0;
+  border-radius: 6px;
+  padding: var(--aqua-spacing-sm) var(--aqua-spacing-md);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+
+.card:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.cardTitle {
+  font-size: var(--aqua-font-size-md);
+  font-weight: var(--aqua-font-weight-bold);
+  margin: 0 0 4px 0;
+  color: var(--aqua-blue-dark);
+}
+
+.cardDescription {
+  font-size: var(--aqua-font-size-sm);
+  line-height: 1.4;
+  margin: 0 0 var(--aqua-spacing-xs) 0;
+  color: #444;
+}
+
+.technologies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tech {
+  font-size: var(--aqua-font-size-xs);
+  background: #e8e8e8;
+  color: #555;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid #d0d0d0;
+}

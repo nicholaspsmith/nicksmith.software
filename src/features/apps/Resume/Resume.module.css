@@ -1,0 +1,101 @@
+/**
+ * Resume.module.css - Tiger-styled resume
+ *
+ * Clean, scannable layout for quick evaluation.
+ * Optimized for 600x500px window default.
+ */
+
+.container {
+  padding: var(--aqua-spacing-md);
+  font-family: var(--aqua-font-family);
+  color: #333;
+  height: 100%;
+  overflow-y: auto;
+  font-size: var(--aqua-font-size-sm);
+  line-height: 1.4;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--aqua-spacing-md);
+  padding-bottom: var(--aqua-spacing-sm);
+  border-bottom: 1px solid #d0d0d0;
+}
+
+.name {
+  font-size: 22px;
+  font-weight: var(--aqua-font-weight-bold);
+  margin: 0 0 4px 0;
+  color: #222;
+}
+
+.contact {
+  font-size: var(--aqua-font-size-xs);
+  color: #666;
+  margin: 0;
+}
+
+.section {
+  margin-bottom: var(--aqua-spacing-md);
+}
+
+.sectionTitle {
+  font-size: var(--aqua-font-size-md);
+  font-weight: var(--aqua-font-weight-bold);
+  color: var(--aqua-blue-dark);
+  margin: 0 0 var(--aqua-spacing-xs) 0;
+  padding-bottom: 2px;
+  border-bottom: 2px solid var(--aqua-blue-primary);
+}
+
+.job {
+  margin-bottom: var(--aqua-spacing-sm);
+}
+
+.jobHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.company {
+  color: #666;
+  font-size: var(--aqua-font-size-xs);
+}
+
+.date {
+  font-size: var(--aqua-font-size-xs);
+  color: #888;
+}
+
+.achievements {
+  margin: 4px 0 0 0;
+  padding-left: 18px;
+}
+
+.achievements li {
+  margin-bottom: 2px;
+}
+
+.skills {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px var(--aqua-spacing-md);
+}
+
+.skillCategory {
+  font-size: var(--aqua-font-size-xs);
+}
+
+.education {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--aqua-spacing-xs);
+}
+
+.school {
+  width: 100%;
+  color: #666;
+  font-size: var(--aqua-font-size-xs);
+}
