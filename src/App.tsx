@@ -1,11 +1,18 @@
 import { MotionConfig } from 'motion/react';
 import { useAppStore } from '@/stores/appStore';
 import { useWindowStore } from '@/stores/windowStore';
-import { useKeyboardShortcuts, useReducedMotion, useStartupChime } from '@/hooks';
+import {
+  useKeyboardShortcuts,
+  useReducedMotion,
+  useStartupChime,
+  useViewport,
+  MOBILE_BREAKPOINT,
+} from '@/hooks';
 import { Desktop } from '@/features/tiger/components/Desktop';
 import { DesktopIconGrid } from '@/features/tiger/components/DesktopIconGrid';
 import { DesktopIcon } from '@/features/tiger/components/DesktopIcon';
 import { Window } from '@/features/tiger/components/Window';
+import { MobileFallback } from '@/features/tiger/components/MobileFallback';
 import { DocumentIcon } from '@/features/tiger/components/icons';
 import { AboutMe } from '@/features/apps/AboutMe';
 import { Projects } from '@/features/apps/Projects';
@@ -57,6 +64,13 @@ export function App() {
   useStartupChime();
   // Detect reduced motion preference
   const prefersReducedMotion = useReducedMotion();
+  // Track viewport for mobile fallback
+  const viewport = useViewport();
+
+  // Show mobile fallback for small screens (< 1024px)
+  if (viewport.width < MOBILE_BREAKPOINT) {
+    return <MobileFallback />;
+  }
 
   const selectedIconId = useAppStore((s) => s.selectedIconId);
   const selectIcon = useAppStore((s) => s.selectIcon);

@@ -1,0 +1,93 @@
+/**
+ * MobileFallback.module.css - Tiger-styled mobile fallback dialog
+ *
+ * Centers a dialog box with quick links for mobile visitors.
+ */
+
+.container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--aqua-spacing-md);
+  background: linear-gradient(135deg, #3a6ea5 0%, #1a4a7a 100%);
+  z-index: var(--aqua-z-modal);
+}
+
+.dialog {
+  max-width: 360px;
+  width: 100%;
+  background: white;
+  border-radius: var(--aqua-window-radius);
+  box-shadow: var(--aqua-window-shadow);
+  padding: var(--aqua-spacing-lg);
+  text-align: center;
+}
+
+.iconContainer {
+  margin-bottom: var(--aqua-spacing-md);
+}
+
+.icon {
+  width: 64px;
+  height: 64px;
+}
+
+.title {
+  margin: 0 0 var(--aqua-spacing-sm);
+  font-family: var(--aqua-font-family);
+  font-size: var(--aqua-font-size-lg);
+  font-weight: var(--aqua-font-weight-bold);
+  color: #333;
+}
+
+.message {
+  margin: 0 0 var(--aqua-spacing-lg);
+  font-family: var(--aqua-font-family);
+  font-size: var(--aqua-font-size-md);
+  color: #666;
+  line-height: 1.5;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--aqua-spacing-sm);
+  margin-bottom: var(--aqua-spacing-lg);
+}
+
+.link {
+  display: block;
+  padding: var(--aqua-spacing-sm) var(--aqua-spacing-md);
+  background: linear-gradient(180deg, #f0f0f0 0%, #d8d8d8 100%);
+  border: 1px solid #a0a0a0;
+  border-radius: 4px;
+  font-family: var(--aqua-font-family);
+  font-size: var(--aqua-font-size-md);
+  color: #333;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--aqua-duration-fast) ease;
+}
+
+.link:hover {
+  background: linear-gradient(180deg, #e0e0e0 0%, #c8c8c8 100%);
+}
+
+.link:active {
+  background: linear-gradient(180deg, #c8c8c8 0%, #b8b8b8 100%);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--aqua-focus-ring);
+  outline-offset: 2px;
+}
+
+.hint {
+  margin: 0;
+  font-family: var(--aqua-font-family);
+  font-size: var(--aqua-font-size-sm);
+  color: #888;
+  font-style: italic;
+}

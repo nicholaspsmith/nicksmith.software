@@ -1,0 +1,1 @@
+export { MobileFallback } from './MobileFallback';
