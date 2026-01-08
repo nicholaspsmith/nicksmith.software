@@ -85,15 +85,15 @@ development_status:
   epic-5-retrospective: optional
 
   # Epic 6: Interaction Polish & Accessibility (MVP)
-  epic-6: backlog
-  6-1-implement-keyboard-shortcuts: backlog
-  6-2-implement-tab-key-navigation: backlog
-  6-3-implement-apple-menu-dropdown: backlog
-  6-4-implement-startup-chime: backlog
-  6-5-add-focus-indicators: backlog
-  6-6-add-aria-labels: backlog
-  6-7-implement-reduced-motion-support: backlog
-  6-8-create-mobile-fallback-message: backlog
+  epic-6: done
+  6-1-implement-keyboard-shortcuts: done
+  6-2-implement-tab-key-navigation: done
+  6-3-implement-apple-menu-dropdown: done
+  6-4-implement-startup-chime: done
+  6-5-add-focus-indicators: done
+  6-6-add-aria-labels: done
+  6-7-implement-reduced-motion-support: done
+  6-8-create-mobile-fallback-message: done
   epic-6-retrospective: optional
 
   # Epic 7: Terminal & Dock (Phase 2)
