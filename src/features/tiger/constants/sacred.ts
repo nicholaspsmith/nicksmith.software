@@ -43,8 +43,11 @@ export const SACRED = {
   // DESKTOP ICONS
   // Icon grid and sizing specs
   // ========================================
-  iconGridSize: 75,
   iconSize: 48,
+  iconGridCellWidth: 80,
+  iconGridCellHeight: 90,
+  iconGridRightMargin: 20,
+  iconGridTopMargin: 40,
   iconLabelMaxWidth: 72,
 
   // ========================================

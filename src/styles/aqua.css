@@ -36,6 +36,8 @@
   --aqua-blue-dark: #1872c9;
   --aqua-blue-light: #7fbfff;
   --aqua-blue-highlight: #b3d9ff;
+  --aqua-selection-bg: rgba(56, 117, 215, 0.85);
+  --aqua-focus-ring: #3b99fc;
 
   /* ========================================
    * WINDOW CHROME COLORS

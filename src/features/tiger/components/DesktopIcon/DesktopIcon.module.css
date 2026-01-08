@@ -1,0 +1,68 @@
+/**
+ * DesktopIcon.module.css - Tiger desktop icon styling
+ *
+ * Mac OS X Tiger icons have:
+ * - 48x48px icon image
+ * - White label text with drop shadow (for readability on wallpaper)
+ * - Blue rounded rectangle selection indicator
+ * - 80x90px grid cell size
+ */
+
+.icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 8px;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  cursor: var(--aqua-cursor-pointer);
+  outline: none;
+  border-radius: 4px;
+}
+
+.icon:focus-visible {
+  box-shadow: 0 0 0 2px var(--aqua-focus-ring);
+}
+
+.iconImage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconImage svg,
+.iconImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.label {
+  font-family: var(--aqua-font-family);
+  font-size: var(--aqua-font-size-sm);
+  line-height: 1.2;
+  color: white;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.8),
+    0 0 4px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+/* Selection state - blue rounded rectangle behind label */
+.selected .label {
+  background: var(--aqua-selection-bg);
+  text-shadow: none;
+}
+
+/* Unfocused selection - lighter background */
+.icon:not(:focus) .selected .label {
+  background: rgba(100, 100, 100, 0.6);
+}

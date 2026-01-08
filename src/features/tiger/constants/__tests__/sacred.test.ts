@@ -58,12 +58,24 @@ describe('SACRED values registry', () => {
   });
 
   describe('desktop icon values', () => {
-    it('should have correct iconGridSize', () => {
-      expect(SACRED.iconGridSize).toBe(75);
-    });
-
     it('should have correct iconSize', () => {
       expect(SACRED.iconSize).toBe(48);
+    });
+
+    it('should have correct iconGridCellWidth', () => {
+      expect(SACRED.iconGridCellWidth).toBe(80);
+    });
+
+    it('should have correct iconGridCellHeight', () => {
+      expect(SACRED.iconGridCellHeight).toBe(90);
+    });
+
+    it('should have correct iconGridRightMargin', () => {
+      expect(SACRED.iconGridRightMargin).toBe(20);
+    });
+
+    it('should have correct iconGridTopMargin', () => {
+      expect(SACRED.iconGridTopMargin).toBe(40);
     });
 
     it('should have correct iconLabelMaxWidth', () => {
@@ -113,8 +125,11 @@ describe('SACRED values registry', () => {
         'windowDefaultHeight',
         'windowCascadeOffset',
         'windowViewportMargin',
-        'iconGridSize',
         'iconSize',
+        'iconGridCellWidth',
+        'iconGridCellHeight',
+        'iconGridRightMargin',
+        'iconGridTopMargin',
         'iconLabelMaxWidth',
         'dockIconSize',
         'dockMagnification',
