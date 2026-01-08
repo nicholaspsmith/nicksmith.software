@@ -99,9 +99,9 @@ describe('Animation Variants', () => {
       expect(iconVariants.idle).toEqual({ scale: 1 });
     });
 
-    it('should have hover scale larger than 1', () => {
+    it('should have hover scale equal to 1 (no zoom - Tiger behavior)', () => {
       const hover = iconVariants.hover as { scale: number };
-      expect(hover.scale).toBeGreaterThan(1);
+      expect(hover.scale).toBe(1);
     });
 
     it('should have active scale smaller than 1', () => {

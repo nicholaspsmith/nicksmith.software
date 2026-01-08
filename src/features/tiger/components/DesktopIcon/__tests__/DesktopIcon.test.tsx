@@ -148,7 +148,7 @@ describe('DesktopIcon', () => {
       expect(handleDoubleClick).toHaveBeenCalledTimes(1);
     });
 
-    it('should trigger onDoubleClick when Space is pressed', () => {
+    it('should NOT trigger onDoubleClick when Space is pressed (Tiger behavior)', () => {
       const handleDoubleClick = vi.fn();
       render(
         <DesktopIcon
@@ -160,7 +160,7 @@ describe('DesktopIcon', () => {
       );
       const button = screen.getByRole('button');
       fireEvent.keyDown(button, { key: ' ' });
-      expect(handleDoubleClick).toHaveBeenCalledTimes(1);
+      expect(handleDoubleClick).not.toHaveBeenCalled();
     });
 
     it('should not trigger onDoubleClick for other keys', () => {

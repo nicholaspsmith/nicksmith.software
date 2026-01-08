@@ -108,14 +108,10 @@ export const iconVariants: Variants = {
   },
 
   /**
-   * Hover state - slight scale up for feedback
+   * Hover state - no scale change (Tiger didn't zoom icons on hover)
    */
   hover: {
-    scale: 1.1,
-    transition: {
-      duration: 0.15,
-      ease: 'easeOut',
-    },
+    scale: 1,
   },
 
   /**

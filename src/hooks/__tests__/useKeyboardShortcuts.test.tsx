@@ -13,9 +13,12 @@ describe('useKeyboardShortcuts', () => {
     });
   });
 
-  it('closes active window on Cmd+W', () => {
+  it('dispatches window-close-request event on Cmd+W', () => {
     // Open a window first
     const windowId = useWindowStore.getState().openWindow('test');
+
+    const eventHandler = vi.fn();
+    window.addEventListener('window-close-request', eventHandler);
 
     renderHook(() => useKeyboardShortcuts());
 
@@ -29,14 +32,20 @@ describe('useKeyboardShortcuts', () => {
       window.dispatchEvent(event);
     });
 
-    // Window should be removed
-    const windows = useWindowStore.getState().windows;
-    expect(windows.find((w) => w.id === windowId)).toBeUndefined();
+    // Event should be dispatched with correct windowId
+    expect(eventHandler).toHaveBeenCalledTimes(1);
+    const detail = (eventHandler.mock.calls[0][0] as CustomEvent).detail;
+    expect(detail.windowId).toBe(windowId);
+
+    window.removeEventListener('window-close-request', eventHandler);
   });
 
-  it('minimizes active window on Cmd+M', () => {
+  it('dispatches window-minimize-request event on Cmd+M', () => {
     // Open a window first
     const windowId = useWindowStore.getState().openWindow('test');
+
+    const eventHandler = vi.fn();
+    window.addEventListener('window-minimize-request', eventHandler);
 
     renderHook(() => useKeyboardShortcuts());
 
@@ -50,13 +59,19 @@ describe('useKeyboardShortcuts', () => {
       window.dispatchEvent(event);
     });
 
-    // Window should be minimized
-    const targetWindow = useWindowStore.getState().windows.find((w) => w.id === windowId);
-    expect(targetWindow?.state).toBe('minimized');
+    // Event should be dispatched with correct windowId
+    expect(eventHandler).toHaveBeenCalledTimes(1);
+    const detail = (eventHandler.mock.calls[0][0] as CustomEvent).detail;
+    expect(detail.windowId).toBe(windowId);
+
+    window.removeEventListener('window-minimize-request', eventHandler);
   });
 
   it('does nothing when no window is focused', () => {
-    const closeWindow = vi.spyOn(useWindowStore.getState(), 'closeWindow');
+    const closeHandler = vi.fn();
+    const minimizeHandler = vi.fn();
+    window.addEventListener('window-close-request', closeHandler);
+    window.addEventListener('window-minimize-request', minimizeHandler);
 
     renderHook(() => useKeyboardShortcuts());
 
@@ -70,7 +85,11 @@ describe('useKeyboardShortcuts', () => {
       window.dispatchEvent(event);
     });
 
-    expect(closeWindow).not.toHaveBeenCalled();
+    expect(closeHandler).not.toHaveBeenCalled();
+    expect(minimizeHandler).not.toHaveBeenCalled();
+
+    window.removeEventListener('window-close-request', closeHandler);
+    window.removeEventListener('window-minimize-request', minimizeHandler);
   });
 
   it('prevents default browser behavior', () => {
@@ -99,6 +118,9 @@ describe('useKeyboardShortcuts', () => {
   it('works with Ctrl key for Windows/Linux', () => {
     const windowId = useWindowStore.getState().openWindow('test');
 
+    const eventHandler = vi.fn();
+    window.addEventListener('window-close-request', eventHandler);
+
     renderHook(() => useKeyboardShortcuts());
 
     // Simulate Ctrl+W (Windows/Linux)
@@ -111,13 +133,18 @@ describe('useKeyboardShortcuts', () => {
       window.dispatchEvent(event);
     });
 
-    const windows = useWindowStore.getState().windows;
-    expect(windows.find((w) => w.id === windowId)).toBeUndefined();
+    expect(eventHandler).toHaveBeenCalledTimes(1);
+    const detail = (eventHandler.mock.calls[0][0] as CustomEvent).detail;
+    expect(detail.windowId).toBe(windowId);
+
+    window.removeEventListener('window-close-request', eventHandler);
   });
 
   it('ignores shortcuts without meta/ctrl key', () => {
     useWindowStore.getState().openWindow('test');
-    const initialWindowCount = useWindowStore.getState().windows.length;
+
+    const eventHandler = vi.fn();
+    window.addEventListener('window-close-request', eventHandler);
 
     renderHook(() => useKeyboardShortcuts());
 
@@ -130,6 +157,8 @@ describe('useKeyboardShortcuts', () => {
       window.dispatchEvent(event);
     });
 
-    expect(useWindowStore.getState().windows.length).toBe(initialWindowCount);
+    expect(eventHandler).not.toHaveBeenCalled();
+
+    window.removeEventListener('window-close-request', eventHandler);
   });
 });

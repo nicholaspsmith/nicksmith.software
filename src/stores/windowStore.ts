@@ -31,6 +31,7 @@ interface WindowStore {
   openWindow: (app: string) => string;
   closeWindow: (id: string) => void;
   focusWindow: (id: string) => void;
+  clearActiveWindow: () => void;
   minimizeWindow: (id: string) => void;
   restoreWindow: (id: string) => void;
   zoomWindow: (id: string) => void;
@@ -46,8 +47,21 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
 
   // Actions
   openWindow: (app) => {
+    const { windows, maxZIndex } = get();
+
+    // Check if window for this app already exists
+    const existingWindow = windows.find((w) => w.app === app);
+    if (existingWindow) {
+      // Focus existing window instead of creating new one
+      get().focusWindow(existingWindow.id);
+      // If minimized, restore it
+      if (existingWindow.state === 'minimized') {
+        get().restoreWindow(existingWindow.id);
+      }
+      return existingWindow.id;
+    }
+
     const id = crypto.randomUUID();
-    const { maxZIndex } = get();
     const newZIndex = maxZIndex + 1;
     set((state) => ({
       windows: [...state.windows, {
@@ -86,6 +100,10 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
       activeWindowId: id,
       maxZIndex: newZIndex,
     }));
+  },
+
+  clearActiveWindow: () => {
+    set({ activeWindowId: null });
   },
 
   minimizeWindow: (id) => {

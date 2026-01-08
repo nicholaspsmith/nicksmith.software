@@ -4,7 +4,6 @@ import { useWindowStore } from '@/stores/windowStore';
 import {
   useKeyboardShortcuts,
   useReducedMotion,
-  useStartupChime,
   useViewport,
   MOBILE_BREAKPOINT,
 } from '@/hooks';
@@ -60,8 +59,6 @@ function WindowContent({ app }: { app: string }) {
 export function App() {
   // Enable Tiger keyboard shortcuts (⌘W, ⌘M)
   useKeyboardShortcuts();
-  // Play startup chime on first user interaction
-  useStartupChime();
   // Detect reduced motion preference
   const prefersReducedMotion = useReducedMotion();
   // Track viewport for mobile fallback

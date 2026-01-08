@@ -38,8 +38,8 @@ export function DesktopIcon({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Enter or Space opens the icon (like double-click)
-    if (e.key === 'Enter' || e.key === ' ') {
+    // Enter (Return) opens the icon (like double-click) - Tiger behavior
+    if (e.key === 'Enter') {
       e.preventDefault();
       onDoubleClick?.();
     }

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Rnd } from 'react-rnd';
 import { motion } from 'motion/react';
 import { useWindowStore } from '@/stores/windowStore';
@@ -26,7 +26,7 @@ export interface WindowProps {
  * - Minimize: open → minimizing → (hidden)
  */
 export function Window({ id, title, children }: WindowProps) {
-  const window = useWindowStore((s) => s.windows.find((w) => w.id === id));
+  const windowState = useWindowStore((s) => s.windows.find((w) => w.id === id));
   const activeWindowId = useWindowStore((s) => s.activeWindowId);
   const updatePosition = useWindowStore((s) => s.updatePosition);
   const updateSize = useWindowStore((s) => s.updateSize);
@@ -79,6 +79,32 @@ export function Window({ id, title, children }: WindowProps) {
     zoomWindow(id);
   }, [id, zoomWindow]);
 
+  // Listen for keyboard shortcut events to trigger animations
+  useEffect(() => {
+    // Skip in test environment where window may not have addEventListener
+    if (typeof window === 'undefined' || !window.addEventListener) return;
+
+    const handleCloseRequest = (e: CustomEvent<{ windowId: string }>) => {
+      if (e.detail.windowId === id) {
+        handleClose();
+      }
+    };
+
+    const handleMinimizeRequest = (e: CustomEvent<{ windowId: string }>) => {
+      if (e.detail.windowId === id) {
+        handleMinimize();
+      }
+    };
+
+    window.addEventListener('window-close-request', handleCloseRequest as EventListener);
+    window.addEventListener('window-minimize-request', handleMinimizeRequest as EventListener);
+
+    return () => {
+      window.removeEventListener('window-close-request', handleCloseRequest as EventListener);
+      window.removeEventListener('window-minimize-request', handleMinimizeRequest as EventListener);
+    };
+  }, [id, handleClose, handleMinimize]);
+
   const handleAnimationComplete = useCallback(() => {
     if (animationState === 'opening') {
       // Transition to stable 'open' state after opening animation
@@ -92,7 +118,7 @@ export function Window({ id, title, children }: WindowProps) {
   }, [animationState, id, closeWindow, minimizeWindow]);
 
   // Don't render if window not found or minimized
-  if (!window || window.state === 'minimized') {
+  if (!windowState || windowState.state === 'minimized') {
     return null;
   }
 
@@ -100,12 +126,11 @@ export function Window({ id, title, children }: WindowProps) {
 
   return (
     <Rnd
-      position={{ x: window.x, y: window.y }}
-      size={{ width: window.width, height: window.height }}
+      position={{ x: windowState.x, y: windowState.y }}
+      size={{ width: windowState.width, height: windowState.height }}
       minWidth={SACRED.windowMinWidth}
       minHeight={SACRED.windowMinHeight}
-      bounds="window"
-      style={{ zIndex: window.zIndex }}
+      style={{ zIndex: windowState.zIndex }}
       dragHandleClassName={styles.dragHandle}
       onDragStop={handleDragStop}
       onResizeStop={handleResizeStop}

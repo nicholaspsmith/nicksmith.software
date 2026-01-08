@@ -33,12 +33,13 @@ export function useKeyboardShortcuts(): void {
       if (key === 'w') {
         // ⌘W - Close window
         e.preventDefault();
-        // Get fresh reference to avoid stale closure
-        useWindowStore.getState().closeWindow(activeWindowId);
+        // Dispatch event for Window component to handle animation
+        window.dispatchEvent(new CustomEvent('window-close-request', { detail: { windowId: activeWindowId } }));
       } else if (key === 'm') {
         // ⌘M - Minimize window
         e.preventDefault();
-        useWindowStore.getState().minimizeWindow(activeWindowId);
+        // Dispatch event for Window component to handle animation
+        window.dispatchEvent(new CustomEvent('window-minimize-request', { detail: { windowId: activeWindowId } }));
       }
     };
 
