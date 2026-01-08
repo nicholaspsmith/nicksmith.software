@@ -95,14 +95,25 @@ export function MenuBar() {
             aria-haspopup="menu"
             data-testid="apple-menu-button"
           >
+            {/* Tiger-era blue Apple logo */}
             <svg
               viewBox="0 0 24 24"
               width="14"
               height="14"
-              fill="currentColor"
               aria-hidden="true"
+              className={styles.appleLogoSvg}
             >
-              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+              <defs>
+                <linearGradient id="appleBlueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#7CB8FF" />
+                  <stop offset="50%" stopColor="#3B82F6" />
+                  <stop offset="100%" stopColor="#1E40AF" />
+                </linearGradient>
+              </defs>
+              <path
+                fill="url(#appleBlueGradient)"
+                d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"
+              />
             </svg>
           </button>
 
@@ -138,13 +149,50 @@ export function MenuBar() {
         <span className={styles.appName} data-testid="app-name">
           {appName}
         </span>
+
+        {/* Menu Items */}
+        <nav className={styles.menuItems} aria-label="Application menu">
+          <span className={styles.menuItem}>File</span>
+          <span className={styles.menuItem}>Edit</span>
+          <span className={styles.menuItem}>View</span>
+          <span className={styles.menuItem}>Go</span>
+          <span className={styles.menuItem}>Window</span>
+          <span className={styles.menuItem}>Help</span>
+        </nav>
       </div>
 
       <div className={styles.right}>
+        {/* Status Icons */}
+        <div className={styles.statusIcons}>
+          {/* Volume Icon */}
+          <svg
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="currentColor"
+            className={styles.statusIcon}
+            aria-label="Volume"
+          >
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+          </svg>
+        </div>
+
         {/* Clock */}
         <span className={styles.clock} data-testid="clock">
           {formatTime(time)}
         </span>
+
+        {/* Spotlight Icon */}
+        <svg
+          viewBox="0 0 24 24"
+          width="16"
+          height="16"
+          fill="currentColor"
+          className={styles.spotlightIcon}
+          aria-label="Spotlight"
+        >
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+        </svg>
       </div>
     </header>
   );
