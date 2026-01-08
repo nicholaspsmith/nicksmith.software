@@ -11,7 +11,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: var(--aqua-desktop-bg);
+  background: url('/tiger-wallpaper.png') center center / cover no-repeat;
   overflow: hidden;
   z-index: var(--aqua-z-desktop);
   cursor: var(--aqua-cursor-default);

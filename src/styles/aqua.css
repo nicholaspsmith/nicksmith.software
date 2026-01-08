@@ -41,24 +41,28 @@
 
   /* ========================================
    * WINDOW CHROME COLORS
-   * Title bar, borders, shadows
+   * Title bar, borders, shadows - Tiger authentic styling
    * ======================================== */
   --aqua-titlebar-active: linear-gradient(
     180deg,
-    #e8e8e8 0%,
-    #d0d0d0 50%,
-    #b8b8b8 51%,
-    #c8c8c8 100%
+    #f0f0f0 0%,
+    #e6e6e6 2%,
+    #d6d6d6 48%,
+    #c4c4c4 52%,
+    #d2d2d2 100%
   );
   --aqua-titlebar-inactive: linear-gradient(
     180deg,
-    #f0f0f0 0%,
-    #e0e0e0 50%,
-    #d0d0d0 51%,
-    #e0e0e0 100%
+    #f8f8f8 0%,
+    #f2f2f2 2%,
+    #e8e8e8 48%,
+    #e0e0e0 52%,
+    #ececec 100%
   );
-  --aqua-window-border: #808080;
-  --aqua-window-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  --aqua-window-border: rgba(0, 0, 0, 0.35);
+  --aqua-window-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.25),
+    0 10px 30px rgba(0, 0, 0, 0.15);
 
   /* ========================================
    * TYPOGRAPHY
@@ -112,10 +116,11 @@
   /* ========================================
    * CURSORS
    * Tiger-era cursor styles using SVG data URIs
+   * Authentic Mac OS X 10.4 Tiger arrow cursor
    * ======================================== */
-  /* Tiger arrow cursor - white arrow with black outline */
-  --aqua-cursor-default: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M3 2l8 18 2-7 7-2z'/%3E%3Cpath fill='%23fff' d='M4.5 4.5l5.5 12.5 1.5-5 5-1.5z'/%3E%3C/svg%3E") 0 0, auto;
+  /* Tiger arrow cursor - white arrow with black outline and subtle shadow */
+  --aqua-cursor-default: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='22' viewBox='0 0 16 22'%3E%3Cdefs%3E%3Cfilter id='shadow' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeDropShadow dx='1' dy='1' stdDeviation='0.5' flood-opacity='0.3'/%3E%3C/filter%3E%3C/defs%3E%3Cpath filter='url(%23shadow)' fill='%23000' stroke='none' d='M1,1 L1,16 L4.5,12.5 L7.5,19 L10,18 L7,11.5 L12,11.5 Z'/%3E%3Cpath fill='%23fff' stroke='none' d='M2,3 L2,14 L4.5,11.5 L7.5,17.5 L8.5,17 L5.5,10.5 L10,10.5 Z'/%3E%3C/svg%3E") 1 1, default;
 
-  /* Pointer cursor for clickable elements */
-  --aqua-cursor-pointer: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M8 3v11l2.5-2.5 2.5 5h3l-2.5-5H18L8 3z'/%3E%3Cpath fill='%23fff' d='M9.5 5.5v7l2-2 2 4h1l-2-4h3.5l-6.5-5z'/%3E%3C/svg%3E") 6 0, pointer;
+  /* Pointer cursor for clickable elements - Tiger pointing hand */
+  --aqua-cursor-pointer: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='17' height='22' viewBox='0 0 17 22'%3E%3Cdefs%3E%3Cfilter id='shadow2' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeDropShadow dx='1' dy='1' stdDeviation='0.5' flood-opacity='0.3'/%3E%3C/filter%3E%3C/defs%3E%3Cpath filter='url(%23shadow2)' fill='%23000' d='M6,1 L6,7 L4,7 L4,9 L2,9 L2,11 L0,11 L0,15 L2,15 L2,17 L4,17 L4,19 L6,19 L6,21 L14,21 L14,19 L16,19 L16,11 L14,11 L14,9 L12,9 L12,7 L10,7 L10,5 L8,5 L8,1 Z'/%3E%3Cpath fill='%23fff' d='M7,2 L7,8 L5,8 L5,10 L3,10 L3,12 L1,12 L1,14 L3,14 L3,16 L5,16 L5,18 L7,18 L7,20 L13,20 L13,18 L15,18 L15,12 L13,12 L13,10 L11,10 L11,8 L9,8 L9,6 L7,6 Z'/%3E%3C/svg%3E") 6 1, pointer;
 }

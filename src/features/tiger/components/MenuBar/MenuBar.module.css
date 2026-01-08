@@ -12,14 +12,17 @@
   width: 100vw;
   height: var(--aqua-menubar-height);
   z-index: var(--aqua-z-menubar);
+  /* Tiger menu bar: semi-transparent white with subtle gradient */
   background: linear-gradient(
     180deg,
-    #ffffff 0%,
-    #f5f5f5 40%,
-    #e8e8e8 60%,
-    #d4d4d4 100%
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(245, 245, 245, 0.85) 50%,
+    rgba(225, 225, 225, 0.85) 100%
   );
-  border-bottom: 1px solid #a0a0a0;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -65,7 +68,7 @@
 
 .appleLogoActive {
   background: var(--aqua-selection-bg);
-  color: white;
+  /* Tiger: Apple logo stays black even when selected */
 }
 
 .appleLogo:focus-visible {
