@@ -1,0 +1,117 @@
+# generated: 2026-01-08
+# project: nicksmith.software
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-01-08
+project: nicksmith.software
+tracking_system: file-system
+story_location: "_bmad-output/implementation-artifacts"
+
+development_status:
+  # Epic 1: Project Foundation & App Shell (MVP)
+  epic-1: done
+  1-1-initialize-vite-react-typescript-project: done
+  1-2-create-zustand-state-management-stores: done
+  1-3-establish-css-architecture: done
+  1-4-implement-sacred-values-registry: done
+  1-5-create-shared-animation-variants: done
+  epic-1-retrospective: optional
+
+  # Epic 2: Tiger Desktop Environment (MVP)
+  epic-2: done
+  2-1-create-desktop-component-with-aqua-wallpaper: done
+  2-2-implement-custom-tiger-cursor: done
+  2-3-create-static-menu-bar: done
+  epic-2-retrospective: optional
+
+  # Epic 3: Window System (MVP)
+  epic-3: in-progress
+  3-1-create-window-component-with-react-rnd: done
+  3-2-implement-window-chrome-with-title-bar: done
+  3-3-create-traffic-light-buttons: done
+  3-4-implement-window-close-functionality: done
+  3-5-implement-window-minimize-with-fade-animation: done
+  3-6-implement-window-zoom-functionality: done
+  3-7-implement-z-index-focus-management: done
+  3-8-implement-window-viewport-constraints: done
+  3-9-implement-window-open-animation: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: Desktop Navigation (MVP)
+  epic-4: backlog
+  4-1-create-desktop-icon-component: backlog
+  4-2-implement-icon-selection-state: backlog
+  4-3-implement-double-click-to-open-window: backlog
+  4-4-implement-menu-bar-app-name-updates: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: Portfolio Content (MVP)
+  epic-5: backlog
+  5-1-create-about-me-window-content: backlog
+  5-2-create-projects-window-content: backlog
+  5-3-create-resume-window-content: backlog
+  5-4-create-contact-window-content: backlog
+  5-5-apply-consistent-aqua-styling-to-content-windows: backlog
+  epic-5-retrospective: optional
+
+  # Epic 6: Interaction Polish & Accessibility (MVP)
+  epic-6: backlog
+  6-1-implement-keyboard-shortcuts: backlog
+  6-2-implement-tab-key-navigation: backlog
+  6-3-implement-apple-menu-dropdown: backlog
+  6-4-implement-startup-chime: backlog
+  6-5-add-focus-indicators: backlog
+  6-6-add-aria-labels: backlog
+  6-7-implement-reduced-motion-support: backlog
+  6-8-create-mobile-fallback-message: backlog
+  epic-6-retrospective: optional
+
+  # Epic 7: Terminal & Dock (Phase 2)
+  epic-7: backlog
+  7-1-create-dock-component: backlog
+  7-2-implement-genie-effect-minimize: backlog
+  7-3-add-terminal-icon-to-desktop: backlog
+  7-4-implement-terminal-window-with-xterm-js: backlog
+  7-5-implement-terminal-commands: backlog
+  7-6-add-terminal-easter-eggs: backlog
+  7-7-implement-window-shade: backlog
+  7-8-add-sosumi-sound-and-error-dialogs: backlog
+  epic-7-retrospective: optional
+
+  # Epic 8: iOS 6 Mobile Experience (Phase 3)
+  epic-8: backlog
+  8-1-create-ios-6-home-screen: backlog
+  8-2-create-ios-portfolio-apps: backlog
+  8-3-implement-reboot-transition: backlog
+  8-4-implement-touch-interactions: backlog
+  epic-8-retrospective: optional

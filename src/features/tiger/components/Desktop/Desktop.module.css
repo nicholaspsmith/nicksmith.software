@@ -1,0 +1,18 @@
+/**
+ * Desktop.module.css - Full viewport Aqua desktop background
+ *
+ * Uses CSS variables from aqua.css for consistent theming.
+ * Position fixed ensures the desktop stays in place during any scrolling.
+ */
+
+.desktop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--aqua-desktop-bg);
+  overflow: hidden;
+  z-index: var(--aqua-z-desktop);
+  cursor: var(--aqua-cursor-default);
+}

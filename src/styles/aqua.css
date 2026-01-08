@@ -1,0 +1,119 @@
+/**
+ * Aqua Design System - CSS Custom Properties
+ * Mac OS X Tiger (10.4) authentic values
+ */
+
+:root {
+  /* ========================================
+   * SACRED VALUES - DO NOT MODIFY
+   * These measurements are authentic Tiger UI specs
+   * ======================================== */
+  --aqua-traffic-light-diameter: 12px;
+  --aqua-titlebar-height: 22px;
+  --aqua-menubar-height: 22px;
+  --aqua-window-radius: 5px;
+  --aqua-traffic-light-spacing: 8px;
+  --aqua-traffic-light-margin: 8px;
+
+  /* ========================================
+   * TRAFFIC LIGHT COLORS
+   * Close, Minimize, Zoom button colors
+   * ======================================== */
+  --aqua-close: #ff5f57;
+  --aqua-minimize: #ffbd2e;
+  --aqua-zoom: #28c940;
+
+  /* Hover/active states */
+  --aqua-close-hover: #ff3b30;
+  --aqua-minimize-hover: #f5a623;
+  --aqua-zoom-hover: #1db954;
+
+  /* ========================================
+   * AQUA BLUE PALETTE
+   * Primary interface colors
+   * ======================================== */
+  --aqua-blue-primary: #4ca1e4;
+  --aqua-blue-dark: #1872c9;
+  --aqua-blue-light: #7fbfff;
+  --aqua-blue-highlight: #b3d9ff;
+
+  /* ========================================
+   * WINDOW CHROME COLORS
+   * Title bar, borders, shadows
+   * ======================================== */
+  --aqua-titlebar-active: linear-gradient(
+    180deg,
+    #e8e8e8 0%,
+    #d0d0d0 50%,
+    #b8b8b8 51%,
+    #c8c8c8 100%
+  );
+  --aqua-titlebar-inactive: linear-gradient(
+    180deg,
+    #f0f0f0 0%,
+    #e0e0e0 50%,
+    #d0d0d0 51%,
+    #e0e0e0 100%
+  );
+  --aqua-window-border: #808080;
+  --aqua-window-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+
+  /* ========================================
+   * TYPOGRAPHY
+   * Authentic Tiger-era fonts
+   * ======================================== */
+  --aqua-font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Helvetica Neue', sans-serif;
+  --aqua-font-size-xs: 10px;
+  --aqua-font-size-sm: 11px;
+  --aqua-font-size-md: 13px;
+  --aqua-font-size-lg: 16px;
+  --aqua-font-weight-normal: 400;
+  --aqua-font-weight-bold: 700;
+
+  /* ========================================
+   * SPACING
+   * Consistent spacing scale
+   * ======================================== */
+  --aqua-spacing-xs: 4px;
+  --aqua-spacing-sm: 8px;
+  --aqua-spacing-md: 16px;
+  --aqua-spacing-lg: 24px;
+  --aqua-spacing-xl: 32px;
+
+  /* ========================================
+   * Z-INDEX LAYERS
+   * Window stacking order
+   * ======================================== */
+  --aqua-z-desktop: 0;
+  --aqua-z-desktop-icons: 10;
+  --aqua-z-windows: 100;
+  --aqua-z-menubar: 1000;
+  --aqua-z-dropdown: 1100;
+  --aqua-z-modal: 2000;
+
+  /* ========================================
+   * ANIMATIONS
+   * Duration and easing values
+   * ======================================== */
+  --aqua-duration-fast: 150ms;
+  --aqua-duration-normal: 250ms;
+  --aqua-duration-slow: 400ms;
+  --aqua-easing-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --aqua-easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* ========================================
+   * DESKTOP
+   * Background and wallpaper
+   * ======================================== */
+  --aqua-desktop-bg: #3a6ea5;
+
+  /* ========================================
+   * CURSORS
+   * Tiger-era cursor styles using SVG data URIs
+   * ======================================== */
+  /* Tiger arrow cursor - white arrow with black outline */
+  --aqua-cursor-default: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M3 2l8 18 2-7 7-2z'/%3E%3Cpath fill='%23fff' d='M4.5 4.5l5.5 12.5 1.5-5 5-1.5z'/%3E%3C/svg%3E") 0 0, auto;
+
+  /* Pointer cursor for clickable elements */
+  --aqua-cursor-pointer: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M8 3v11l2.5-2.5 2.5 5h3l-2.5-5H18L8 3z'/%3E%3Cpath fill='%23fff' d='M9.5 5.5v7l2-2 2 4h1l-2-4h3.5l-6.5-5z'/%3E%3C/svg%3E") 6 0, pointer;
+}

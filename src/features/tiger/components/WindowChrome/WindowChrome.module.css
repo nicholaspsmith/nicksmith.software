@@ -1,0 +1,58 @@
+/**
+ * WindowChrome.module.css - Tiger-style window chrome styling
+ *
+ * Title bar with authentic Tiger gradient and focus states.
+ */
+
+.chrome {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.titleBar {
+  display: flex;
+  align-items: center;
+  height: var(--aqua-titlebar-height);
+  min-height: var(--aqua-titlebar-height);
+  padding: 0 var(--aqua-spacing-sm);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  cursor: var(--aqua-cursor-default);
+  user-select: none;
+}
+
+.focused {
+  background: var(--aqua-titlebar-active);
+}
+
+.unfocused {
+  background: var(--aqua-titlebar-inactive);
+}
+
+.title {
+  flex: 1;
+  text-align: center;
+  font-family: var(--aqua-font-family);
+  font-size: var(--aqua-font-size-md);
+  font-weight: var(--aqua-font-weight-bold);
+  color: #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.unfocused .title {
+  color: #666;
+}
+
+/* Spacer to balance traffic lights for centered title */
+.spacer {
+  width: 54px;
+  flex-shrink: 0;
+}
+
+.content {
+  flex: 1;
+  overflow: auto;
+}

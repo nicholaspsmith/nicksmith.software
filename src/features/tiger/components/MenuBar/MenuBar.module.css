@@ -1,0 +1,64 @@
+/**
+ * MenuBar.module.css - Tiger-era menu bar styling
+ *
+ * Fixed positioning at top of viewport with authentic Tiger gradient.
+ * Uses sacred 22px height value.
+ */
+
+.menuBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: var(--aqua-menubar-height);
+  z-index: var(--aqua-z-menubar);
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f5f5f5 40%,
+    #e8e8e8 60%,
+    #d4d4d4 100%
+  );
+  border-bottom: 1px solid #a0a0a0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--aqua-spacing-sm);
+  font-family: var(--aqua-font-family);
+  font-size: var(--aqua-font-size-sm);
+  color: #000;
+  cursor: var(--aqua-cursor-default);
+  user-select: none;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: var(--aqua-spacing-sm);
+}
+
+.right {
+  display: flex;
+  align-items: center;
+}
+
+.appleLogo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  border-radius: 3px;
+  cursor: var(--aqua-cursor-pointer);
+}
+
+.appleLogo:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.appName {
+  font-weight: var(--aqua-font-weight-bold);
+}
+
+.clock {
+  font-variant-numeric: tabular-nums;
+}

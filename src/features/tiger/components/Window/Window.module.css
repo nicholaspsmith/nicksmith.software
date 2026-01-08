@@ -1,0 +1,24 @@
+/**
+ * Window.module.css - Window container styling
+ *
+ * Base window appearance with Aqua styling.
+ * WindowChrome and content will be rendered inside.
+ */
+
+.window {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  border: 1px solid var(--aqua-window-border);
+  border-radius: var(--aqua-window-radius);
+  box-shadow: var(--aqua-window-shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: var(--aqua-cursor-default);
+}
+
+/* Drag handle class - applied to title bar for react-rnd */
+/* Note: cursor inherited from WindowChrome.titleBar */
+.dragHandle {
+}

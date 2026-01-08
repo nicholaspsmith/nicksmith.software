@@ -24,18 +24,18 @@ workflow_path: "method-greenfield.yaml"
 workflow_status:
   # Phase 1: Analysis (Optional - user selected)
   brainstorm-project: "_bmad-output/analysis/brainstorming-session-2026-01-07.md"
-  research: optional
-  product-brief: recommended
+  research: "_bmad-output/planning-artifacts/research/technical-tiger-ios6-implementation-research-2026-01-07.md"
+  product-brief: "_bmad-output/planning-artifacts/product-brief-nicksmith.software-2026-01-07.md"
 
   # Phase 2: Planning
-  prd: required
-  create-ux-design: conditional  # if_has_ui - determined after PRD
+  prd: "_bmad-output/planning-artifacts/prd.md"
+  create-ux-design: "_bmad-output/planning-artifacts/ux-design-specification.md"
 
   # Phase 3: Solutioning
-  create-architecture: required
-  create-epics-and-stories: required
+  create-architecture: "_bmad-output/planning-artifacts/architecture.md"
+  create-epics-and-stories: "_bmad-output/planning-artifacts/epics.md"
   test-design: optional
-  implementation-readiness: required
+  implementation-readiness: "_bmad-output/planning-artifacts/implementation-readiness-report-2026-01-08.md"
 
   # Phase 4: Implementation
   sprint-planning: required
