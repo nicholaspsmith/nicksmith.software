@@ -69,9 +69,7 @@
   font: inherit;
 }
 
-.appleLogo:hover {
-  background: rgba(0, 0, 0, 0.08);
-}
+/* No hover effect on Apple logo - Tiger style */
 
 .appleLogoActive {
   background: var(--aqua-selection-bg);

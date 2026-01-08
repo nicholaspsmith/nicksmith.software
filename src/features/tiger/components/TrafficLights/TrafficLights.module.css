@@ -116,25 +116,36 @@
 
 /* Show symbols on hover (group hover - Tiger behavior) */
 .focused:hover .button {
-  color: rgba(0, 0, 0, 0.6);
+  color: rgba(80, 30, 20, 0.85);
+}
+
+/* Symbol positioning - centered in button */
+.focused .button::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity var(--aqua-duration-fast) ease;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: 900;
+  line-height: 1;
 }
 
 .focused .close::after {
-  content: '×';
-  opacity: 0;
-  transition: opacity var(--aqua-duration-fast) ease;
+  content: '✕';
+  font-size: 8px;
 }
 
 .focused .minimize::after {
-  content: '−';
-  opacity: 0;
-  transition: opacity var(--aqua-duration-fast) ease;
+  content: '─';
+  font-size: 10px;
+  font-weight: 900;
 }
 
 .focused .zoom::after {
   content: '+';
-  opacity: 0;
-  transition: opacity var(--aqua-duration-fast) ease;
+  font-size: 10px;
 }
 
 .focused:hover .button::after {
