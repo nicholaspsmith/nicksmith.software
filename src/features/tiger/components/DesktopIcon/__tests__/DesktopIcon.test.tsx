@@ -131,4 +131,52 @@ describe('DesktopIcon', () => {
       expect(screen.getByLabelText('About Me')).toBeInTheDocument();
     });
   });
+
+  describe('keyboard navigation', () => {
+    it('should trigger onDoubleClick when Enter is pressed', () => {
+      const handleDoubleClick = vi.fn();
+      render(
+        <DesktopIcon
+          id="test"
+          label="Test"
+          icon={<MockIcon />}
+          onDoubleClick={handleDoubleClick}
+        />
+      );
+      const button = screen.getByRole('button');
+      fireEvent.keyDown(button, { key: 'Enter' });
+      expect(handleDoubleClick).toHaveBeenCalledTimes(1);
+    });
+
+    it('should trigger onDoubleClick when Space is pressed', () => {
+      const handleDoubleClick = vi.fn();
+      render(
+        <DesktopIcon
+          id="test"
+          label="Test"
+          icon={<MockIcon />}
+          onDoubleClick={handleDoubleClick}
+        />
+      );
+      const button = screen.getByRole('button');
+      fireEvent.keyDown(button, { key: ' ' });
+      expect(handleDoubleClick).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not trigger onDoubleClick for other keys', () => {
+      const handleDoubleClick = vi.fn();
+      render(
+        <DesktopIcon
+          id="test"
+          label="Test"
+          icon={<MockIcon />}
+          onDoubleClick={handleDoubleClick}
+        />
+      );
+      const button = screen.getByRole('button');
+      fireEvent.keyDown(button, { key: 'Tab' });
+      fireEvent.keyDown(button, { key: 'Escape' });
+      expect(handleDoubleClick).not.toHaveBeenCalled();
+    });
+  });
 });

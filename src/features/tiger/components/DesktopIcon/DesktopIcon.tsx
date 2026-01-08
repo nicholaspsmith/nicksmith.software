@@ -37,6 +37,14 @@ export function DesktopIcon({
     onDoubleClick?.();
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Enter or Space opens the icon (like double-click)
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onDoubleClick?.();
+    }
+  };
+
   return (
     <motion.button
       className={`${styles.icon} ${isSelected ? styles.selected : ''}`}
@@ -47,6 +55,7 @@ export function DesktopIcon({
       whileTap="active"
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
+      onKeyDown={handleKeyDown}
       aria-label={label}
       aria-pressed={isSelected}
       style={{
