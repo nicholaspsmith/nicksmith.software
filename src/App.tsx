@@ -1,6 +1,7 @@
+import { MotionConfig } from 'motion/react';
 import { useAppStore } from '@/stores/appStore';
 import { useWindowStore } from '@/stores/windowStore';
-import { useKeyboardShortcuts, useStartupChime } from '@/hooks';
+import { useKeyboardShortcuts, useReducedMotion, useStartupChime } from '@/hooks';
 import { Desktop } from '@/features/tiger/components/Desktop';
 import { DesktopIconGrid } from '@/features/tiger/components/DesktopIconGrid';
 import { DesktopIcon } from '@/features/tiger/components/DesktopIcon';
@@ -54,6 +55,8 @@ export function App() {
   useKeyboardShortcuts();
   // Play startup chime on first user interaction
   useStartupChime();
+  // Detect reduced motion preference
+  const prefersReducedMotion = useReducedMotion();
 
   const selectedIconId = useAppStore((s) => s.selectedIconId);
   const selectIcon = useAppStore((s) => s.selectIcon);
@@ -67,27 +70,29 @@ export function App() {
   };
 
   return (
-    <Desktop>
-      <DesktopIconGrid>
-        {PORTFOLIO_APPS.map((app) => (
-          <DesktopIcon
-            key={app.id}
-            id={app.id}
-            label={app.label}
-            icon={<DocumentIcon color={app.color} label={app.abbrev} />}
-            isSelected={selectedIconId === app.id}
-            onClick={() => selectIcon(app.id)}
-            onDoubleClick={() => handleDoubleClick(app.id)}
-          />
-        ))}
-      </DesktopIconGrid>
-      {windows
-        .filter((w) => w.state !== 'closed')
-        .map((w) => (
-          <Window key={w.id} id={w.id} title={w.title}>
-            <WindowContent app={w.app} />
-          </Window>
-        ))}
-    </Desktop>
+    <MotionConfig reducedMotion={prefersReducedMotion ? 'always' : 'never'}>
+      <Desktop>
+        <DesktopIconGrid>
+          {PORTFOLIO_APPS.map((app) => (
+            <DesktopIcon
+              key={app.id}
+              id={app.id}
+              label={app.label}
+              icon={<DocumentIcon color={app.color} label={app.abbrev} />}
+              isSelected={selectedIconId === app.id}
+              onClick={() => selectIcon(app.id)}
+              onDoubleClick={() => handleDoubleClick(app.id)}
+            />
+          ))}
+        </DesktopIconGrid>
+        {windows
+          .filter((w) => w.state !== 'closed')
+          .map((w) => (
+            <Window key={w.id} id={w.id} title={w.title}>
+              <WindowContent app={w.app} />
+            </Window>
+          ))}
+      </Desktop>
+    </MotionConfig>
   );
 }
