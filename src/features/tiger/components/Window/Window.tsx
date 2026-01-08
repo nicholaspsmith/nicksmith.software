@@ -67,6 +67,11 @@ export function Window({ id, title, children }: WindowProps) {
     focusWindow(id);
   }, [id, focusWindow]);
 
+  // Stop click propagation to prevent Desktop from clearing focus
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+  }, []);
+
   const handleClose = useCallback(() => {
     setAnimationState('closing');
   }, []);
@@ -147,6 +152,7 @@ export function Window({ id, title, children }: WindowProps) {
         initial="closed"
         animate={animationState}
         onAnimationComplete={handleAnimationComplete}
+        onClick={handleClick}
       >
         <WindowChrome
           title={title}

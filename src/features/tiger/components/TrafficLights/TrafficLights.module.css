@@ -32,86 +32,86 @@
   transition: transform var(--aqua-duration-fast) ease;
 }
 
-/* Button colors when focused - Tiger gel button style with strong glossy highlight */
+/* Button colors when focused - Tiger gel button style with sunken/inset look */
 .focused .close {
   background:
     radial-gradient(
-      ellipse 60% 40% at 50% 15%,
-      rgba(255, 255, 255, 0.7) 0%,
-      rgba(255, 255, 255, 0) 100%
+      ellipse 70% 50% at 50% 20%,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(255, 255, 255, 0) 70%
     ),
-    radial-gradient(
-      circle at 50% 50%,
-      #ff6b5b 0%,
-      #ff5145 50%,
-      #d93025 100%
+    linear-gradient(
+      180deg,
+      #ff7a70 0%,
+      #ff5145 40%,
+      #e02b1d 100%
     );
   box-shadow:
+    0 0 1px 0 rgba(0, 0, 0, 0.9),
     inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.15),
-    0 1px 2px rgba(0, 0, 0, 0.2);
-  border: 0.5px solid rgba(139, 50, 40, 0.6);
+    inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+  border: none;
 }
 
 .focused .minimize {
   background:
     radial-gradient(
-      ellipse 60% 40% at 50% 15%,
-      rgba(255, 255, 255, 0.7) 0%,
-      rgba(255, 255, 255, 0) 100%
+      ellipse 70% 50% at 50% 20%,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(255, 255, 255, 0) 70%
     ),
-    radial-gradient(
-      circle at 50% 50%,
-      #ffc945 0%,
-      #f5b820 50%,
-      #d99f00 100%
+    linear-gradient(
+      180deg,
+      #ffd048 0%,
+      #f5b820 40%,
+      #c99500 100%
     );
   box-shadow:
+    0 0 1px 0 rgba(0, 0, 0, 0.9),
     inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.15),
-    0 1px 2px rgba(0, 0, 0, 0.2);
-  border: 0.5px solid rgba(160, 120, 0, 0.6);
+    inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+  border: none;
 }
 
 .focused .zoom {
   background:
     radial-gradient(
-      ellipse 60% 40% at 50% 15%,
-      rgba(255, 255, 255, 0.7) 0%,
-      rgba(255, 255, 255, 0) 100%
+      ellipse 70% 50% at 50% 20%,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(255, 255, 255, 0) 70%
     ),
-    radial-gradient(
-      circle at 50% 50%,
-      #44d955 0%,
-      #2bc840 50%,
-      #17a528 100%
+    linear-gradient(
+      180deg,
+      #5be86a 0%,
+      #2bc840 40%,
+      #149922 100%
     );
   box-shadow:
+    0 0 1px 0 rgba(0, 0, 0, 0.9),
     inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.15),
-    0 1px 2px rgba(0, 0, 0, 0.2);
-  border: 0.5px solid rgba(20, 100, 30, 0.6);
+    inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+  border: none;
 }
 
-/* Unfocused state - gray buttons with same gel effect */
+/* Unfocused state - gray buttons with same sunken effect */
 .unfocused .button {
   background:
     radial-gradient(
-      ellipse 60% 40% at 50% 15%,
-      rgba(255, 255, 255, 0.5) 0%,
-      rgba(255, 255, 255, 0) 100%
+      ellipse 70% 50% at 50% 20%,
+      rgba(255, 255, 255, 0.6) 0%,
+      rgba(255, 255, 255, 0) 70%
     ),
-    radial-gradient(
-      circle at 50% 50%,
-      #a0a0a0 0%,
-      #888888 50%,
-      #606060 100%
+    linear-gradient(
+      180deg,
+      #b8b8b8 0%,
+      #9a9a9a 40%,
+      #707070 100%
     );
   box-shadow:
+    0 0 1px 0 rgba(0, 0, 0, 0.7),
     inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.1),
-    0 1px 2px rgba(0, 0, 0, 0.1);
-  border: 0.5px solid rgba(0, 0, 0, 0.2);
+    inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+  border: none;
 }
 
 /* Show symbols on hover (group hover - Tiger behavior) */
