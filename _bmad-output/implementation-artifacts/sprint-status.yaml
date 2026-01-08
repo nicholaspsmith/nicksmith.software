@@ -70,7 +70,7 @@ development_status:
   # Epic 4: Desktop Navigation (MVP)
   epic-4: in-progress
   4-1-create-desktop-icon-component: done
-  4-2-implement-icon-selection-state: backlog
+  4-2-implement-icon-selection-state: done
   4-3-implement-double-click-to-open-window: backlog
   4-4-implement-menu-bar-app-name-updates: backlog
   epic-4-retrospective: optional

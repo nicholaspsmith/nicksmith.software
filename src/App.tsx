@@ -1,7 +1,9 @@
 import { useAppStore } from '@/stores/appStore';
+import { useWindowStore } from '@/stores/windowStore';
 import { Desktop } from '@/features/tiger/components/Desktop';
 import { DesktopIconGrid } from '@/features/tiger/components/DesktopIconGrid';
 import { DesktopIcon } from '@/features/tiger/components/DesktopIcon';
+import { Window } from '@/features/tiger/components/Window';
 import { DocumentIcon } from '@/features/tiger/components/icons';
 
 /**
@@ -21,10 +23,20 @@ const PORTFOLIO_APPS = [
  * Renders the Tiger desktop with portfolio icons.
  * Icons are arranged in the top-right corner following
  * Mac OS X Tiger's column-first layout pattern.
+ *
+ * Double-clicking an icon opens a window for that app.
  */
 export function App() {
   const selectedIconId = useAppStore((s) => s.selectedIconId);
   const selectIcon = useAppStore((s) => s.selectIcon);
+  const windows = useWindowStore((s) => s.windows);
+  const openWindow = useWindowStore((s) => s.openWindow);
+
+  const handleDoubleClick = (appId: string) => {
+    openWindow(appId);
+    // Clear selection after opening window (Tiger behavior)
+    useAppStore.getState().clearSelection();
+  };
 
   return (
     <Desktop>
@@ -37,9 +49,19 @@ export function App() {
             icon={<DocumentIcon color={app.color} label={app.abbrev} />}
             isSelected={selectedIconId === app.id}
             onClick={() => selectIcon(app.id)}
+            onDoubleClick={() => handleDoubleClick(app.id)}
           />
         ))}
       </DesktopIconGrid>
+      {windows
+        .filter((w) => w.state !== 'closed')
+        .map((w) => (
+          <Window key={w.id} id={w.id} title={w.title}>
+            <div style={{ padding: 16 }}>
+              <p>{w.app} content coming soon...</p>
+            </div>
+          </Window>
+        ))}
     </Desktop>
   );
 }
