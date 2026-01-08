@@ -1,18 +1,24 @@
 import { useState, useEffect } from 'react';
+import { useWindowStore } from '@/stores/windowStore';
 import styles from './MenuBar.module.css';
-
-export interface MenuBarProps {
-  appName?: string;
-}
 
 /**
  * MenuBar component - Tiger-era menu bar at top of screen
  *
  * Displays Apple logo, current app name, and clock.
  * Fixed at top with authentic Tiger styling.
+ *
+ * The app name updates to show the focused window's app,
+ * or "Finder" when no windows are focused.
  */
-export function MenuBar({ appName = 'Finder' }: MenuBarProps) {
+export function MenuBar() {
+  const activeWindowId = useWindowStore((s) => s.activeWindowId);
+  const windows = useWindowStore((s) => s.windows);
   const [time, setTime] = useState(new Date());
+
+  // Derive app name from focused window, default to "Finder"
+  const activeWindow = windows.find((w) => w.id === activeWindowId);
+  const appName = activeWindow?.title ?? 'Finder';
 
   useEffect(() => {
     const timer = setInterval(() => {
