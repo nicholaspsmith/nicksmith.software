@@ -96,6 +96,8 @@ export function Window({ id, title, children }: WindowProps) {
     return null;
   }
 
+  const titleId = `window-title-${id}`;
+
   return (
     <Rnd
       position={{ x: window.x, y: window.y }}
@@ -113,6 +115,9 @@ export function Window({ id, title, children }: WindowProps) {
       <motion.div
         className={styles.window}
         data-testid="window-content"
+        role="dialog"
+        aria-labelledby={titleId}
+        aria-modal="false"
         variants={windowVariants}
         initial="closed"
         animate={animationState}
@@ -120,6 +125,7 @@ export function Window({ id, title, children }: WindowProps) {
       >
         <WindowChrome
           title={title}
+          titleId={titleId}
           isFocused={isFocused}
           className={styles.dragHandle}
           onClose={handleClose}

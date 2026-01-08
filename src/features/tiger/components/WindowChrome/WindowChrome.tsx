@@ -3,6 +3,7 @@ import styles from './WindowChrome.module.css';
 
 export interface WindowChromeProps {
   title: string;
+  titleId?: string;
   isFocused: boolean;
   className?: string;
   children?: React.ReactNode;
@@ -19,6 +20,7 @@ export interface WindowChromeProps {
  */
 export function WindowChrome({
   title,
+  titleId,
   isFocused,
   className,
   children,
@@ -37,7 +39,7 @@ export function WindowChrome({
           onMinimize={onMinimize}
           onZoom={onZoom}
         />
-        <span className={styles.title} data-testid="window-title">
+        <span id={titleId} className={styles.title} data-testid="window-title">
           {title}
         </span>
         <div className={styles.spacer} />

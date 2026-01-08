@@ -136,4 +136,39 @@ describe('Window', () => {
     expect(rndWrapper.dataset.dragHandle).toBeDefined();
     expect(rndWrapper.dataset.dragHandle).toContain('dragHandle');
   });
+
+  describe('accessibility', () => {
+    it('has role="dialog" on window content', () => {
+      useWindowStore.getState().openWindow('TestApp');
+      const windows = useWindowStore.getState().windows;
+      const windowId = windows[0].id;
+
+      render(<Window id={windowId} title="Test App" />);
+      const windowContent = screen.getByTestId('window-content');
+      expect(windowContent).toHaveAttribute('role', 'dialog');
+    });
+
+    it('has aria-labelledby pointing to title', () => {
+      useWindowStore.getState().openWindow('TestApp');
+      const windows = useWindowStore.getState().windows;
+      const windowId = windows[0].id;
+
+      render(<Window id={windowId} title="Test App" />);
+      const windowContent = screen.getByTestId('window-content');
+      const titleId = windowContent.getAttribute('aria-labelledby');
+
+      expect(titleId).toBe(`window-title-${windowId}`);
+      expect(screen.getByTestId('window-title')).toHaveAttribute('id', titleId);
+    });
+
+    it('has aria-modal="false" for non-blocking windows', () => {
+      useWindowStore.getState().openWindow('TestApp');
+      const windows = useWindowStore.getState().windows;
+      const windowId = windows[0].id;
+
+      render(<Window id={windowId} title="Test App" />);
+      const windowContent = screen.getByTestId('window-content');
+      expect(windowContent).toHaveAttribute('aria-modal', 'false');
+    });
+  });
 });
