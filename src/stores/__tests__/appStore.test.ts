@@ -7,6 +7,7 @@ describe('appStore', () => {
     useAppStore.setState({
       mode: 'tiger',
       startupComplete: false,
+      selectedIconId: null,
     });
   });
 
@@ -17,6 +18,10 @@ describe('appStore', () => {
 
     it('should have startupComplete as false', () => {
       expect(useAppStore.getState().startupComplete).toBe(false);
+    });
+
+    it('should have no icon selected', () => {
+      expect(useAppStore.getState().selectedIconId).toBeNull();
     });
   });
 
@@ -43,6 +48,32 @@ describe('appStore', () => {
       useAppStore.getState().completeStartup();
       useAppStore.getState().completeStartup();
       expect(useAppStore.getState().startupComplete).toBe(true);
+    });
+  });
+
+  describe('selectIcon', () => {
+    it('should select an icon by id', () => {
+      useAppStore.getState().selectIcon('resume');
+      expect(useAppStore.getState().selectedIconId).toBe('resume');
+    });
+
+    it('should change selection when selecting a different icon', () => {
+      useAppStore.getState().selectIcon('resume');
+      useAppStore.getState().selectIcon('projects');
+      expect(useAppStore.getState().selectedIconId).toBe('projects');
+    });
+  });
+
+  describe('clearSelection', () => {
+    it('should clear the selected icon', () => {
+      useAppStore.getState().selectIcon('resume');
+      useAppStore.getState().clearSelection();
+      expect(useAppStore.getState().selectedIconId).toBeNull();
+    });
+
+    it('should be safe to call when nothing is selected', () => {
+      useAppStore.getState().clearSelection();
+      expect(useAppStore.getState().selectedIconId).toBeNull();
     });
   });
 });

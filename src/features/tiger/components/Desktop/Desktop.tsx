@@ -1,3 +1,4 @@
+import { useAppStore } from '@/stores/appStore';
 import { MenuBar } from '../MenuBar';
 import styles from './Desktop.module.css';
 
@@ -11,10 +12,22 @@ export interface DesktopProps {
  * Renders the Aqua blue background that fills the viewport,
  * serving as the container for all desktop elements (icons, windows).
  * Includes the MenuBar fixed at the top.
+ *
+ * Clicking on the desktop background clears any icon selection.
  */
 export function Desktop({ children }: DesktopProps) {
+  const clearSelection = useAppStore((s) => s.clearSelection);
+
+  const handleClick = () => {
+    clearSelection();
+  };
+
   return (
-    <div className={styles.desktop} data-testid="desktop">
+    <div
+      className={styles.desktop}
+      data-testid="desktop"
+      onClick={handleClick}
+    >
       <MenuBar />
       {children}
     </div>
