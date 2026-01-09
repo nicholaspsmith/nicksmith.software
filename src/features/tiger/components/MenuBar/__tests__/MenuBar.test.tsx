@@ -195,4 +195,164 @@ describe('MenuBar', () => {
       expect(appleButton).toHaveAttribute('aria-expanded', 'true');
     });
   });
+
+  describe('Application Menu Dropdowns', () => {
+    it('opens File menu dropdown when clicked', () => {
+      render(<MenuBar />);
+      const fileMenu = screen.getByTestId('menu-file');
+
+      expect(screen.queryByTestId('file-menu-dropdown')).not.toBeInTheDocument();
+
+      fireEvent.click(fileMenu);
+
+      expect(screen.getByTestId('file-menu-dropdown')).toBeInTheDocument();
+    });
+
+    it('opens Edit menu dropdown when clicked', () => {
+      render(<MenuBar />);
+      fireEvent.click(screen.getByTestId('menu-edit'));
+
+      expect(screen.getByTestId('edit-menu-dropdown')).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /Undo/ })).toBeInTheDocument();
+    });
+
+    it('opens View menu dropdown when clicked', () => {
+      render(<MenuBar />);
+      fireEvent.click(screen.getByTestId('menu-view'));
+
+      expect(screen.getByTestId('view-menu-dropdown')).toBeInTheDocument();
+    });
+
+    it('opens Go menu dropdown when clicked', () => {
+      render(<MenuBar />);
+      fireEvent.click(screen.getByTestId('menu-go'));
+
+      expect(screen.getByTestId('go-menu-dropdown')).toBeInTheDocument();
+    });
+
+    it('opens Window menu dropdown when clicked', () => {
+      render(<MenuBar />);
+      fireEvent.click(screen.getByTestId('menu-window'));
+
+      expect(screen.getByTestId('window-menu-dropdown')).toBeInTheDocument();
+    });
+
+    it('opens Help menu dropdown when clicked', () => {
+      render(<MenuBar />);
+      fireEvent.click(screen.getByTestId('menu-help'));
+
+      expect(screen.getByTestId('help-menu-dropdown')).toBeInTheDocument();
+    });
+
+    it('displays keyboard shortcuts in dropdown items', () => {
+      render(<MenuBar />);
+      fireEvent.click(screen.getByTestId('menu-file'));
+
+      // Check for keyboard shortcut display
+      const newItem = screen.getByTestId('menu-item-new');
+      expect(newItem).toHaveTextContent('⌘N');
+    });
+
+    it('closes dropdown when Escape is pressed', () => {
+      render(<MenuBar />);
+      fireEvent.click(screen.getByTestId('menu-file'));
+      expect(screen.getByTestId('file-menu-dropdown')).toBeInTheDocument();
+
+      act(() => {
+        fireEvent.keyDown(document, { key: 'Escape' });
+      });
+
+      expect(screen.queryByTestId('file-menu-dropdown')).not.toBeInTheDocument();
+    });
+
+    it('closes dropdown when clicking outside', () => {
+      render(<MenuBar />);
+      fireEvent.click(screen.getByTestId('menu-file'));
+      expect(screen.getByTestId('file-menu-dropdown')).toBeInTheDocument();
+
+      act(() => {
+        fireEvent.mouseDown(document.body);
+      });
+
+      expect(screen.queryByTestId('file-menu-dropdown')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Menu Tracking Behavior', () => {
+    it('switches dropdown when hovering another menu while one is open', () => {
+      render(<MenuBar />);
+
+      // Open File menu
+      fireEvent.click(screen.getByTestId('menu-file'));
+      expect(screen.getByTestId('file-menu-dropdown')).toBeInTheDocument();
+
+      // Hover over Edit menu - should switch
+      fireEvent.mouseEnter(screen.getByTestId('menu-edit'));
+
+      expect(screen.queryByTestId('file-menu-dropdown')).not.toBeInTheDocument();
+      expect(screen.getByTestId('edit-menu-dropdown')).toBeInTheDocument();
+    });
+
+    it('does not open dropdown on hover when no menu is open', () => {
+      render(<MenuBar />);
+
+      // Hover over File menu without clicking first
+      fireEvent.mouseEnter(screen.getByTestId('menu-file'));
+
+      // Should not open dropdown
+      expect(screen.queryByTestId('file-menu-dropdown')).not.toBeInTheDocument();
+    });
+
+    it('switches from Apple menu to app menu via hover', () => {
+      render(<MenuBar />);
+
+      // Open Apple menu
+      fireEvent.click(screen.getByTestId('apple-menu-button'));
+      expect(screen.getByTestId('apple-menu-dropdown')).toBeInTheDocument();
+
+      // Hover over File menu
+      fireEvent.mouseEnter(screen.getByTestId('menu-file'));
+
+      expect(screen.queryByTestId('apple-menu-dropdown')).not.toBeInTheDocument();
+      expect(screen.getByTestId('file-menu-dropdown')).toBeInTheDocument();
+    });
+
+    it('switches back to Apple menu via hover', () => {
+      render(<MenuBar />);
+
+      // Open File menu
+      fireEvent.click(screen.getByTestId('menu-file'));
+      expect(screen.getByTestId('file-menu-dropdown')).toBeInTheDocument();
+
+      // Hover over Apple menu
+      fireEvent.mouseEnter(screen.getByTestId('apple-menu-button'));
+
+      expect(screen.queryByTestId('file-menu-dropdown')).not.toBeInTheDocument();
+      expect(screen.getByTestId('apple-menu-dropdown')).toBeInTheDocument();
+    });
+  });
+
+  describe('Active Menu Styling', () => {
+    it('applies active class to menu item when dropdown is open', () => {
+      render(<MenuBar />);
+      const fileMenu = screen.getByTestId('menu-file');
+
+      expect(fileMenu.className).not.toContain('menuActive');
+
+      fireEvent.click(fileMenu);
+
+      expect(fileMenu.className).toContain('menuActive');
+    });
+
+    it('applies active class to Apple menu when dropdown is open', () => {
+      render(<MenuBar />);
+      const appleMenu = screen.getByTestId('apple-menu-button');
+
+      expect(appleMenu.className).not.toContain('menuActive');
+
+      fireEvent.click(appleMenu);
+
+      expect(appleMenu.className).toContain('menuActive');
+    });
+  });
 });

@@ -1,6 +1,6 @@
-import { useCallback, useMemo, lazy, Suspense } from 'react';
+import { useCallback, useMemo, useEffect, lazy, Suspense } from 'react';
 import { MotionConfig } from 'motion/react';
-import { useAppStore } from '@/stores/appStore';
+import { useAppStore, type IconPosition } from '@/stores/appStore';
 import { useWindowStore } from '@/stores/windowStore';
 import {
   useKeyboardShortcuts,
@@ -17,6 +17,7 @@ import { AlertDialog } from '@/features/tiger/components/AlertDialog';
 import { TerminalIcon } from '@/features/tiger/components/icons';
 import { HomeScreen, IOS_BREAKPOINT } from '@/features/ios';
 import { RebootTransition } from '@/components/RebootTransition';
+import { SACRED } from '@/features/tiger/constants/sacred';
 import { AboutMe } from '@/features/apps/AboutMe';
 import { Projects } from '@/features/apps/Projects';
 import { Resume } from '@/features/apps/Resume';
@@ -54,6 +55,25 @@ const DESKTOP_ICONS = [
 ] as const;
 
 type IconConfig = (typeof DESKTOP_ICONS)[number];
+
+/**
+ * Calculate initial icon positions for right-side column layout
+ * Tiger desktop traditionally has icons in a column on the right
+ */
+function calculateInitialPositions(): Record<string, IconPosition> {
+  const positions: Record<string, IconPosition> = {};
+  const gap = 4; // Gap between icons
+
+  DESKTOP_ICONS.forEach((icon, index) => {
+    // Right-aligned column: x = viewport width - cell width - margin
+    const x = window.innerWidth - SACRED.iconGridCellWidth - SACRED.iconGridRightMargin;
+    // Stack vertically from top
+    const y = SACRED.iconGridTopMargin + index * (SACRED.iconGridCellHeight + gap);
+    positions[icon.id] = { x, y };
+  });
+
+  return positions;
+}
 
 /**
  * Renders the appropriate icon based on config
@@ -128,11 +148,22 @@ function WindowContent({ app }: { app: string }) {
 function TigerDesktop() {
   const selectedIconId = useAppStore((s) => s.selectedIconId);
   const selectIcon = useAppStore((s) => s.selectIcon);
+  const iconPositions = useAppStore((s) => s.iconPositions);
+  const iconPositionsInitialized = useAppStore((s) => s.iconPositionsInitialized);
+  const initializeIconPositions = useAppStore((s) => s.initializeIconPositions);
+  const setIconPosition = useAppStore((s) => s.setIconPosition);
   const alertOpen = useAppStore((s) => s.alertOpen);
   const alertConfig = useAppStore((s) => s.alertConfig);
   const hideAlert = useAppStore((s) => s.hideAlert);
   const windows = useWindowStore((s) => s.windows);
   const openWindow = useWindowStore((s) => s.openWindow);
+
+  // Initialize icon positions on mount
+  useEffect(() => {
+    if (!iconPositionsInitialized) {
+      initializeIconPositions(calculateInitialPositions());
+    }
+  }, [iconPositionsInitialized, initializeIconPositions]);
 
   // Handle alert OK button
   const handleAlertOk = useCallback(() => {
@@ -154,21 +185,47 @@ function TigerDesktop() {
     }
   };
 
+  const handlePositionChange = useCallback(
+    (iconId: string, x: number, y: number) => {
+      setIconPosition(iconId, x, y);
+    },
+    [setIconPosition]
+  );
+
+  // Get icon position (fallback to calculated position if not yet initialized)
+  const getIconPosition = (iconId: string, index: number) => {
+    if (iconPositions[iconId]) {
+      return iconPositions[iconId];
+    }
+    // Fallback while initializing
+    const gap = 4;
+    return {
+      x: window.innerWidth - SACRED.iconGridCellWidth - SACRED.iconGridRightMargin,
+      y: SACRED.iconGridTopMargin + index * (SACRED.iconGridCellHeight + gap),
+    };
+  };
+
   return (
     <>
       <Desktop>
         <DesktopIconGrid>
-          {DESKTOP_ICONS.map((icon) => (
-            <DesktopIcon
-              key={icon.id}
-              id={icon.id}
-              label={icon.label}
-              icon={<DesktopIconImage icon={icon} isSelected={selectedIconId === icon.id} />}
-              isSelected={selectedIconId === icon.id}
-              onClick={() => selectIcon(icon.id)}
-              onDoubleClick={() => handleDoubleClick(icon)}
-            />
-          ))}
+          {DESKTOP_ICONS.map((icon, index) => {
+            const position = getIconPosition(icon.id, index);
+            return (
+              <DesktopIcon
+                key={icon.id}
+                id={icon.id}
+                label={icon.label}
+                icon={<DesktopIconImage icon={icon} isSelected={selectedIconId === icon.id} />}
+                isSelected={selectedIconId === icon.id}
+                x={position.x}
+                y={position.y}
+                onClick={() => selectIcon(icon.id)}
+                onDoubleClick={() => handleDoubleClick(icon)}
+                onPositionChange={(x, y) => handlePositionChange(icon.id, x, y)}
+              />
+            );
+          })}
         </DesktopIconGrid>
         {windows
           .filter((w) => w.state !== 'closed')

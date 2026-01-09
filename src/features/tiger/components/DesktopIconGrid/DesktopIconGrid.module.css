@@ -1,15 +1,22 @@
 /**
  * DesktopIconGrid.module.css - Icon grid container
  *
- * Positions icons in a single vertical column on the right side,
- * authentic to Mac OS X Tiger desktop layout.
+ * Full-desktop container for absolutely positioned icons.
+ * Icons are positioned via inline styles from the store.
  */
 
 .grid {
   position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: var(--aqua-z-desktop-icons);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  /* Pointer events pass through to desktop background */
+  pointer-events: none;
+}
+
+/* Icons within the grid should receive pointer events */
+.grid > * {
+  pointer-events: auto;
 }

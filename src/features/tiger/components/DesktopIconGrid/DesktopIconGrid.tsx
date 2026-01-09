@@ -1,4 +1,3 @@
-import { SACRED } from '../../constants/sacred';
 import styles from './DesktopIconGrid.module.css';
 
 export interface DesktopIconGridProps {
@@ -8,22 +7,15 @@ export interface DesktopIconGridProps {
 /**
  * DesktopIconGrid component - Container for desktop icons
  *
- * Positions icons in a single vertical column on the right side
- * of the screen, authentic to Mac OS X Tiger desktop layout.
- *
- * Positioning:
- * - Starts 20px from right edge, 40px from top (per sacred values)
- * - Icons stack vertically from top to bottom
+ * Full-screen container that allows icons to be positioned absolutely.
+ * Icons manage their own positions via the appStore.
+ * Container has pointer-events: none so clicks pass through to desktop.
  */
 export function DesktopIconGrid({ children }: DesktopIconGridProps) {
   return (
     <div
       className={styles.grid}
       data-testid="desktop-icon-grid"
-      style={{
-        top: SACRED.iconGridTopMargin,
-        right: SACRED.iconGridRightMargin,
-      }}
     >
       {children}
     </div>

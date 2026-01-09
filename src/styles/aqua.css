@@ -95,6 +95,8 @@
   --aqua-z-windows: 100;
   --aqua-z-menubar: 1000;
   --aqua-z-dropdown: 1100;
+  --aqua-z-context-menu-overlay: 1200;
+  --aqua-z-context-menu: 1201;
   --aqua-z-modal: 2000;
 
   /* ========================================

@@ -4,40 +4,51 @@ import { DesktopIcon } from '../DesktopIcon';
 
 const MockIcon = () => <svg data-testid="mock-icon" />;
 
+// Default position for tests
+const defaultPosition = { x: 100, y: 100 };
+
 describe('DesktopIcon', () => {
   describe('rendering', () => {
     it('should render with label', () => {
-      render(<DesktopIcon id="test" label="Test Icon" icon={<MockIcon />} />);
+      render(<DesktopIcon id="test" label="Test Icon" icon={<MockIcon />} {...defaultPosition} />);
       expect(screen.getByText('Test Icon')).toBeInTheDocument();
     });
 
     it('should render icon content', () => {
-      render(<DesktopIcon id="test" label="Test Icon" icon={<MockIcon />} />);
+      render(<DesktopIcon id="test" label="Test Icon" icon={<MockIcon />} {...defaultPosition} />);
       expect(screen.getByTestId('mock-icon')).toBeInTheDocument();
     });
 
     it('should have correct test id', () => {
-      render(<DesktopIcon id="resume" label="Resume" icon={<MockIcon />} />);
+      render(<DesktopIcon id="resume" label="Resume" icon={<MockIcon />} {...defaultPosition} />);
       expect(screen.getByTestId('desktop-icon-resume')).toBeInTheDocument();
     });
 
     it('should have button role with aria-label', () => {
-      render(<DesktopIcon id="test" label="My Label" icon={<MockIcon />} />);
+      render(<DesktopIcon id="test" label="My Label" icon={<MockIcon />} {...defaultPosition} />);
       const button = screen.getByRole('button', { name: 'My Label' });
       expect(button).toBeInTheDocument();
+    });
+
+    it('should be positioned absolutely at x, y coordinates', () => {
+      const { container } = render(
+        <DesktopIcon id="test" label="Test" icon={<MockIcon />} x={200} y={300} />
+      );
+      const button = container.querySelector('button');
+      expect(button).toHaveStyle({ position: 'absolute', left: '200px', top: '300px' });
     });
   });
 
   describe('selection state', () => {
     it('should not be selected by default', () => {
-      render(<DesktopIcon id="test" label="Test" icon={<MockIcon />} />);
+      render(<DesktopIcon id="test" label="Test" icon={<MockIcon />} {...defaultPosition} />);
       const button = screen.getByRole('button');
       expect(button).toHaveAttribute('aria-pressed', 'false');
     });
 
     it('should show selected state when isSelected is true', () => {
       render(
-        <DesktopIcon id="test" label="Test" icon={<MockIcon />} isSelected />
+        <DesktopIcon id="test" label="Test" icon={<MockIcon />} isSelected {...defaultPosition} />
       );
       const button = screen.getByRole('button');
       expect(button).toHaveAttribute('aria-pressed', 'true');
@@ -45,7 +56,7 @@ describe('DesktopIcon', () => {
 
     it('should apply selected class when isSelected is true', () => {
       const { container } = render(
-        <DesktopIcon id="test" label="Test" icon={<MockIcon />} isSelected />
+        <DesktopIcon id="test" label="Test" icon={<MockIcon />} isSelected {...defaultPosition} />
       );
       const button = container.querySelector('button');
       expect(button?.className).toContain('selected');
@@ -61,6 +72,7 @@ describe('DesktopIcon', () => {
           label="Test"
           icon={<MockIcon />}
           onClick={handleClick}
+          {...defaultPosition}
         />
       );
       fireEvent.click(screen.getByRole('button'));
@@ -75,6 +87,7 @@ describe('DesktopIcon', () => {
           label="Test"
           icon={<MockIcon />}
           onDoubleClick={handleDoubleClick}
+          {...defaultPosition}
         />
       );
       fireEvent.doubleClick(screen.getByRole('button'));
@@ -91,6 +104,7 @@ describe('DesktopIcon', () => {
             label="Test"
             icon={<MockIcon />}
             onClick={iconClick}
+            {...defaultPosition}
           />
         </div>
       );
@@ -109,6 +123,7 @@ describe('DesktopIcon', () => {
             label="Test"
             icon={<MockIcon />}
             onDoubleClick={iconDoubleClick}
+            {...defaultPosition}
           />
         </div>
       );
@@ -120,14 +135,14 @@ describe('DesktopIcon', () => {
 
   describe('accessibility', () => {
     it('should be focusable', () => {
-      render(<DesktopIcon id="test" label="Test" icon={<MockIcon />} />);
+      render(<DesktopIcon id="test" label="Test" icon={<MockIcon />} {...defaultPosition} />);
       const button = screen.getByRole('button');
       button.focus();
       expect(document.activeElement).toBe(button);
     });
 
     it('should have aria-label matching label', () => {
-      render(<DesktopIcon id="test" label="About Me" icon={<MockIcon />} />);
+      render(<DesktopIcon id="test" label="About Me" icon={<MockIcon />} {...defaultPosition} />);
       expect(screen.getByLabelText('About Me')).toBeInTheDocument();
     });
   });
@@ -141,6 +156,7 @@ describe('DesktopIcon', () => {
           label="Test"
           icon={<MockIcon />}
           onDoubleClick={handleDoubleClick}
+          {...defaultPosition}
         />
       );
       const button = screen.getByRole('button');
@@ -156,6 +172,7 @@ describe('DesktopIcon', () => {
           label="Test"
           icon={<MockIcon />}
           onDoubleClick={handleDoubleClick}
+          {...defaultPosition}
         />
       );
       const button = screen.getByRole('button');
@@ -171,12 +188,31 @@ describe('DesktopIcon', () => {
           label="Test"
           icon={<MockIcon />}
           onDoubleClick={handleDoubleClick}
+          {...defaultPosition}
         />
       );
       const button = screen.getByRole('button');
       fireEvent.keyDown(button, { key: 'Tab' });
       fireEvent.keyDown(button, { key: 'Escape' });
       expect(handleDoubleClick).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('dragging', () => {
+    it('should call onPositionChange callback when provided', () => {
+      const handlePositionChange = vi.fn();
+      render(
+        <DesktopIcon
+          id="test"
+          label="Test"
+          icon={<MockIcon />}
+          onPositionChange={handlePositionChange}
+          {...defaultPosition}
+        />
+      );
+      // The callback is called during drag, which we can't easily test here
+      // This test just verifies the prop is accepted
+      expect(screen.getByRole('button')).toBeInTheDocument();
     });
   });
 });

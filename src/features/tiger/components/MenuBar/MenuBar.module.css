@@ -52,7 +52,8 @@
   align-items: center;
 }
 
-.appleMenuContainer {
+/* Menu Container - wraps each menu button and its dropdown */
+.menuContainer {
   position: relative;
 }
 
@@ -61,7 +62,7 @@
   align-items: center;
   justify-content: center;
   padding: 2px 6px;
-  border-radius: 3px;
+  border-radius: 0;
   cursor: var(--aqua-cursor-pointer);
   border: none;
   background: transparent;
@@ -71,9 +72,15 @@
 
 /* No hover effect on Apple logo - Tiger style */
 
-.appleLogoActive {
+/* Active state for menus (when dropdown is open) */
+.menuActive {
   background: var(--aqua-selection-bg);
-  /* Tiger: Apple logo stays black even when selected */
+  color: #fff;
+}
+
+/* Apple logo stays blue gradient even when selected */
+.appleLogo.menuActive {
+  background: var(--aqua-selection-bg);
 }
 
 .appleLogo:focus-visible {
@@ -81,42 +88,79 @@
   outline-offset: 1px;
 }
 
-/* Dropdown Menu */
+/* Dropdown Menu - Tiger pinstripe texture */
 .dropdown {
   position: absolute;
   top: calc(100% + 2px);
   left: 0;
-  min-width: 180px;
-  background: white;
-  border-radius: 6px;
+  min-width: 200px;
+  /* Tiger pinstripe background - subtle horizontal lines */
+  background-color: #fff;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    rgba(0, 0, 0, 0.03) 1px,
+    rgba(0, 0, 0, 0.03) 2px
+  );
+  border: 1px solid #808080;
+  border-radius: 0;
   box-shadow:
-    0 2px 10px rgba(0, 0, 0, 0.2),
+    0 3px 10px rgba(0, 0, 0, 0.25),
     0 0 1px rgba(0, 0, 0, 0.3);
   padding: 4px 0;
   z-index: var(--aqua-z-dropdown);
 }
 
 .dropdownItem {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
-  padding: 4px 16px;
+  padding: 3px 16px 3px 20px;
   text-align: left;
   border: none;
   background: transparent;
   font-family: var(--aqua-font-family);
   font-size: var(--aqua-font-size-sm);
+  font-weight: 500;
   color: #000;
   cursor: var(--aqua-cursor-pointer);
+  white-space: nowrap;
 }
 
 .dropdownItem:hover {
-  background: var(--aqua-selection-bg);
+  background: #3875d7;
   color: white;
 }
 
 .dropdownItem:focus-visible {
   outline: 2px solid var(--aqua-focus-ring);
   outline-offset: -2px;
+}
+
+/* Disabled menu items */
+.dropdownItemDisabled {
+  color: #999;
+}
+
+.dropdownItemDisabled:hover {
+  background: transparent;
+  color: #999;
+}
+
+.dropdownItemLabel {
+  flex: 1;
+}
+
+.dropdownItemShortcut {
+  margin-left: 24px;
+  opacity: 0.7;
+  font-size: var(--aqua-font-size-sm);
+}
+
+.dropdownItem:hover .dropdownItemShortcut {
+  opacity: 1;
 }
 
 .dropdownDivider {
@@ -126,7 +170,20 @@
 }
 
 .appName {
-  font-weight: var(--aqua-font-weight-bold);
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 0;
+  cursor: var(--aqua-cursor-pointer);
+  border: none;
+  background: transparent;
+  font-family: var(--aqua-font-family);
+  font-size: var(--aqua-font-size-sm);
+  color: #000;
+}
+
+.appName.menuActive {
+  background: var(--aqua-selection-bg);
+  color: #fff;
 }
 
 .clock {
@@ -137,18 +194,34 @@
 .menuItems {
   display: flex;
   align-items: center;
-  gap: var(--aqua-spacing-md);
-  margin-left: var(--aqua-spacing-md);
+  gap: 0;
+  margin-left: 0;
 }
 
 .menuItem {
   padding: 2px 6px;
-  border-radius: 3px;
+  border-radius: 0;
   cursor: var(--aqua-cursor-pointer);
+  border: none;
+  background: transparent;
+  font-family: var(--aqua-font-family);
+  font-size: var(--aqua-font-size-sm);
+  font-weight: 500;
+  color: #000;
 }
 
-.menuItem:hover {
-  background: rgba(0, 0, 0, 0.08);
+/* Tiger: No hover effect on menu items - only shows on click/active */
+/* Removed: .menuItem:hover { background: ... } */
+
+/* Active menu item - blue highlight */
+.menuItem.menuActive {
+  background: var(--aqua-selection-bg);
+  color: #fff;
+}
+
+.menuItem:focus-visible {
+  outline: 2px solid var(--aqua-focus-ring);
+  outline-offset: 1px;
 }
 
 /* Status Icons */

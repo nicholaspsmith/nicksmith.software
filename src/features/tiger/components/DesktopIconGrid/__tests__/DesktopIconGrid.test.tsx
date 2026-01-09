@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { DesktopIconGrid } from '../DesktopIconGrid';
-import { SACRED } from '../../../constants/sacred';
 
 describe('DesktopIconGrid', () => {
   describe('rendering', () => {
@@ -27,26 +26,25 @@ describe('DesktopIconGrid', () => {
   });
 
   describe('positioning', () => {
-    it('should be positioned from top-right', () => {
+    it('should be a full-screen container for absolutely positioned icons', () => {
       render(
         <DesktopIconGrid>
           <div>Icon</div>
         </DesktopIconGrid>
       );
       const grid = screen.getByTestId('desktop-icon-grid');
-      expect(grid.style.top).toBe(`${SACRED.iconGridTopMargin}px`);
-      expect(grid.style.right).toBe(`${SACRED.iconGridRightMargin}px`);
+      // Grid is now a full-screen container (positioning done via CSS)
+      expect(grid).toBeInTheDocument();
+      expect(grid.className).toContain('grid');
     });
 
-    it('should use vertical flex layout', () => {
+    it('should apply grid class for styling', () => {
       render(
         <DesktopIconGrid>
           <div>Icon</div>
         </DesktopIconGrid>
       );
       const grid = screen.getByTestId('desktop-icon-grid');
-      // Flex layout is defined in CSS module, check container exists
-      expect(grid).toBeInTheDocument();
       expect(grid.className).toContain('grid');
     });
   });

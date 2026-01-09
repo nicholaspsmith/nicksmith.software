@@ -128,13 +128,10 @@ export const iconVariants: Variants = {
   },
 
   /**
-   * Active/pressed state - scale down for click feedback
+   * Active/pressed state - no scale change (Tiger didn't shrink icons on click)
    */
   active: {
-    scale: 0.95,
-    transition: {
-      duration: 0.1,
-    },
+    scale: 1,
   },
 };
 

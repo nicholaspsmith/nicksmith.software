@@ -1,0 +1,100 @@
+/**
+ * ContextMenu.module.css - Tiger-style context menu
+ *
+ * Recreates the Mac OS X Tiger context menu with:
+ * - Subtle pinstripe texture background
+ * - 6px border radius
+ * - Drop shadow
+ * - Blue selection highlight
+ */
+
+.contextMenu {
+  position: fixed;
+  z-index: var(--aqua-z-context-menu, 10000);
+  min-width: 180px;
+  padding: 4px 0;
+
+  /* Tiger pinstripe background - subtle horizontal lines */
+  background-color: #fff;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    rgba(0, 0, 0, 0.03) 1px,
+    rgba(0, 0, 0, 0.03) 2px
+  );
+
+  /* Border and shadow - context menus have rounded corners */
+  border: 1px solid #808080;
+  border-radius: 5px;
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.25),
+    0 0 1px rgba(0, 0, 0, 0.1);
+
+  /* Prevent text selection */
+  user-select: none;
+
+  /* Typography - matches menu bar */
+  font-family: var(--aqua-font-family);
+  font-size: var(--aqua-font-size-sm);
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 12px 4px 25px;
+  color: #000;
+  cursor: default;
+  white-space: nowrap;
+}
+
+.menuItem:hover {
+  background: #3875d7;
+  color: #fff;
+}
+
+.menuItem.disabled {
+  color: #888;
+}
+
+.menuItem.disabled:hover {
+  background: transparent;
+  color: #888;
+}
+
+.menuItemLabel {
+  flex: 1;
+}
+
+.submenuArrow {
+  margin-left: 16px;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.menuItem:hover .submenuArrow {
+  opacity: 1;
+}
+
+.divider {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 12px,
+    #c0c0c0 12px,
+    #c0c0c0 calc(100% - 12px),
+    transparent calc(100% - 12px)
+  );
+  margin: 4px 0;
+}
+
+/* Overlay to detect clicks outside */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: var(--aqua-z-context-menu-overlay, 9999);
+}
