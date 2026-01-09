@@ -5,15 +5,20 @@ import { motion, AnimatePresence } from 'motion/react';
 import styles from './Dock.module.css';
 
 /**
- * Bounce animation for dock icons when clicked
- * Simulates the classic Tiger dock bounce effect - one complete cycle in 0.75s
+ * Bounce animation for dock icons when app is launching
+ * - Constant height bounce (same y each time, not decreasing)
+ * - Slow, steady rhythm
+ * - Only applies to app-launching icons (not Finder, System Preferences, Trash)
  */
+const BOUNCE_HEIGHT = -25;
+const BOUNCE_CYCLE_DURATION = 0.5; // seconds per bounce cycle
+
 const bounceAnimation = {
-  y: [0, -20, 0, -12, 0, -6, 0],
+  y: [0, BOUNCE_HEIGHT, 0],
   transition: {
-    duration: 0.75,
-    times: [0, 0.2, 0.35, 0.5, 0.65, 0.8, 1],
-    ease: 'easeOut' as const,
+    duration: BOUNCE_CYCLE_DURATION,
+    repeat: Infinity,
+    ease: 'easeInOut' as const,
   },
 };
 
@@ -61,17 +66,19 @@ export function Dock() {
   // Track which icons are currently bouncing
   const [bouncingIcons, setBouncingIcons] = useState<Set<string>>(new Set());
 
-  // Trigger bounce animation for an icon
+  // Trigger bounce animation for an icon (for app-launching icons only)
+  // Bounces for a random duration between 1-3 seconds
   const triggerBounce = useCallback((iconId: string) => {
     setBouncingIcons((prev) => new Set(prev).add(iconId));
-    // Stop bouncing after animation completes (matches 0.75s duration)
+    // Random duration between 1-3 seconds
+    const bounceDuration = 1000 + Math.random() * 2000;
     setTimeout(() => {
       setBouncingIcons((prev) => {
         const next = new Set(prev);
         next.delete(iconId);
         return next;
       });
-    }, 750);
+    }, bounceDuration);
   }, []);
 
   // Get running apps (open or minimized, but not closed)
@@ -85,7 +92,7 @@ export function Dock() {
 
   const handleDefaultIconClick = (e: React.MouseEvent, iconId: string) => {
     e.stopPropagation();
-    triggerBounce(iconId);
+    // Don't bounce - these icons don't launch apps yet
     if (iconId === 'finder') {
       showAlert({
         title: 'Finder',
@@ -123,7 +130,7 @@ export function Dock() {
 
   const handleTrashClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    triggerBounce('trash');
+    // Don't bounce - Trash doesn't launch an app
     showAlert({
       title: 'Trash',
       message: 'The Trash is empty.',
@@ -140,14 +147,13 @@ export function Dock() {
     >
       <div className={styles.dock}>
         <div className={styles.shelf}>
-          {/* Default system icons */}
+          {/* Default system icons - no bounce (they don't launch apps yet) */}
           <div className={styles.appSection}>
             {DEFAULT_DOCK_ICONS.map((icon) => (
-              <motion.button
+              <button
                 key={icon.id}
                 className={styles.dockIcon}
                 onClick={(e) => handleDefaultIconClick(e, icon.id)}
-                animate={bouncingIcons.has(icon.id) ? bounceAnimation : { y: 0 }}
                 aria-label={icon.label}
                 data-label={icon.label}
                 data-testid={`dock-icon-${icon.id}`}
@@ -155,7 +161,7 @@ export function Dock() {
                 <div className={styles.iconImage}>
                   <DefaultIcon iconId={icon.id} />
                 </div>
-              </motion.button>
+              </button>
             ))}
           </div>
 
@@ -221,11 +227,10 @@ export function Dock() {
           {/* Separator before trash */}
           <div className={styles.separator} aria-hidden="true" />
 
-          {/* Trash icon */}
-          <motion.button
+          {/* Trash icon - no bounce (doesn't launch an app) */}
+          <button
             className={styles.dockIcon}
             onClick={(e) => handleTrashClick(e)}
-            animate={bouncingIcons.has('trash') ? bounceAnimation : { y: 0 }}
             aria-label="Trash"
             data-label="Trash"
             data-testid="dock-icon-trash"
@@ -233,7 +238,7 @@ export function Dock() {
             <div className={styles.iconImage}>
               <TrashIcon />
             </div>
-          </motion.button>
+          </button>
         </div>
       </div>
     </div>
