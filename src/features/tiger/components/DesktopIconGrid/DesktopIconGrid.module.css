@@ -1,17 +1,15 @@
 /**
  * DesktopIconGrid.module.css - Icon grid container
  *
- * Positions icons in Tiger-authentic top-right, column-first layout.
- * Uses CSS Grid with writing-mode trick for column-first flow.
+ * Positions icons in a single vertical column on the right side,
+ * authentic to Mac OS X Tiger desktop layout.
  */
 
 .grid {
   position: fixed;
   z-index: var(--aqua-z-desktop-icons);
-  display: grid;
-  grid-auto-flow: column;
-  justify-content: end;
-  align-content: start;
-  gap: 0;
-  max-height: calc(100vh - 80px); /* Account for menubar + margin */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }

@@ -11,9 +11,10 @@ class MockAudioContext {
     start: vi.fn(),
   }));
   createOscillator = vi.fn(() => ({
-    type: 'sine',
+    type: 'triangle',
     frequency: {
       setValueAtTime: vi.fn(),
+      exponentialRampToValueAtTime: vi.fn(),
     },
     connect: vi.fn(),
     start: vi.fn(),
@@ -142,6 +143,53 @@ describe('soundStore', () => {
       // 4 notes in the F# major chord
       expect(ctx.createOscillator).toHaveBeenCalledTimes(4);
       expect(ctx.createGain).toHaveBeenCalledTimes(4);
+    });
+  });
+
+  describe('playSosumi', () => {
+    it('should create AudioContext if not initialized', () => {
+      useSoundStore.getState().playSosumi();
+
+      expect(useSoundStore.getState().audioContext).toBeInstanceOf(MockAudioContext);
+      expect(useSoundStore.getState().initialized).toBe(true);
+    });
+
+    it('should create oscillator and gain node', () => {
+      useSoundStore.getState().playSosumi();
+
+      const ctx = useSoundStore.getState().audioContext as unknown as MockAudioContext;
+      expect(ctx.createOscillator).toHaveBeenCalledTimes(1);
+      expect(ctx.createGain).toHaveBeenCalledTimes(1);
+    });
+
+    it('should use triangle wave for softer tone', () => {
+      useSoundStore.getState().playSosumi();
+
+      const ctx = useSoundStore.getState().audioContext as unknown as MockAudioContext;
+      const oscillatorMock = ctx.createOscillator.mock.results[0].value;
+      expect(oscillatorMock.type).toBe('triangle');
+    });
+
+    it('should play multiple times (unlike startup chime)', () => {
+      useSoundStore.getState().playSosumi();
+      const ctx = useSoundStore.getState().audioContext as unknown as MockAudioContext;
+
+      // Clear mocks and play again
+      vi.clearAllMocks();
+      useSoundStore.getState().playSosumi();
+
+      // Should create new oscillator for second play
+      expect(ctx.createOscillator).toHaveBeenCalledTimes(1);
+    });
+
+    it('should use existing AudioContext if already initialized', async () => {
+      await useSoundStore.getState().initialize();
+      const existingCtx = useSoundStore.getState().audioContext;
+
+      useSoundStore.getState().playSosumi();
+
+      // Should use same context
+      expect(useSoundStore.getState().audioContext).toBe(existingCtx);
     });
   });
 });

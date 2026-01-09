@@ -18,6 +18,8 @@ export interface WindowState {
   zIndex: number;
   state: 'open' | 'minimized' | 'closed';
   isZoomed: boolean;
+  /** Window is "shaded" - collapsed to just title bar */
+  isShaded: boolean;
   previousBounds: WindowBounds | null;
   /** True when window was just restored from minimized - triggers reverse genie animation */
   restoredFromMinimized: boolean;
@@ -38,6 +40,7 @@ interface WindowStore {
   restoreWindow: (id: string) => void;
   clearRestoredFlag: (id: string) => void;
   zoomWindow: (id: string) => void;
+  shadeWindow: (id: string) => void;
   updatePosition: (id: string, x: number, y: number) => void;
   updateSize: (id: string, width: number, height: number) => void;
 }
@@ -78,6 +81,7 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
         zIndex: newZIndex,
         state: 'open',
         isZoomed: false,
+        isShaded: false,
         previousBounds: null,
         restoredFromMinimized: false,
       }],
@@ -186,6 +190,14 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
           };
         }
       }),
+    }));
+  },
+
+  shadeWindow: (id) => {
+    set((state) => ({
+      windows: state.windows.map((w) =>
+        w.id === id ? { ...w, isShaded: !w.isShaded } : w
+      ),
     }));
   },
 }));

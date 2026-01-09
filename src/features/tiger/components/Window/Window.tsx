@@ -34,17 +34,20 @@ export function Window({ id, title, children }: WindowProps) {
   const closeWindow = useWindowStore((s) => s.closeWindow);
   const minimizeWindow = useWindowStore((s) => s.minimizeWindow);
   const zoomWindow = useWindowStore((s) => s.zoomWindow);
+  const shadeWindow = useWindowStore((s) => s.shadeWindow);
   const clearRestoredFlag = useWindowStore((s) => s.clearRestoredFlag);
 
-  // Determine initial animation state based on whether this is a restore from minimized
-  const isRestoring = windowState?.restoredFromMinimized ?? false;
-
-  // Animation state: starts as 'opening' for new windows or 'restoring' for restored windows
-  const [animationState, setAnimationState] = useState<'opening' | 'open' | 'closing' | 'minimizing' | 'restoring'>(
-    isRestoring ? 'restoring' : 'opening'
-  );
+  // Animation state: starts as 'opening' for new windows
+  const [animationState, setAnimationState] = useState<'opening' | 'open' | 'closing' | 'minimizing' | 'restoring'>('opening');
 
   const isFocused = activeWindowId === id;
+
+  // Detect when window is restored from minimized and trigger restore animation
+  useEffect(() => {
+    if (windowState?.restoredFromMinimized) {
+      setAnimationState('restoring');
+    }
+  }, [windowState?.restoredFromMinimized]);
 
   const handleDragStop = useCallback(
     (_e: unknown, d: { x: number; y: number }) => {
@@ -89,6 +92,10 @@ export function Window({ id, title, children }: WindowProps) {
   const handleZoom = useCallback(() => {
     zoomWindow(id);
   }, [id, zoomWindow]);
+
+  const handleShade = useCallback(() => {
+    shadeWindow(id);
+  }, [id, shadeWindow]);
 
   // Listen for keyboard shortcut events to trigger animations
   useEffect(() => {
@@ -137,28 +144,33 @@ export function Window({ id, title, children }: WindowProps) {
   }
 
   const titleId = `window-title-${id}`;
+  const isShaded = windowState.isShaded;
+
+  // When shaded, collapse to just title bar height
+  const displayHeight = isShaded ? SACRED.titleBarHeight : windowState.height;
 
   return (
     <Rnd
       position={{ x: windowState.x, y: windowState.y }}
-      size={{ width: windowState.width, height: windowState.height }}
+      size={{ width: windowState.width, height: displayHeight }}
       minWidth={SACRED.windowMinWidth}
-      minHeight={SACRED.windowMinHeight}
+      minHeight={isShaded ? SACRED.titleBarHeight : SACRED.windowMinHeight}
       style={{ zIndex: windowState.zIndex }}
       dragHandleClassName={styles.dragHandle}
       onDragStop={handleDragStop}
       onResizeStop={handleResizeStop}
       onMouseDown={handleMouseDown}
+      enableResizing={!isShaded}
       data-testid={`window-${id}`}
     >
       <motion.div
-        className={styles.window}
+        className={`${styles.window} ${isShaded ? styles.shaded : ''}`}
         data-testid="window-content"
         role="dialog"
         aria-labelledby={titleId}
         aria-modal="false"
         variants={windowVariants}
-        initial={isRestoring ? 'minimized' : 'closed'}
+        initial={animationState === 'restoring' ? 'minimized' : 'closed'}
         animate={animationState}
         onAnimationComplete={handleAnimationComplete}
         onClick={handleClick}
@@ -167,10 +179,12 @@ export function Window({ id, title, children }: WindowProps) {
           title={title}
           titleId={titleId}
           isFocused={isFocused}
+          isShaded={isShaded}
           className={styles.dragHandle}
           onClose={handleClose}
           onMinimize={handleMinimize}
           onZoom={handleZoom}
+          onShade={handleShade}
         >
           {children}
         </WindowChrome>

@@ -8,14 +8,12 @@ export interface DesktopIconGridProps {
 /**
  * DesktopIconGrid component - Container for desktop icons
  *
- * Positions icons in a top-right, column-first grid layout
- * authentic to Mac OS X Tiger. Icons flow from top to bottom,
- * then right to left as columns fill.
+ * Positions icons in a single vertical column on the right side
+ * of the screen, authentic to Mac OS X Tiger desktop layout.
  *
- * Grid positioning:
+ * Positioning:
  * - Starts 20px from right edge, 40px from top (per sacred values)
- * - Each cell is 80x90px
- * - Icons flow column-first (top-to-bottom, then right-to-left)
+ * - Icons stack vertically from top to bottom
  */
 export function DesktopIconGrid({ children }: DesktopIconGridProps) {
   return (
@@ -25,8 +23,6 @@ export function DesktopIconGrid({ children }: DesktopIconGridProps) {
       style={{
         top: SACRED.iconGridTopMargin,
         right: SACRED.iconGridRightMargin,
-        gridAutoRows: SACRED.iconGridCellHeight,
-        gridTemplateColumns: `repeat(auto-fill, ${SACRED.iconGridCellWidth}px)`,
       }}
     >
       {children}

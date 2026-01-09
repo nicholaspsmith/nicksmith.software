@@ -9,6 +9,38 @@ export interface SoundStore {
   initialize: () => Promise<void>;
   play: (soundName: string) => void;
   playStartupChime: () => void;
+  playSosumi: () => void;
+}
+
+/**
+ * Synthesize the Sosumi error sound using Web Audio API
+ * Classic Mac "boing" - a quick descending tone with slight wobble
+ */
+function playSosumiSound(audioContext: AudioContext): void {
+  const now = audioContext.currentTime;
+  const duration = 0.15;
+
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+
+  // Triangle wave for softer tone
+  oscillator.type = 'triangle';
+
+  // Start at ~880Hz (A5) and descend to ~440Hz (A4)
+  oscillator.frequency.setValueAtTime(880, now);
+  oscillator.frequency.exponentialRampToValueAtTime(440, now + duration);
+
+  // Quick attack, sustain, then fade
+  gainNode.gain.setValueAtTime(0, now);
+  gainNode.gain.linearRampToValueAtTime(0.3, now + 0.01);
+  gainNode.gain.setValueAtTime(0.3, now + duration * 0.7);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, now + duration);
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+
+  oscillator.start(now);
+  oscillator.stop(now + duration);
 }
 
 /**
@@ -90,6 +122,19 @@ export const useSoundStore = create<SoundStore>((set, get) => ({
     } else {
       set({ startupChimePlayed: true });
       playChimeSound(audioContext);
+    }
+  },
+
+  playSosumi: () => {
+    const { audioContext, initialized } = get();
+
+    // Initialize audio context if needed (requires user gesture)
+    if (!initialized || !audioContext) {
+      const ctx = new AudioContext();
+      set({ audioContext: ctx, initialized: true });
+      playSosumiSound(ctx);
+    } else {
+      playSosumiSound(audioContext);
     }
   },
 }));

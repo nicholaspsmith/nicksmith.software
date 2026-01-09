@@ -22,3 +22,15 @@
 /* Note: cursor inherited from WindowChrome.titleBar */
 .dragHandle {
 }
+
+/* Shaded window state - collapsed to just title bar */
+.shaded {
+  /* Smooth height transition for shade effect */
+  transition: height 0.2s ease-out;
+}
+
+/* Remove bottom rounded corners when shaded */
+.shaded .chrome {
+  border-bottom-left-radius: var(--aqua-window-radius);
+  border-bottom-right-radius: var(--aqua-window-radius);
+}

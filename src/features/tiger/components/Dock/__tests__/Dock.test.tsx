@@ -21,37 +21,20 @@ describe('Dock', () => {
       activeWindowId: null,
       maxZIndex: 0,
     });
+    // Mock alert
+    vi.spyOn(window, 'alert').mockImplementation(() => {});
   });
 
-  it('does not render when no windows are minimized', () => {
-    render(<Dock />);
-    expect(screen.queryByTestId('dock')).not.toBeInTheDocument();
-  });
-
-  it('renders when windows are minimized', () => {
-    useWindowStore.setState({
-      windows: [
-        {
-          id: 'test-1',
-          app: 'About Me',
-          title: 'About Me',
-          x: 100,
-          y: 100,
-          width: 400,
-          height: 300,
-          zIndex: 1,
-          state: 'minimized',
-          isZoomed: false,
-          previousBounds: null,
-          restoredFromMinimized: false,
-        },
-      ],
-      activeWindowId: null,
-      maxZIndex: 1,
-    });
-
+  it('always renders the dock (visible at all times)', () => {
     render(<Dock />);
     expect(screen.getByTestId('dock')).toBeInTheDocument();
+  });
+
+  it('displays default icons (Finder, System Preferences, Trash)', () => {
+    render(<Dock />);
+    expect(screen.getByTestId('dock-icon-finder')).toBeInTheDocument();
+    expect(screen.getByTestId('dock-icon-system-preferences')).toBeInTheDocument();
+    expect(screen.getByTestId('dock-icon-trash')).toBeInTheDocument();
   });
 
   it('displays minimized window icons', () => {
@@ -59,7 +42,7 @@ describe('Dock', () => {
       windows: [
         {
           id: 'test-1',
-          app: 'About Me',
+          app: 'about',
           title: 'About Me',
           x: 100,
           y: 100,
@@ -70,10 +53,11 @@ describe('Dock', () => {
           isZoomed: false,
           previousBounds: null,
           restoredFromMinimized: false,
+          isShaded: false,
         },
         {
           id: 'test-2',
-          app: 'Projects',
+          app: 'projects',
           title: 'Projects',
           x: 150,
           y: 150,
@@ -84,6 +68,7 @@ describe('Dock', () => {
           isZoomed: false,
           previousBounds: null,
           restoredFromMinimized: false,
+          isShaded: false,
         },
       ],
       activeWindowId: null,
@@ -95,12 +80,12 @@ describe('Dock', () => {
     expect(screen.getByTestId('dock-icon-test-2')).toBeInTheDocument();
   });
 
-  it('does not display open windows', () => {
+  it('does not display open windows in minimized section', () => {
     useWindowStore.setState({
       windows: [
         {
           id: 'minimized-1',
-          app: 'About Me',
+          app: 'about',
           title: 'About Me',
           x: 100,
           y: 100,
@@ -111,10 +96,11 @@ describe('Dock', () => {
           isZoomed: false,
           previousBounds: null,
           restoredFromMinimized: false,
+          isShaded: false,
         },
         {
           id: 'open-1',
-          app: 'Projects',
+          app: 'projects',
           title: 'Projects',
           x: 150,
           y: 150,
@@ -125,6 +111,7 @@ describe('Dock', () => {
           isZoomed: false,
           previousBounds: null,
           restoredFromMinimized: false,
+          isShaded: false,
         },
       ],
       activeWindowId: 'open-1',
@@ -136,12 +123,12 @@ describe('Dock', () => {
     expect(screen.queryByTestId('dock-icon-open-1')).not.toBeInTheDocument();
   });
 
-  it('restores window when icon is clicked', () => {
+  it('restores window when minimized icon is clicked', () => {
     useWindowStore.setState({
       windows: [
         {
           id: 'test-1',
-          app: 'About Me',
+          app: 'about',
           title: 'About Me',
           x: 100,
           y: 100,
@@ -152,6 +139,7 @@ describe('Dock', () => {
           isZoomed: false,
           previousBounds: null,
           restoredFromMinimized: false,
+          isShaded: false,
         },
       ],
       activeWindowId: null,
@@ -174,7 +162,7 @@ describe('Dock', () => {
       windows: [
         {
           id: 'test-1',
-          app: 'Resume',
+          app: 'resume',
           title: 'Resume',
           x: 100,
           y: 100,
@@ -185,6 +173,7 @@ describe('Dock', () => {
           isZoomed: false,
           previousBounds: null,
           restoredFromMinimized: false,
+          isShaded: false,
         },
       ],
       activeWindowId: null,
@@ -193,5 +182,8 @@ describe('Dock', () => {
 
     render(<Dock />);
     expect(screen.getByLabelText('Restore Resume')).toBeInTheDocument();
+    expect(screen.getByLabelText('Finder')).toBeInTheDocument();
+    expect(screen.getByLabelText('System Preferences')).toBeInTheDocument();
+    expect(screen.getByLabelText('Trash')).toBeInTheDocument();
   });
 });

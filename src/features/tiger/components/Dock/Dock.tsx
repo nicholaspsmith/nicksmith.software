@@ -1,98 +1,280 @@
 import { useWindowStore } from '@/stores/windowStore';
+import { useAppStore } from '@/stores/appStore';
 import { motion, AnimatePresence } from 'motion/react';
 import styles from './Dock.module.css';
 
 /**
+ * App configurations for dock icons
+ * Maps app IDs to their display labels
+ */
+const APP_CONFIG: Record<string, { label: string }> = {
+  about: { label: 'About Me' },
+  projects: { label: 'Projects' },
+  resume: { label: 'Resume' },
+  contact: { label: 'Contact' },
+  terminal: { label: 'Terminal' },
+};
+
+/**
+ * Default dock icons that are always present (Finder, System Preferences)
+ */
+const DEFAULT_DOCK_ICONS = [
+  { id: 'finder', label: 'Finder' },
+  { id: 'system-preferences', label: 'System Preferences' },
+] as const;
+
+/**
  * Dock component - Tiger-era application dock
  *
- * Displays minimized windows as icons at the bottom of the screen.
- * Clicking an icon restores the window.
- * Uses authentic Tiger glass shelf styling with reflection.
+ * Layout (left to right):
+ * - Default system icons (Finder, System Preferences)
+ * - Running application icons (with indicator dot)
+ * - Separator
+ * - Minimized window thumbnails
+ * - Separator
+ * - Trash
+ *
+ * Clicking behavior:
+ * - Running app icon: Focus window (or restore if minimized)
+ * - Minimized thumbnail: Restore window
  */
 export function Dock() {
   const windows = useWindowStore((s) => s.windows);
   const restoreWindow = useWindowStore((s) => s.restoreWindow);
+  const focusWindow = useWindowStore((s) => s.focusWindow);
+  const showAlert = useAppStore((s) => s.showAlert);
 
-  // Get only minimized windows
+  // Get running apps (open or minimized, but not closed)
+  const runningApps = windows.filter((w) => w.state !== 'closed');
+
+  // Get unique app IDs that are running
+  const runningAppIds = [...new Set(runningApps.map((w) => w.app))];
+
+  // Get only minimized windows for thumbnails
   const minimizedWindows = windows.filter((w) => w.state === 'minimized');
 
-  // Don't render dock if no minimized windows
-  if (minimizedWindows.length === 0) {
-    return null;
-  }
+  const handleDefaultIconClick = (e: React.MouseEvent, iconId: string) => {
+    e.stopPropagation();
+    if (iconId === 'finder') {
+      showAlert({
+        title: 'Finder',
+        message: 'Finder is coming soon!',
+        type: 'note',
+      });
+    } else if (iconId === 'system-preferences') {
+      showAlert({
+        title: 'System Preferences',
+        message: 'System Preferences is coming soon!',
+        type: 'note',
+      });
+    }
+  };
 
-  const handleIconClick = (windowId: string) => {
+  const handleRunningAppClick = (e: React.MouseEvent, appId: string) => {
+    e.stopPropagation();
+    // Find the window for this app
+    const appWindow = windows.find((w) => w.app === appId && w.state !== 'closed');
+    if (appWindow) {
+      if (appWindow.state === 'minimized') {
+        restoreWindow(appWindow.id);
+      } else {
+        focusWindow(appWindow.id);
+      }
+    }
+  };
+
+  const handleMinimizedWindowClick = (e: React.MouseEvent, windowId: string) => {
+    e.stopPropagation();
     restoreWindow(windowId);
   };
 
+  const handleTrashClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    showAlert({
+      title: 'Trash',
+      message: 'The Trash is empty.',
+      type: 'note',
+      playSound: false, // No error sound for info
+    });
+  };
+
   return (
-    <div className={styles.dockContainer} data-testid="dock">
+    <div
+      className={styles.dockContainer}
+      data-testid="dock"
+      onClick={(e) => e.stopPropagation()}
+    >
       <div className={styles.dock}>
         <div className={styles.shelf}>
+          {/* Default system icons */}
+          <div className={styles.appSection}>
+            {DEFAULT_DOCK_ICONS.map((icon) => (
+              <button
+                key={icon.id}
+                className={styles.dockIcon}
+                onClick={(e) => handleDefaultIconClick(e, icon.id)}
+                aria-label={icon.label}
+                data-testid={`dock-icon-${icon.id}`}
+              >
+                <div className={styles.iconImage}>
+                  <DefaultIcon iconId={icon.id} />
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Running application icons */}
+          <AnimatePresence>
+            {runningAppIds.map((appId) => {
+              const config = APP_CONFIG[appId];
+              if (!config) return null;
+              return (
+                <motion.button
+                  key={`app-${appId}`}
+                  className={styles.dockIcon}
+                  onClick={(e) => handleRunningAppClick(e, appId)}
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  whileHover={{ scale: 1.15, y: -10 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  aria-label={config.label}
+                  data-testid={`dock-icon-app-${appId}`}
+                >
+                  <div className={styles.iconImage}>
+                    <AppIcon appId={appId} />
+                  </div>
+                  <div className={styles.runningIndicator} aria-hidden="true" />
+                </motion.button>
+              );
+            })}
+          </AnimatePresence>
+
+          {/* Separator before minimized windows */}
+          {minimizedWindows.length > 0 && (
+            <div className={styles.separator} aria-hidden="true" />
+          )}
+
+          {/* Minimized window thumbnails */}
           <AnimatePresence>
             {minimizedWindows.map((window) => (
               <motion.button
                 key={window.id}
                 className={styles.dockIcon}
-                onClick={() => handleIconClick(window.id)}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-                whileHover={{ scale: 1.1, y: -8 }}
+                onClick={(e) => handleMinimizedWindowClick(e, window.id)}
+                initial={{ scale: 0, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0, opacity: 0, y: 20 }}
+                whileHover={{ scale: 1.15, y: -10 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                 aria-label={`Restore ${window.title}`}
                 data-testid={`dock-icon-${window.id}`}
               >
                 <div className={styles.iconImage}>
-                  {getAppIcon(window.app)}
+                  <MinimizedWindowThumbnail app={window.app} title={window.title} />
                 </div>
-                <span className={styles.iconLabel}>{window.title}</span>
               </motion.button>
             ))}
           </AnimatePresence>
+
+          {/* Separator before trash */}
+          <div className={styles.separator} aria-hidden="true" />
+
+          {/* Trash icon */}
+          <button
+            className={styles.dockIcon}
+            onClick={(e) => handleTrashClick(e)}
+            aria-label="Trash"
+            data-testid="dock-icon-trash"
+          >
+            <div className={styles.iconImage}>
+              <TrashIcon />
+            </div>
+          </button>
         </div>
-        {/* Reflection effect */}
-        <div className={styles.reflection} aria-hidden="true" />
       </div>
     </div>
   );
 }
 
 /**
- * Get the appropriate icon for an app
+ * Default dock icon (Finder, System Preferences)
+ * Uses official Tiger PNG icons
  */
-function getAppIcon(app: string): React.ReactNode {
-  // Simple colored squares for now - can be replaced with actual icons
+function DefaultIcon({ iconId }: { iconId: string }) {
+  const iconMap: Record<string, string> = {
+    finder: '/icons/finder.png',
+    'system-preferences': '/icons/system-preferences.png',
+  };
+
+  const src = iconMap[iconId];
+  if (!src) return null;
+
+  return <img src={src} alt="" width={48} height={48} draggable={false} aria-hidden="true" />;
+}
+
+/**
+ * App icon for running applications in dock
+ * Terminal uses custom SVG, others use document.png
+ */
+function AppIcon({ appId }: { appId: string }) {
+  if (appId === 'terminal') {
+    return (
+      <svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true">
+        <rect x="4" y="4" width="40" height="40" rx="8" fill="#1A1A1A" />
+        <text x="12" y="30" fontSize="20" fill="#33FF33" fontFamily="monospace">&gt;_</text>
+      </svg>
+    );
+  }
+
+  // Generic document icon for other apps
+  return <img src="/icons/document.png" alt="" width={48} height={48} draggable={false} aria-hidden="true" />;
+}
+
+/**
+ * Minimized window thumbnail - looks like a mini version of the window
+ */
+function MinimizedWindowThumbnail({ app, title }: { app: string; title: string }) {
   const colors: Record<string, string> = {
-    'About Me': '#4A90D9',
-    'Projects': '#7B68EE',
-    'Resume': '#E8E8E8',
-    'Contact': '#50C878',
+    about: '#FF9500',
+    projects: '#28C940',
+    resume: '#4CA1E4',
+    contact: '#FF5F57',
+    terminal: '#1A1A1A',
   };
 
   const color = colors[app] || '#808080';
 
   return (
-    <svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true">
-      <defs>
-        <linearGradient id={`icon-gradient-${app.replace(/\s/g, '')}`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor={color} stopOpacity="1" />
-          <stop offset="100%" stopColor={color} stopOpacity="0.7" />
-        </linearGradient>
-      </defs>
-      <rect
-        x="4"
-        y="4"
-        width="40"
-        height="40"
-        rx="8"
-        fill={`url(#icon-gradient-${app.replace(/\s/g, '')})`}
-      />
-      {/* Document icon overlay for minimized windows */}
-      <rect x="14" y="10" width="20" height="26" rx="2" fill="white" fillOpacity="0.9" />
-      <rect x="17" y="14" width="14" height="2" rx="1" fill={color} fillOpacity="0.5" />
-      <rect x="17" y="19" width="14" height="2" rx="1" fill={color} fillOpacity="0.5" />
-      <rect x="17" y="24" width="10" height="2" rx="1" fill={color} fillOpacity="0.5" />
+    <svg viewBox="0 0 64 48" width="64" height="48" aria-hidden="true">
+      {/* Window shadow */}
+      <rect x="4" y="4" width="56" height="42" rx="4" fill="rgba(0,0,0,0.2)" />
+      {/* Window frame */}
+      <rect x="2" y="2" width="56" height="42" rx="4" fill="white" stroke="#999" strokeWidth="0.5" />
+      {/* Title bar */}
+      <rect x="2" y="2" width="56" height="12" rx="4" fill="#E8E8E8" />
+      <rect x="2" y="10" width="56" height="4" fill="#E8E8E8" />
+      {/* Traffic lights (smaller) */}
+      <circle cx="10" cy="8" r="2.5" fill="#FF5F57" />
+      <circle cx="18" cy="8" r="2.5" fill="#FFBD2E" />
+      <circle cx="26" cy="8" r="2.5" fill="#28C940" />
+      {/* Title text (truncated) */}
+      <text x="34" y="11" fontSize="6" fill="#333" fontFamily="system-ui">
+        {title.length > 8 ? title.slice(0, 8) + '...' : title}
+      </text>
+      {/* Content area with app color accent */}
+      <rect x="4" y="16" width="52" height="26" fill="white" />
+      <rect x="6" y="18" width="48" height="3" fill={color} rx="1" />
+      <rect x="6" y="24" width="40" height="2" fill="#ddd" rx="1" />
+      <rect x="6" y="28" width="44" height="2" fill="#ddd" rx="1" />
+      <rect x="6" y="32" width="36" height="2" fill="#ddd" rx="1" />
     </svg>
   );
+}
+
+/**
+ * Trash can icon - uses official Tiger PNG
+ */
+function TrashIcon() {
+  return <img src="/icons/trash-empty.png" alt="" width={48} height={48} draggable={false} aria-hidden="true" />;
 }

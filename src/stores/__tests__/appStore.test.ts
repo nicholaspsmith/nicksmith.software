@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useAppStore } from '../appStore';
 
 describe('appStore', () => {
@@ -8,6 +8,8 @@ describe('appStore', () => {
       mode: 'tiger',
       startupComplete: false,
       selectedIconId: null,
+      alertOpen: false,
+      alertConfig: null,
     });
   });
 
@@ -74,6 +76,82 @@ describe('appStore', () => {
     it('should be safe to call when nothing is selected', () => {
       useAppStore.getState().clearSelection();
       expect(useAppStore.getState().selectedIconId).toBeNull();
+    });
+  });
+
+  describe('alert dialog state', () => {
+    it('should have alertOpen as false initially', () => {
+      expect(useAppStore.getState().alertOpen).toBe(false);
+    });
+
+    it('should have alertConfig as null initially', () => {
+      expect(useAppStore.getState().alertConfig).toBeNull();
+    });
+  });
+
+  describe('showAlert', () => {
+    it('should set alertOpen to true', () => {
+      useAppStore.getState().showAlert({
+        title: 'Test',
+        message: 'Test message',
+      });
+      expect(useAppStore.getState().alertOpen).toBe(true);
+    });
+
+    it('should set alertConfig with provided values', () => {
+      const config = {
+        title: 'Test Title',
+        message: 'Test message',
+        type: 'caution' as const,
+      };
+      useAppStore.getState().showAlert(config);
+      expect(useAppStore.getState().alertConfig).toEqual(config);
+    });
+
+    it('should store onOk callback', () => {
+      const onOk = vi.fn();
+      useAppStore.getState().showAlert({
+        title: 'Test',
+        message: 'Test',
+        onOk,
+      });
+      expect(useAppStore.getState().alertConfig?.onOk).toBe(onOk);
+    });
+  });
+
+  describe('hideAlert', () => {
+    it('should set alertOpen to false', () => {
+      useAppStore.getState().showAlert({
+        title: 'Test',
+        message: 'Test',
+      });
+      useAppStore.getState().hideAlert();
+      expect(useAppStore.getState().alertOpen).toBe(false);
+    });
+
+    it('should set alertConfig to null', () => {
+      useAppStore.getState().showAlert({
+        title: 'Test',
+        message: 'Test',
+      });
+      useAppStore.getState().hideAlert();
+      expect(useAppStore.getState().alertConfig).toBeNull();
+    });
+
+    it('should call onOk callback when hiding', () => {
+      const onOk = vi.fn();
+      useAppStore.getState().showAlert({
+        title: 'Test',
+        message: 'Test',
+        onOk,
+      });
+      useAppStore.getState().hideAlert();
+      expect(onOk).toHaveBeenCalledTimes(1);
+    });
+
+    it('should be safe to call when no alert is shown', () => {
+      useAppStore.getState().hideAlert();
+      expect(useAppStore.getState().alertOpen).toBe(false);
     });
   });
 });

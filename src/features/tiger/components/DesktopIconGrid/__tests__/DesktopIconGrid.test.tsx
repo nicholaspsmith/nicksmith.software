@@ -38,26 +38,16 @@ describe('DesktopIconGrid', () => {
       expect(grid.style.right).toBe(`${SACRED.iconGridRightMargin}px`);
     });
 
-    it('should have correct grid row height', () => {
+    it('should use vertical flex layout', () => {
       render(
         <DesktopIconGrid>
           <div>Icon</div>
         </DesktopIconGrid>
       );
       const grid = screen.getByTestId('desktop-icon-grid');
-      expect(grid.style.gridAutoRows).toBe(`${SACRED.iconGridCellHeight}px`);
-    });
-
-    it('should have correct column width', () => {
-      render(
-        <DesktopIconGrid>
-          <div>Icon</div>
-        </DesktopIconGrid>
-      );
-      const grid = screen.getByTestId('desktop-icon-grid');
-      expect(grid.style.gridTemplateColumns).toContain(
-        `${SACRED.iconGridCellWidth}px`
-      );
+      // Flex layout is defined in CSS module, check container exists
+      expect(grid).toBeInTheDocument();
+      expect(grid.className).toContain('grid');
     });
   });
 });

@@ -1,63 +1,81 @@
 /**
  * Dock.module.css - Tiger-era dock styling
  *
- * Glass shelf appearance with reflection effect.
+ * 3D shelf appearance with trapezoidal shape (wider at top, narrower at bottom).
  * Positioned at bottom center of viewport.
+ * Always visible with default icons + minimized windows + trash.
  */
 
 .dockContainer {
   position: fixed;
-  bottom: 8px;
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
   z-index: var(--aqua-z-menubar);
-  pointer-events: none;
+  padding-bottom: 4px;
 }
 
 .dock {
   display: flex;
   flex-direction: column;
   align-items: center;
-  pointer-events: auto;
 }
 
 .shelf {
   display: flex;
   align-items: flex-end;
-  gap: 4px;
-  padding: 4px 12px;
+  gap: 2px;
+  padding: 4px 12px 6px 12px;
+
+  /* 3D shelf effect - glossy translucent appearance */
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.4) 0%,
-    rgba(255, 255, 255, 0.2) 50%,
-    rgba(200, 200, 200, 0.3) 100%
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(200, 200, 200, 0.4) 100%
   );
+
+  /* Glass effect */
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: 16px;
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.15),
-    0 4px 20px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.appSection {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.separator {
+  width: 1px;
+  height: 48px;
+  margin: 0 6px;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0.3) 50%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
 }
 
 .dockIcon {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 4px;
+  padding: 2px;
   background: none;
   border: none;
   cursor: var(--aqua-cursor-default);
-  border-radius: 8px;
-  transition: background-color var(--aqua-duration-fast) ease;
+  transition: transform 0.15s ease-out;
+  position: relative;
 }
 
 .dockIcon:hover {
-  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-8px) scale(1.1);
+}
+
+.dockIcon:active {
+  transform: translateY(-4px) scale(1.05);
 }
 
 .dockIcon:focus {
@@ -67,36 +85,41 @@
 .dockIcon:focus-visible {
   outline: 2px solid var(--aqua-focus-ring);
   outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .iconImage {
   width: 48px;
   height: 48px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.3));
+  position: relative;
 }
 
-.iconLabel {
-  font-family: var(--aqua-font-family);
-  font-size: 10px;
-  color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-  max-width: 60px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Reflection effect below the dock */
-.reflection {
-  width: 100%;
+/* Icon reflection on the shelf */
+.iconImage::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  right: 0;
   height: 20px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.15) 0%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  border-radius: 0 0 16px 16px;
+  background: inherit;
   transform: scaleY(-1);
-  opacity: 0.5;
+  opacity: 0.2;
+  filter: blur(2px);
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.3), transparent);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.3), transparent);
   pointer-events: none;
+}
+
+/* Running indicator dot (for open apps) */
+.runningIndicator {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
 }
