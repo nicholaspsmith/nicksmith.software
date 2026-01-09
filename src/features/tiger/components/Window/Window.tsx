@@ -203,23 +203,42 @@ export function Window({ id, title, children }: WindowProps) {
   // When shaded, collapse to just title bar height
   const displayHeight = isShaded ? SACRED.titleBarHeight : windowState.height;
 
-  // Calculate animation value - use dynamic target for minimizing
+  // Calculate animation value - use dynamic target for minimizing/restoring
   const animateValue = useMemo(() => {
     if (animationState === 'minimizing' && dockTarget) {
-      // Dynamic minimize animation toward dock position
+      // Genie effect: window appears to be "sucked" into the dock
+      // - originY: 1 anchors transforms to bottom of window
+      // - scaleY compresses faster than scaleX (funnel effect)
+      // - Keyframes create phased animation for more dramatic effect
       return {
-        opacity: 0,
-        scale: 0.1,
-        scaleX: 0.3,
-        x: dockTarget.x,
-        y: dockTarget.y,
+        opacity: [1, 1, 0],
+        scaleX: [1, 0.6, 0.15],
+        scaleY: [1, 0.3, 0.1],
+        x: [0, dockTarget.x * 0.3, dockTarget.x],
+        y: [0, dockTarget.y * 0.5, dockTarget.y],
         transition: {
-          duration: 0.4,
-          ease: [0.4, 0, 0.6, 1] as [number, number, number, number], // Cubic bezier for genie "suction"
-          opacity: { duration: 0.3, delay: 0.1 },
+          duration: 0.35,
+          times: [0, 0.4, 1], // Phase 1: 0-40%, Phase 2: 40-100%
+          ease: [0.4, 0, 0.9, 0.4] as [number, number, number, number], // Fast start, slow finish
         },
       };
     }
+
+    if (animationState === 'restoring') {
+      // Reverse genie effect: window expands from dock back to position
+      return {
+        opacity: 1,
+        scaleX: 1,
+        scaleY: 1,
+        x: 0,
+        y: 0,
+        transition: {
+          duration: 0.3,
+          ease: [0, 0.5, 0.2, 1] as [number, number, number, number], // Bounce out feel
+        },
+      };
+    }
+
     // Use variant name for other states
     return animationState;
   }, [animationState, dockTarget]);
@@ -250,6 +269,7 @@ export function Window({ id, title, children }: WindowProps) {
         animate={animateValue}
         onAnimationComplete={handleAnimationComplete}
         onClick={handleClick}
+        style={animationState === 'minimizing' || animationState === 'restoring' ? { originY: 1, originX: 0.5 } : undefined}
       >
         <WindowChrome
           title={title}
