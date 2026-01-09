@@ -1,6 +1,7 @@
 import { useAppStore } from '@/stores/appStore';
 import { useWindowStore } from '@/stores/windowStore';
 import { MenuBar } from '../MenuBar';
+import { Dock } from '../Dock';
 import styles from './Desktop.module.css';
 
 export interface DesktopProps {
@@ -34,6 +35,7 @@ export function Desktop({ children }: DesktopProps) {
     >
       <MenuBar />
       {children}
+      <Dock />
     </div>
   );
 }
