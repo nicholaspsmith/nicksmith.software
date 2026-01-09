@@ -70,6 +70,129 @@ alias ll="ls -la"`;
     return `cat: ${file}: No such file or directory`;
   },
   echo: (args: string[]) => args.join(' '),
+
+  // === Easter Egg Commands ===
+
+  sudo: () => `Password: ********
+Sorry, user guest does not have sudo privileges.
+This incident will be reported.`,
+
+  vim: () => `
+ _   ________  ___
+| | / /  _/  |/  /  Good choice!
+| |/ // // /|_/ /   But this is a portfolio,
+|___/___/_/  /_/    not a real shell :)
+
+Hint: Try 'help' for available commands.`,
+
+  emacs: () => `GNU Emacs is great, but...
+
+  M-x butterfly
+
+...this terminal only supports basic commands.
+Try 'help' for what's available!`,
+
+  neofetch: () => `
+\x1b[32m                    'c.         \x1b[36mguest\x1b[0m@\x1b[36mmacbook\x1b[0m
+\x1b[32m                 ,xNMM.         \x1b[0m-----------------
+\x1b[32m               .OMMMMo          \x1b[33mOS:\x1b[0m Mac OS X Tiger (web)
+\x1b[32m               OMMM0,           \x1b[33mHost:\x1b[0m nicksmith.software
+\x1b[32m     .;loddo:' loolloddol;.    \x1b[33mKernel:\x1b[0m React 18
+\x1b[32m   cKMMMMMMMMMMNWMMMMMMMMMM0:  \x1b[33mShell:\x1b[0m xterm.js
+\x1b[33m .KMMMMMMMMMMMMMMMMMMMMMMMWd.  \x1b[33mResolution:\x1b[0m ${window.innerWidth}x${window.innerHeight}
+\x1b[31mXMMMMMMMMMMMMMMMMMMMMMMMX.     \x1b[33mTheme:\x1b[0m Aqua
+\x1b[31m;MMMMMMMMMMMMMMMMMMMMMMMM:     \x1b[33mTerminal:\x1b[0m Tiger Terminal
+\x1b[31m:MMMMMMMMMMMMMMMMMMMMMMMM:     \x1b[33mCPU:\x1b[0m Browser Engine
+\x1b[31m.MMMMMMMMMMMMMMMMMMMMMMMMX.    \x1b[33mMemory:\x1b[0m ${Math.round(((performance as Performance & { memory?: { usedJSHeapSize: number } })?.memory?.usedJSHeapSize ?? 0) / 1048576) || '??'}MB
+\x1b[31m kMMMMMMMMMMMMMMMMMMMMMMMMWd.
+\x1b[33m .XMMMMMMMMMMMMMMMMMMMMMMMMMMk
+\x1b[33m  .XMMMMMMMMMMMMMMMMMMMMMMMMK.
+\x1b[32m    kMMMMMMMMMMMMMMMMMMMMMMd
+\x1b[32m     ;KMMMMMMMWXXWMMMMMMMk.
+\x1b[32m       .coeli;,  .,codedc.`,
+
+  matrix: () => `
+\x1b[32m01001000 01100101 01101100 01101100 01101111
+01010111 01101111 01110010 01101100 01100100
+
+Wake up, Neo...
+The Matrix has you...
+
+(Just kidding. Try 'help' for real commands)`,
+
+  coffee: () => `
+       ( (
+        ) )
+      ........
+      |      |]
+      \\      /
+       \`----'
+
+    Here's your coffee!
+    Now get back to coding.`,
+
+  hello: () => `Hello! Welcome to Nick's portfolio terminal.
+Type 'help' to see available commands.`,
+
+  hi: () => `Hey there! Type 'help' for commands.`,
+
+  fortune: () => {
+    const fortunes = [
+      'A bug in the code is worth two in the documentation.',
+      'In the middle of difficulty lies opportunity. - Einstein',
+      'The best time to plant a tree was 20 years ago. The second best time is now.',
+      'It works on my machine!',
+      'Have you tried turning it off and on again?',
+      'There are only 10 types of people: those who understand binary and those who don\'t.',
+      'A good programmer looks both ways before crossing a one-way street.',
+      'Code never lies, comments sometimes do.',
+    ];
+    return fortunes[Math.floor(Math.random() * fortunes.length)];
+  },
+
+  cowsay: (args: string[]) => {
+    const message = args.join(' ') || 'Moo!';
+    const border = '-'.repeat(message.length + 2);
+    return `
+ ${border}
+< ${message} >
+ ${border}
+        \\   ^__^
+         \\  (oo)\\_______
+            (__)\\       )\\/\\
+                ||----w |
+                ||     ||`;
+  },
+
+  sl: () => `
+      ====        ________                ___________
+  _D _|  |_______/        \\__I_I_____===__|_________|
+   |(_)---  |   H\\________/ |   |        =|___ ___|
+   /     |  |   H  |  |     |   |         ||_| |_||
+  |      |  |   H  |__--------------------| [___] |
+  | ________|___H__/__|_____/[][]~\\_______|       |
+  |/ |   |-----------I_____I [][] []  D   |=======|_
+
+You've been railroaded! (The command is 'ls', not 'sl')`,
+
+  exit: () => `logout
+Saving session...
+...copying shared history...
+...saving history...truncating history files...
+...completed.
+
+[Process completed]
+
+(This is a web terminal - you can't really exit!)`,
+
+  rm: (args: string[]) => {
+    if (args.includes('-rf') && args.includes('/')) {
+      return `Nice try! 😈
+But this is a sandboxed web terminal.
+No filesystems were harmed in the making of this portfolio.`;
+    }
+    return `rm: cannot remove '${args[0] || ''}': This is a virtual filesystem`;
+  },
 };
 
 /**
