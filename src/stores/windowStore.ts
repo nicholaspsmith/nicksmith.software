@@ -74,7 +74,7 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
       windows: [...state.windows, {
         id,
         app,
-        title: app, // Default title to app name
+        title: app.charAt(0).toUpperCase() + app.slice(1), // Capitalize app name for display
         x: 100 + (state.windows.length * 30), // Cascade positioning
         y: 100 + (state.windows.length * 30),
         width: 400,
