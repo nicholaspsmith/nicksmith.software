@@ -25,11 +25,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 8px;
-  font-weight: bold;
-  line-height: 1;
-  color: transparent;
   transition: transform var(--aqua-duration-fast) ease;
+}
+
+/* SVG icon styling - hidden by default, shown on hover */
+.icon {
+  opacity: 0;
+  transition: opacity var(--aqua-duration-fast) ease;
+  color: rgba(80, 30, 20, 0.85);
+}
+
+/* Show icons on hover (group hover - Tiger behavior) */
+.focused:hover .icon {
+  opacity: 1;
 }
 
 /* Button colors when focused - Tiger gel button style with sunken/inset look */
@@ -50,7 +58,6 @@
     0 0 1px 0 rgba(0, 0, 0, 0.9),
     inset 0 1px 0 rgba(255, 255, 255, 0.4),
     inset 0 -1px 1px rgba(0, 0, 0, 0.2);
-  border: none;
 }
 
 .focused .minimize {
@@ -70,7 +77,6 @@
     0 0 1px 0 rgba(0, 0, 0, 0.9),
     inset 0 1px 0 rgba(255, 255, 255, 0.4),
     inset 0 -1px 1px rgba(0, 0, 0, 0.2);
-  border: none;
 }
 
 .focused .zoom {
@@ -90,66 +96,18 @@
     0 0 1px 0 rgba(0, 0, 0, 0.9),
     inset 0 1px 0 rgba(255, 255, 255, 0.4),
     inset 0 -1px 1px rgba(0, 0, 0, 0.2);
-  border: none;
 }
 
-/* Unfocused state - gray buttons with same sunken effect */
+/* Unfocused state - circular outlines only (no fill) */
 .unfocused .button {
-  background:
-    radial-gradient(
-      ellipse 70% 50% at 50% 20%,
-      rgba(255, 255, 255, 0.6) 0%,
-      rgba(255, 255, 255, 0) 70%
-    ),
-    linear-gradient(
-      180deg,
-      #b8b8b8 0%,
-      #9a9a9a 40%,
-      #707070 100%
-    );
-  box-shadow:
-    0 0 1px 0 rgba(0, 0, 0, 0.7),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.1);
-  border: none;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 
-/* Show symbols on hover (group hover - Tiger behavior) */
-.focused:hover .button {
-  color: rgba(80, 30, 20, 0.85);
-}
-
-/* Symbol positioning - centered in button */
-.focused .button::after {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+/* Hide icons when unfocused */
+.unfocused .icon {
   opacity: 0;
-  transition: opacity var(--aqua-duration-fast) ease;
-  font-family: system-ui, -apple-system, sans-serif;
-  font-weight: 900;
-  line-height: 1;
-}
-
-.focused .close::after {
-  content: '✕';
-  font-size: 8px;
-}
-
-.focused .minimize::after {
-  content: '─';
-  font-size: 10px;
-  font-weight: 900;
-}
-
-.focused .zoom::after {
-  content: '+';
-  font-size: 10px;
-}
-
-.focused:hover .button::after {
-  opacity: 1;
 }
 
 /* Active/pressed state */
