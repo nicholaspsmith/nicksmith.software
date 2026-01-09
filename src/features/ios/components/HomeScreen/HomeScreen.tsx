@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { StatusBar } from '../StatusBar';
 import {
   AppIcon,
@@ -8,7 +9,14 @@ import {
   SafariIcon,
   TerminalIOSIcon,
 } from '../AppIcon';
+import { NotesApp } from '../NotesApp';
+import { PhotosApp } from '../PhotosApp';
+import { IBooksApp } from '../IBooksApp';
+import { MailApp } from '../MailApp';
 import styles from './HomeScreen.module.css';
+
+/** App IDs that have implemented views */
+type AppId = 'about' | 'projects' | 'resume' | 'contact' | 'safari' | 'terminal' | null;
 
 /**
  * App configuration for the iOS 6 home screen
@@ -34,7 +42,7 @@ const DOCK_APPS = [
 ] as const;
 
 export interface HomeScreenProps {
-  /** Handler when an app is tapped */
+  /** Handler when an app is tapped (optional, for external handling) */
   onAppTap?: (appId: string) => void;
 }
 
@@ -47,11 +55,35 @@ export interface HomeScreenProps {
  * - Page indicator dots
  * - Dock with 4 favorite apps
  * - iOS 6 linen wallpaper texture
+ *
+ * Manages app navigation state internally, rendering
+ * the appropriate app view when an icon is tapped.
  */
 export function HomeScreen({ onAppTap }: HomeScreenProps) {
+  const [activeApp, setActiveApp] = useState<AppId>(null);
+
   const handleAppTap = (appId: string) => {
+    setActiveApp(appId as AppId);
     onAppTap?.(appId);
   };
+
+  const handleBack = () => {
+    setActiveApp(null);
+  };
+
+  // Render the active app if one is selected
+  if (activeApp === 'about') {
+    return <NotesApp onBack={handleBack} />;
+  }
+  if (activeApp === 'projects') {
+    return <PhotosApp onBack={handleBack} />;
+  }
+  if (activeApp === 'resume') {
+    return <IBooksApp onBack={handleBack} />;
+  }
+  if (activeApp === 'contact') {
+    return <MailApp onBack={handleBack} />;
+  }
 
   return (
     <div className={styles.homeScreen} data-testid="ios-home-screen">

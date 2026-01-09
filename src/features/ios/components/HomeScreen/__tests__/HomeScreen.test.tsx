@@ -67,21 +67,30 @@ describe('HomeScreen', () => {
     expect(handleAppTap).toHaveBeenCalledWith('about');
   });
 
-  it('calls onAppTap with correct app id for each app', () => {
-    const handleAppTap = vi.fn();
-    render(<HomeScreen onAppTap={handleAppTap} />);
+  it('navigates to app view when app icon is clicked', () => {
+    render(<HomeScreen />);
 
-    // Click projects
+    // Click about to navigate to Notes app
+    fireEvent.click(screen.getByTestId('ios-app-about'));
+
+    // Home screen should be gone, Notes app should be visible
+    expect(screen.queryByTestId('ios-home-screen')).not.toBeInTheDocument();
+    expect(screen.getByTestId('ios-notes-app')).toBeInTheDocument();
+  });
+
+  it('returns to home screen when back is clicked', () => {
+    render(<HomeScreen />);
+
+    // Navigate to an app
     fireEvent.click(screen.getByTestId('ios-app-projects'));
-    expect(handleAppTap).toHaveBeenCalledWith('projects');
+    expect(screen.getByTestId('ios-photos-app')).toBeInTheDocument();
 
-    // Click resume (grid icon)
-    fireEvent.click(screen.getByTestId('ios-app-resume'));
-    expect(handleAppTap).toHaveBeenCalledWith('resume');
+    // Click back button
+    const backButton = screen.getByRole('button', { name: /back|home/i });
+    fireEvent.click(backButton);
 
-    // Click contact (grid icon)
-    fireEvent.click(screen.getByTestId('ios-app-contact'));
-    expect(handleAppTap).toHaveBeenCalledWith('contact');
+    // Should be back on home screen
+    expect(screen.getByTestId('ios-home-screen')).toBeInTheDocument();
   });
 
   it('calls onAppTap from dock icons too', () => {

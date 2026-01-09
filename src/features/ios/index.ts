@@ -10,4 +10,9 @@ export {
   SafariIcon,
   TerminalIOSIcon,
 } from './components/AppIcon';
+export { NavigationBar } from './components/NavigationBar';
+export { NotesApp } from './components/NotesApp';
+export { PhotosApp } from './components/PhotosApp';
+export { IBooksApp } from './components/IBooksApp';
+export { MailApp } from './components/MailApp';
 export { IOS_SACRED, IOS_BREAKPOINT } from './constants/sacred';
