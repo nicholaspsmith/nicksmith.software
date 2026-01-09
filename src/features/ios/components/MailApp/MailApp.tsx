@@ -1,4 +1,5 @@
 import { NavigationBar } from '../NavigationBar';
+import { CONTACT, MAILTO } from '@/constants';
 import styles from './MailApp.module.css';
 
 export interface MailAppProps {
@@ -22,7 +23,7 @@ export function MailApp({ onBack }: MailAppProps) {
         backLabel="Home"
         onBack={onBack}
         rightLabel="Send"
-        onRightAction={() => window.location.href = 'mailto:nick@example.com'}
+        onRightAction={() => window.location.href = MAILTO}
       />
 
       <div className={styles.composeView}>
@@ -31,10 +32,10 @@ export function MailApp({ onBack }: MailAppProps) {
           <label className={styles.fieldLabel}>To:</label>
           <span className={styles.fieldValue}>
             <a
-              href="mailto:nick@example.com"
+              href={MAILTO}
               className={styles.link}
             >
-              nick@example.com
+              {CONTACT.email}
             </a>
           </span>
         </div>
@@ -44,12 +45,12 @@ export function MailApp({ onBack }: MailAppProps) {
           <label className={styles.fieldLabel}>Cc:</label>
           <span className={styles.fieldValue}>
             <a
-              href="https://linkedin.com/in/nicksmith"
+              href={CONTACT.linkedin}
               target="_blank"
               rel="noopener noreferrer"
               className={styles.link}
             >
-              linkedin.com/in/nicksmith
+              {CONTACT.linkedin.replace('https://', '')}
             </a>
           </span>
         </div>
@@ -59,12 +60,12 @@ export function MailApp({ onBack }: MailAppProps) {
           <label className={styles.fieldLabel}>Bcc:</label>
           <span className={styles.fieldValue}>
             <a
-              href="https://github.com/nicksmith"
+              href={CONTACT.github}
               target="_blank"
               rel="noopener noreferrer"
               className={styles.link}
             >
-              github.com/nicksmith
+              {CONTACT.github.replace('https://', '')}
             </a>
           </span>
         </div>
@@ -94,14 +95,14 @@ export function MailApp({ onBack }: MailAppProps) {
             <h3 className={styles.contactTitle}>Quick Links</h3>
 
             <a
-              href="mailto:nick@example.com"
+              href={MAILTO}
               className={styles.contactButton}
             >
               📧 Send Email
             </a>
 
             <a
-              href="https://linkedin.com/in/nicksmith"
+              href={CONTACT.linkedin}
               target="_blank"
               rel="noopener noreferrer"
               className={styles.contactButton}
@@ -110,7 +111,7 @@ export function MailApp({ onBack }: MailAppProps) {
             </a>
 
             <a
-              href="https://github.com/nicksmith"
+              href={CONTACT.github}
               target="_blank"
               rel="noopener noreferrer"
               className={styles.contactButton}
@@ -118,19 +119,20 @@ export function MailApp({ onBack }: MailAppProps) {
               🐙 GitHub Profile
             </a>
 
-            <a
-              href="/resume.pdf"
-              download
+            <button
+              type="button"
+              onClick={onBack}
               className={styles.contactButton}
+              aria-label="View Resume in iBooks app"
             >
-              📄 Download Resume
-            </a>
+              📄 View Resume
+            </button>
           </div>
 
           <p className={styles.signature}>
             Best regards,
             <br />
-            <strong>Nick Smith</strong>
+            <strong>{CONTACT.name}</strong>
           </p>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { StatusBar } from '../StatusBar';
 import {
   AppIcon,
@@ -14,33 +14,51 @@ import { PhotosApp } from '../PhotosApp';
 import { IBooksApp } from '../IBooksApp';
 import { MailApp } from '../MailApp';
 import { useSwipe } from '@/hooks';
+import { CONTACT, MAILTO } from '@/constants';
 import styles from './HomeScreen.module.css';
 
 /** App IDs that have implemented views */
 type AppId = 'about' | 'projects' | 'resume' | 'contact' | 'safari' | 'terminal' | null;
 
+/** Icon components mapped by app id */
+const APP_ICONS: Record<string, () => React.ReactElement> = {
+  about: NotesIcon,
+  projects: PhotosIcon,
+  resume: IBooksIcon,
+  contact: MailIcon,
+  safari: SafariIcon,
+  terminal: TerminalIOSIcon,
+};
+
 /**
  * App configuration for the iOS 6 home screen
  * Maps portfolio apps to iOS-style app representations
+ * Note: Icons are render functions to avoid creating elements on every render
  */
 const HOME_SCREEN_APPS = [
-  { id: 'about', label: 'About', icon: <NotesIcon /> },
-  { id: 'projects', label: 'Projects', icon: <PhotosIcon /> },
-  { id: 'resume', label: 'Resume', icon: <IBooksIcon /> },
-  { id: 'contact', label: 'Contact', icon: <MailIcon /> },
-  { id: 'safari', label: 'Safari', icon: <SafariIcon /> },
-  { id: 'terminal', label: 'Terminal', icon: <TerminalIOSIcon /> },
+  { id: 'about', label: 'About' },
+  { id: 'projects', label: 'Projects' },
+  { id: 'resume', label: 'Resume' },
+  { id: 'contact', label: 'Contact' },
+  { id: 'safari', label: 'Safari' },
+  { id: 'terminal', label: 'Terminal' },
 ] as const;
 
 /**
  * Dock apps (bottom bar)
  */
 const DOCK_APPS = [
-  { id: 'about', label: 'About', icon: <NotesIcon /> },
-  { id: 'resume', label: 'Resume', icon: <IBooksIcon /> },
-  { id: 'contact', label: 'Contact', icon: <MailIcon /> },
-  { id: 'safari', label: 'Safari', icon: <SafariIcon /> },
+  { id: 'about', label: 'About' },
+  { id: 'resume', label: 'Resume' },
+  { id: 'contact', label: 'Contact' },
+  { id: 'safari', label: 'Safari' },
 ] as const;
+
+/** Renders the icon for an app */
+function renderIcon(appId: string): React.ReactElement {
+  const IconComponent = APP_ICONS[appId];
+  return IconComponent ? <IconComponent /> : <div />;
+}
 
 export interface HomeScreenProps {
   /** Handler when an app is tapped (optional, for external handling) */
@@ -100,6 +118,7 @@ export function HomeScreen({ onAppTap }: HomeScreenProps) {
       Array.from({ length: TOTAL_PAGES }, (_, i) => (
         <button
           key={i}
+          type="button"
           className={`${styles.pageDot} ${i === currentPage ? styles.active : ''}`}
           onClick={() => setCurrentPage(i)}
           aria-label={`Go to page ${i + 1}`}
@@ -108,6 +127,19 @@ export function HomeScreen({ onAppTap }: HomeScreenProps) {
       )),
     [currentPage]
   );
+
+  // Handle Safari/Terminal special cases (no dedicated iOS views)
+  useEffect(() => {
+    if (activeApp === 'safari') {
+      // Safari opens external link to portfolio
+      window.open(CONTACT.website, '_blank', 'noopener,noreferrer');
+      setActiveApp(null);
+    } else if (activeApp === 'terminal') {
+      // Terminal requires desktop - just return to home
+      // In a full implementation, could show an alert
+      setActiveApp(null);
+    }
+  }, [activeApp]);
 
   // Render the active app if one is selected
   if (activeApp === 'about') {
@@ -147,7 +179,7 @@ export function HomeScreen({ onAppTap }: HomeScreenProps) {
                     key={app.id}
                     id={app.id}
                     label={app.label}
-                    icon={app.icon}
+                    icon={renderIcon(app.id)}
                     onClick={() => handleAppTap(app.id)}
                   />
                 ))}
@@ -155,17 +187,39 @@ export function HomeScreen({ onAppTap }: HomeScreenProps) {
             </div>
           </div>
 
-          {/* Page 2: Additional Info */}
+          {/* Page 2: Quick Links */}
           <div className={styles.page}>
             <div className={styles.content}>
               <div className={styles.infoPage} data-testid="info-page">
-                <h2 className={styles.infoTitle}>Welcome</h2>
+                <h2 className={styles.infoTitle}>Quick Links</h2>
                 <p className={styles.infoText}>
-                  Swipe left and right to navigate between pages.
+                  {CONTACT.title} passionate about crafting delightful
+                  user experiences with React & TypeScript.
                 </p>
-                <p className={styles.infoText}>
-                  Tap any app icon to explore my portfolio.
-                </p>
+                <div className={styles.quickLinks}>
+                  <a
+                    href={CONTACT.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.quickLink}
+                  >
+                    GitHub
+                  </a>
+                  <a
+                    href={CONTACT.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.quickLink}
+                  >
+                    LinkedIn
+                  </a>
+                  <a
+                    href={MAILTO}
+                    className={styles.quickLink}
+                  >
+                    Email
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -189,7 +243,7 @@ export function HomeScreen({ onAppTap }: HomeScreenProps) {
               key={`dock-${app.id}`}
               id={`dock-${app.id}`}
               label={app.label}
-              icon={app.icon}
+              icon={renderIcon(app.id)}
               onClick={() => handleAppTap(app.id)}
               isDockIcon
             />

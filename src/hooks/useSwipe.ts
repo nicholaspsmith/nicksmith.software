@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 
 export interface SwipeCallbacks {
   /** Called when user swipes left */
@@ -46,6 +46,12 @@ export function useSwipe(
   // Store touch start position
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
+  // Use ref for callbacks to avoid stale closure issues
+  const callbacksRef = useRef(callbacks);
+  useEffect(() => {
+    callbacksRef.current = callbacks;
+  }, [callbacks]);
+
   const onTouchStart = useCallback(
     (e: React.TouchEvent) => {
       if (e.touches.length !== 1) return; // Single touch only
@@ -76,24 +82,27 @@ export function useSwipe(
       const absX = Math.abs(deltaX);
       const absY = Math.abs(deltaY);
 
+      // Use ref to get latest callbacks (avoids stale closure)
+      const cb = callbacksRef.current;
+
       // Must exceed threshold and be predominantly in one direction
       if (absX > absY && absX >= threshold) {
         // Horizontal swipe
         if (deltaX > 0) {
-          callbacks.onSwipeRight?.();
+          cb.onSwipeRight?.();
         } else {
-          callbacks.onSwipeLeft?.();
+          cb.onSwipeLeft?.();
         }
       } else if (absY > absX && absY >= threshold) {
         // Vertical swipe
         if (deltaY > 0) {
-          callbacks.onSwipeDown?.();
+          cb.onSwipeDown?.();
         } else {
-          callbacks.onSwipeUp?.();
+          cb.onSwipeUp?.();
         }
       }
     },
-    [callbacks, threshold]
+    [threshold]
   );
 
   return { onTouchStart, onTouchEnd };

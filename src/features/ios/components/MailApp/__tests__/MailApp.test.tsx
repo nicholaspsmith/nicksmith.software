@@ -57,7 +57,7 @@ describe('MailApp', () => {
     expect(screen.getByText(/Send Email/)).toBeInTheDocument();
     expect(screen.getByText(/LinkedIn Profile/)).toBeInTheDocument();
     expect(screen.getByText(/GitHub Profile/)).toBeInTheDocument();
-    expect(screen.getByText(/Download Resume/)).toBeInTheDocument();
+    expect(screen.getByText(/View Resume/)).toBeInTheDocument();
   });
 
   it('renders email link with correct href', () => {
