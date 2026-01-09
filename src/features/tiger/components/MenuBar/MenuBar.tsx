@@ -1,33 +1,56 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useWindowStore } from '@/stores/windowStore';
 import styles from './MenuBar.module.css';
 
-// Menu item definitions with their dropdown content
-const MENU_ITEMS = [
+type MenuItem = { label: string; shortcut?: string; disabled?: boolean; hasSubmenu?: boolean; checked?: boolean } | { type: 'divider' };
+type MenuConfig = { id: string; label: string; items: MenuItem[] };
+
+/**
+ * Finder menu configuration - matches Tiger Finder exactly
+ */
+const FINDER_MENUS: MenuConfig[] = [
   {
     id: 'file',
     label: 'File',
     items: [
-      { label: 'New', shortcut: '⌘N' },
-      { label: 'Open...', shortcut: '⌘O' },
-      { type: 'divider' as const },
-      { label: 'Close', shortcut: '⌘W' },
-      { label: 'Save', shortcut: '⌘S', disabled: true },
-      { type: 'divider' as const },
-      { label: 'Print...', shortcut: '⌘P' },
+      { label: 'New Finder Window', shortcut: '⌘N' },
+      { label: 'New Folder', shortcut: '⇧⌘N' },
+      { label: 'New Smart Folder', shortcut: '⌥⌘N' },
+      { label: 'New Burn Folder' },
+      { type: 'divider' },
+      { label: 'Open', shortcut: '⌘O', disabled: true },
+      { label: 'Open With', hasSubmenu: true, disabled: true },
+      { label: 'Print', disabled: true },
+      { label: 'Close Window', shortcut: '⌘W' },
+      { type: 'divider' },
+      { label: 'Get Info', shortcut: '⌘I', disabled: true },
+      { type: 'divider' },
+      { label: 'Duplicate', shortcut: '⌘D', disabled: true },
+      { label: 'Make Alias', shortcut: '⌘L', disabled: true },
+      { label: 'Show Original', shortcut: '⌘R', disabled: true },
+      { label: 'Add to Favorites', shortcut: '⇧⌘T', disabled: true },
+      { label: 'Create Archive', disabled: true },
+      { type: 'divider' },
+      { label: 'Move to Trash', shortcut: '⌘⌫', disabled: true },
+      { label: 'Eject', shortcut: '⌘E', disabled: true },
+      { label: 'Burn Disc...', disabled: true },
+      { type: 'divider' },
+      { label: 'Find...', shortcut: '⌘F' },
     ],
   },
   {
     id: 'edit',
     label: 'Edit',
     items: [
-      { label: 'Undo', shortcut: '⌘Z', disabled: true },
-      { label: 'Redo', shortcut: '⇧⌘Z', disabled: true },
-      { type: 'divider' as const },
-      { label: 'Cut', shortcut: '⌘X' },
-      { label: 'Copy', shortcut: '⌘C' },
-      { label: 'Paste', shortcut: '⌘V' },
+      { label: "Can't Undo", shortcut: '⌘Z', disabled: true },
+      { type: 'divider' },
+      { label: 'Cut', shortcut: '⌘X', disabled: true },
+      { label: 'Copy', shortcut: '⌘C', disabled: true },
+      { label: 'Paste', shortcut: '⌘V', disabled: true },
       { label: 'Select All', shortcut: '⌘A' },
+      { type: 'divider' },
+      { label: 'Show Clipboard' },
+      { label: 'Special Characters...' },
     ],
   },
   {
@@ -37,9 +60,15 @@ const MENU_ITEMS = [
       { label: 'as Icons', shortcut: '⌘1' },
       { label: 'as List', shortcut: '⌘2' },
       { label: 'as Columns', shortcut: '⌘3' },
-      { type: 'divider' as const },
-      { label: 'Show Toolbar', shortcut: '⌥⌘T' },
+      { type: 'divider' },
+      { label: 'Clean Up' },
+      { label: 'Arrange By', hasSubmenu: true },
+      { type: 'divider' },
+      { label: 'Hide Toolbar', shortcut: '⌥⌘T' },
+      { label: 'Customize Toolbar...' },
       { label: 'Hide Status Bar' },
+      { type: 'divider' },
+      { label: 'Show View Options', shortcut: '⌘J' },
     ],
   },
   {
@@ -48,12 +77,19 @@ const MENU_ITEMS = [
     items: [
       { label: 'Back', shortcut: '⌘[', disabled: true },
       { label: 'Forward', shortcut: '⌘]', disabled: true },
-      { type: 'divider' as const },
+      { label: 'Enclosing Folder', shortcut: '⌘↑' },
+      { type: 'divider' },
       { label: 'Computer', shortcut: '⇧⌘C' },
       { label: 'Home', shortcut: '⇧⌘H' },
+      { label: 'Network', shortcut: '⇧⌘K' },
+      { label: 'iDisk', hasSubmenu: true },
       { label: 'Applications', shortcut: '⇧⌘A' },
-      { type: 'divider' as const },
+      { label: 'Utilities', shortcut: '⇧⌘U' },
+      { type: 'divider' },
+      { label: 'Recent Folders', hasSubmenu: true },
+      { type: 'divider' },
       { label: 'Go to Folder...', shortcut: '⇧⌘G' },
+      { label: 'Connect to Server...', shortcut: '⌘K' },
     ],
   },
   {
@@ -62,7 +98,8 @@ const MENU_ITEMS = [
     items: [
       { label: 'Minimize', shortcut: '⌘M' },
       { label: 'Zoom' },
-      { type: 'divider' as const },
+      { label: 'Cycle Through Windows', shortcut: '⌘`' },
+      { type: 'divider' },
       { label: 'Bring All to Front' },
     ],
   },
@@ -71,13 +108,89 @@ const MENU_ITEMS = [
     label: 'Help',
     items: [
       { label: 'Mac Help', shortcut: '⌘?' },
-      { type: 'divider' as const },
-      { label: 'Search' },
     ],
   },
 ];
 
-type MenuItem = { label: string; shortcut?: string; disabled?: boolean } | { type: 'divider' };
+/**
+ * TextEdit menu configuration - matches Tiger TextEdit exactly
+ */
+const TEXTEDIT_MENUS: MenuConfig[] = [
+  {
+    id: 'file',
+    label: 'File',
+    items: [
+      { label: 'New', shortcut: '⌘N' },
+      { label: 'Open...', shortcut: '⌘O' },
+      { label: 'Open Recent', hasSubmenu: true },
+      { type: 'divider' },
+      { label: 'Close', shortcut: '⌘W' },
+      { label: 'Save', shortcut: '⌘S', disabled: true },
+      { label: 'Save As...', shortcut: '⇧⌘S', disabled: true },
+      { label: 'Save All', disabled: true },
+      { label: 'Revert to Saved', disabled: true },
+      { type: 'divider' },
+      { label: 'Show Properties', shortcut: '⌥⌘P' },
+      { type: 'divider' },
+      { label: 'Page Setup...', shortcut: '⇧⌘P' },
+      { label: 'Print...', shortcut: '⌘P' },
+    ],
+  },
+  {
+    id: 'edit',
+    label: 'Edit',
+    items: [
+      { label: 'Undo', shortcut: '⌘Z', disabled: true },
+      { label: 'Redo', shortcut: '⇧⌘Z', disabled: true },
+      { type: 'divider' },
+      { label: 'Cut', shortcut: '⌘X' },
+      { label: 'Copy', shortcut: '⌘C' },
+      { label: 'Paste', shortcut: '⌘V' },
+      { label: 'Paste and Match Style', shortcut: '⌥⇧⌘V' },
+      { label: 'Delete' },
+      { label: 'Complete', shortcut: '⌥⎋' },
+      { label: 'Select All', shortcut: '⌘A' },
+      { type: 'divider' },
+      { label: 'Insert', hasSubmenu: true },
+      { type: 'divider' },
+      { label: 'Find', hasSubmenu: true },
+      { label: 'Spelling', hasSubmenu: true },
+      { label: 'Speech', hasSubmenu: true },
+      { type: 'divider' },
+      { label: 'Special Characters...', shortcut: '⌥⌘T' },
+    ],
+  },
+  {
+    id: 'format',
+    label: 'Format',
+    items: [
+      { label: 'Font', hasSubmenu: true },
+      { label: 'Text', hasSubmenu: true },
+      { type: 'divider' },
+      { label: 'Make Plain Text', shortcut: '⇧⌘T' },
+      { label: 'Prevent Editing' },
+      { label: 'Wrap to Page', shortcut: '⇧⌘W' },
+      { label: 'Allow Hyphenation' },
+    ],
+  },
+  {
+    id: 'window',
+    label: 'Window',
+    items: [
+      { label: 'Minimize', shortcut: '⌘M' },
+      { label: 'Zoom' },
+      { type: 'divider' },
+      { label: 'Bring All to Front' },
+    ],
+  },
+  {
+    id: 'help',
+    label: 'Help',
+    items: [
+      { label: 'TextEdit Help', shortcut: '⌘?' },
+    ],
+  },
+];
 
 /**
  * MenuBar component - Tiger-era menu bar at top of screen
@@ -85,11 +198,9 @@ type MenuItem = { label: string; shortcut?: string; disabled?: boolean } | { typ
  * Displays Apple logo, current app name, and clock.
  * Fixed at top with authentic Tiger styling.
  *
- * The app name updates to show the focused window's app,
- * or "Finder" when no windows are focused.
- *
- * All menu items now open dropdown menus with tracking behavior
- * (hovering switches menus when one is already open).
+ * The app name and menus update based on the focused window's app:
+ * - Finder: File, Edit, View, Go, Window, Help
+ * - TextEdit: File, Edit, Format, Window, Help
  */
 export function MenuBar() {
   const activeWindowId = useWindowStore((s) => s.activeWindowId);
@@ -104,18 +215,24 @@ export function MenuBar() {
 
   // Derive app name from focused window, default to "Finder"
   const activeWindow = windows.find((w) => w.id === activeWindowId);
-  // Show parent app name (e.g., TextEdit), not document title (e.g., Resume)
-  // Capitalize: textEdit → TextEdit, terminal → Terminal
   const parentApp = activeWindow?.parentApp;
   const appName = parentApp
     ? parentApp.charAt(0).toUpperCase() + parentApp.slice(1)
     : 'Finder';
 
+  // Select menus based on active app
+  const menus = useMemo(() => {
+    if (parentApp === 'textEdit') {
+      return TEXTEDIT_MENUS;
+    }
+    // Default to Finder menus (for Finder, Terminal, or no active window)
+    return FINDER_MENUS;
+  }, [parentApp]);
+
   useEffect(() => {
     const timer = setInterval(() => {
       setTime(new Date());
-    }, 60000); // Update every minute
-
+    }, 60000);
     return () => clearInterval(timer);
   }, []);
 
@@ -159,9 +276,10 @@ export function MenuBar() {
 
   const handleMenuClick = useCallback((menuId: string) => {
     setOpenMenuId((prev) => (prev === menuId ? null : menuId));
+    setSpotlightOpen(false);
+    setClockDropdownOpen(false);
   }, []);
 
-  // Menu tracking: when a menu is open, hovering another opens it
   const handleMenuHover = useCallback((menuId: string) => {
     if (openMenuId !== null && openMenuId !== menuId) {
       setOpenMenuId(menuId);
@@ -170,14 +288,11 @@ export function MenuBar() {
 
   const handleMenuItemClick = useCallback((label: string) => {
     setOpenMenuId(null);
-
-    // Handle specific menu actions
     if (label === 'About This Mac') {
       alert('Mac OS X Tiger 10.4.11\n\nThis is a portfolio website by Nick Smith');
     } else if (label === 'Restart...') {
       window.location.reload();
     }
-    // Other menu items are decorative for now
   }, []);
 
   const handleSpotlightClick = useCallback(() => {
@@ -210,20 +325,24 @@ export function MenuBar() {
         return <div key={index} className={styles.dropdownDivider} role="separator" />;
       }
 
-      const menuItem = item as { label: string; shortcut?: string; disabled?: boolean };
+      const menuItem = item as { label: string; shortcut?: string; disabled?: boolean; hasSubmenu?: boolean; checked?: boolean };
       return (
         <button
           key={menuItem.label}
           type="button"
-          className={`${styles.dropdownItem} ${menuItem.disabled ? styles.dropdownItemDisabled : ''}`}
-          onClick={() => !menuItem.disabled && handleMenuItemClick(menuItem.label)}
+          className={`${styles.dropdownItem} ${menuItem.disabled ? styles.dropdownItemDisabled : ''} ${menuItem.hasSubmenu ? styles.hasSubmenu : ''}`}
+          onClick={() => !menuItem.disabled && !menuItem.hasSubmenu && handleMenuItemClick(menuItem.label)}
           role="menuitem"
           aria-disabled={menuItem.disabled}
           data-testid={`menu-item-${menuItem.label.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
         >
+          {menuItem.checked && <span className={styles.checkmark}>✓</span>}
           <span className={styles.dropdownItemLabel}>{menuItem.label}</span>
-          {menuItem.shortcut && (
+          {menuItem.shortcut && !menuItem.hasSubmenu && (
             <span className={styles.dropdownItemShortcut}>{menuItem.shortcut}</span>
+          )}
+          {menuItem.hasSubmenu && (
+            <span className={styles.dropdownItemShortcut}>▶</span>
           )}
         </button>
       );
@@ -245,7 +364,6 @@ export function MenuBar() {
             aria-haspopup="menu"
             data-testid="apple-menu-button"
           >
-            {/* Tiger-era blue Apple logo - 20x20 to almost fill menu bar height */}
             <svg
               viewBox="0 0 24 24"
               width="20"
@@ -269,113 +387,51 @@ export function MenuBar() {
 
           {/* Apple Menu Dropdown */}
           {openMenuId === 'apple' && (
-            <div
-              className={styles.dropdown}
-              role="menu"
-              data-testid="apple-menu-dropdown"
-            >
+            <div className={styles.dropdown} role="menu" data-testid="apple-menu-dropdown">
               <button
                 type="button"
                 className={styles.dropdownItem}
                 onClick={() => handleMenuItemClick('About This Mac')}
                 role="menuitem"
-                data-testid="menu-item-about-this-mac"
               >
                 <span className={styles.dropdownItemLabel}>About This Mac</span>
               </button>
               <div className={styles.dropdownDivider} role="separator" />
-              <button
-                type="button"
-                className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`}
-                role="menuitem"
-                aria-disabled="true"
-                data-testid="menu-item-software-update"
-              >
+              <button type="button" className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`} role="menuitem" aria-disabled="true">
                 <span className={styles.dropdownItemLabel}>Software Update...</span>
               </button>
               <div className={styles.dropdownDivider} role="separator" />
-              <button
-                type="button"
-                className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`}
-                role="menuitem"
-                aria-disabled="true"
-                data-testid="menu-item-system-preferences"
-              >
+              <button type="button" className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`} role="menuitem" aria-disabled="true">
                 <span className={styles.dropdownItemLabel}>System Preferences...</span>
               </button>
-              <button
-                type="button"
-                className={`${styles.dropdownItem} ${styles.hasSubmenu}`}
-                role="menuitem"
-                data-testid="menu-item-dock"
-              >
+              <button type="button" className={`${styles.dropdownItem} ${styles.hasSubmenu}`} role="menuitem">
                 <span className={styles.dropdownItemLabel}>Dock</span>
                 <span className={styles.dropdownItemShortcut}>▶</span>
               </button>
-              <button
-                type="button"
-                className={`${styles.dropdownItem} ${styles.hasSubmenu}`}
-                role="menuitem"
-                data-testid="menu-item-location"
-              >
+              <button type="button" className={`${styles.dropdownItem} ${styles.hasSubmenu}`} role="menuitem">
                 <span className={styles.dropdownItemLabel}>Location</span>
                 <span className={styles.dropdownItemShortcut}>▶</span>
               </button>
-              <button
-                type="button"
-                className={`${styles.dropdownItem} ${styles.hasSubmenu}`}
-                role="menuitem"
-                data-testid="menu-item-recent-items"
-              >
+              <button type="button" className={`${styles.dropdownItem} ${styles.hasSubmenu}`} role="menuitem">
                 <span className={styles.dropdownItemLabel}>Recent Items</span>
                 <span className={styles.dropdownItemShortcut}>▶</span>
               </button>
               <div className={styles.dropdownDivider} role="separator" />
-              <button
-                type="button"
-                className={styles.dropdownItem}
-                onClick={() => handleMenuItemClick('Force Quit')}
-                role="menuitem"
-                data-testid="menu-item-force-quit"
-              >
+              <button type="button" className={styles.dropdownItem} onClick={() => handleMenuItemClick('Force Quit')} role="menuitem">
                 <span className={styles.dropdownItemLabel}>Force Quit {appName}</span>
               </button>
               <div className={styles.dropdownDivider} role="separator" />
-              <button
-                type="button"
-                className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`}
-                role="menuitem"
-                aria-disabled="true"
-                data-testid="menu-item-sleep"
-              >
+              <button type="button" className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`} role="menuitem" aria-disabled="true">
                 <span className={styles.dropdownItemLabel}>Sleep</span>
               </button>
-              <button
-                type="button"
-                className={styles.dropdownItem}
-                onClick={() => handleMenuItemClick('Restart...')}
-                role="menuitem"
-                data-testid="menu-item-restart"
-              >
+              <button type="button" className={styles.dropdownItem} onClick={() => handleMenuItemClick('Restart...')} role="menuitem">
                 <span className={styles.dropdownItemLabel}>Restart...</span>
               </button>
-              <button
-                type="button"
-                className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`}
-                role="menuitem"
-                aria-disabled="true"
-                data-testid="menu-item-shut-down"
-              >
+              <button type="button" className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`} role="menuitem" aria-disabled="true">
                 <span className={styles.dropdownItemLabel}>Shut Down...</span>
               </button>
               <div className={styles.dropdownDivider} role="separator" />
-              <button
-                type="button"
-                className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`}
-                role="menuitem"
-                aria-disabled="true"
-                data-testid="menu-item-log-out"
-              >
+              <button type="button" className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`} role="menuitem" aria-disabled="true">
                 <span className={styles.dropdownItemLabel}>Log Out Nick Smith...</span>
                 <span className={styles.dropdownItemShortcut}>⇧⌘Q</span>
               </button>
@@ -398,80 +454,34 @@ export function MenuBar() {
           </button>
 
           {openMenuId === 'app' && (
-            <div
-              className={styles.dropdown}
-              role="menu"
-              data-testid="app-menu-dropdown"
-            >
-              <button
-                type="button"
-                className={styles.dropdownItem}
-                onClick={() => handleMenuItemClick(`About ${appName}`)}
-                role="menuitem"
-                data-testid="menu-item-about-app"
-              >
+            <div className={styles.dropdown} role="menu" data-testid="app-menu-dropdown">
+              <button type="button" className={styles.dropdownItem} onClick={() => handleMenuItemClick(`About ${appName}`)} role="menuitem">
                 <span className={styles.dropdownItemLabel}>About {appName}</span>
               </button>
               <div className={styles.dropdownDivider} role="separator" />
-              <button
-                type="button"
-                className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`}
-                role="menuitem"
-                aria-disabled="true"
-                data-testid="menu-item-preferences"
-              >
+              <button type="button" className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`} role="menuitem" aria-disabled="true">
                 <span className={styles.dropdownItemLabel}>Preferences...</span>
                 <span className={styles.dropdownItemShortcut}>⌘,</span>
               </button>
               <div className={styles.dropdownDivider} role="separator" />
-              <button
-                type="button"
-                className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`}
-                role="menuitem"
-                aria-disabled="true"
-                data-testid="menu-item-services"
-              >
+              <button type="button" className={`${styles.dropdownItem} ${styles.hasSubmenu}`} role="menuitem">
                 <span className={styles.dropdownItemLabel}>Services</span>
                 <span className={styles.dropdownItemShortcut}>▶</span>
               </button>
               <div className={styles.dropdownDivider} role="separator" />
-              <button
-                type="button"
-                className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`}
-                role="menuitem"
-                aria-disabled="true"
-                data-testid="menu-item-hide"
-              >
+              <button type="button" className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`} role="menuitem" aria-disabled="true">
                 <span className={styles.dropdownItemLabel}>Hide {appName}</span>
                 <span className={styles.dropdownItemShortcut}>⌘H</span>
               </button>
-              <button
-                type="button"
-                className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`}
-                role="menuitem"
-                aria-disabled="true"
-                data-testid="menu-item-hide-others"
-              >
+              <button type="button" className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`} role="menuitem" aria-disabled="true">
                 <span className={styles.dropdownItemLabel}>Hide Others</span>
                 <span className={styles.dropdownItemShortcut}>⌥⌘H</span>
               </button>
-              <button
-                type="button"
-                className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`}
-                role="menuitem"
-                aria-disabled="true"
-                data-testid="menu-item-show-all"
-              >
+              <button type="button" className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`} role="menuitem" aria-disabled="true">
                 <span className={styles.dropdownItemLabel}>Show All</span>
               </button>
               <div className={styles.dropdownDivider} role="separator" />
-              <button
-                type="button"
-                className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`}
-                role="menuitem"
-                aria-disabled="true"
-                data-testid="menu-item-quit"
-              >
+              <button type="button" className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`} role="menuitem" aria-disabled="true">
                 <span className={styles.dropdownItemLabel}>Quit {appName}</span>
                 <span className={styles.dropdownItemShortcut}>⌘Q</span>
               </button>
@@ -479,9 +489,9 @@ export function MenuBar() {
           )}
         </div>
 
-        {/* Menu Items */}
+        {/* Application Menus - context-aware based on active app */}
         <nav className={styles.menuItems} aria-label="Application menu">
-          {MENU_ITEMS.map((menu) => (
+          {menus.map((menu) => (
             <div key={menu.id} className={styles.menuContainer}>
               <button
                 type="button"
@@ -496,11 +506,7 @@ export function MenuBar() {
               </button>
 
               {openMenuId === menu.id && (
-                <div
-                  className={styles.dropdown}
-                  role="menu"
-                  data-testid={`${menu.id}-menu-dropdown`}
-                >
+                <div className={styles.dropdown} role="menu" data-testid={`${menu.id}-menu-dropdown`}>
                   {renderDropdownItems(menu.items)}
                 </div>
               )}
@@ -512,15 +518,7 @@ export function MenuBar() {
       <div className={styles.right}>
         {/* Status Icons */}
         <div className={styles.statusIcons}>
-          {/* Volume Icon */}
-          <svg
-            viewBox="0 0 24 24"
-            width="16"
-            height="16"
-            fill="currentColor"
-            className={styles.statusIcon}
-            aria-label="Volume"
-          >
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" className={styles.statusIcon} aria-label="Volume">
             <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
           </svg>
         </div>
@@ -539,29 +537,30 @@ export function MenuBar() {
           {clockDropdownOpen && (
             <div className={`${styles.dropdown} ${styles.clockDropdown}`} data-testid="clock-dropdown">
               <div className={styles.clockDateDisplay}>
-                <div className={styles.clockFullDate}>
-                  {time.toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                </div>
+                {time.toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
               </div>
               <div className={styles.dropdownDivider} role="separator" />
-              <button
-                type="button"
-                className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`}
-                role="menuitem"
-                aria-disabled="true"
-              >
-                <span className={styles.dropdownItemLabel}>Open Date & Time Preferences...</span>
+              <button type="button" className={styles.dropdownItem} role="menuitem">
+                <span className={styles.dropdownItemLabel}>View as Analog</span>
+              </button>
+              <button type="button" className={styles.dropdownItem} role="menuitem">
+                <span className={styles.checkmark}>✓</span>
+                <span className={styles.dropdownItemLabel}>View as Digital</span>
+              </button>
+              <div className={styles.dropdownDivider} role="separator" />
+              <button type="button" className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`} role="menuitem" aria-disabled="true">
+                <span className={styles.dropdownItemLabel}>Open Date & Time...</span>
               </button>
             </div>
           )}
         </div>
 
-        {/* Spotlight Icon with Dropdown */}
+        {/* Spotlight - Tiger style horizontal bar */}
         <div className={styles.menuContainer}>
           <button
             type="button"
@@ -571,13 +570,7 @@ export function MenuBar() {
             aria-expanded={spotlightOpen}
             data-testid="spotlight-button"
           >
-            <svg
-              viewBox="0 0 20 20"
-              width="20"
-              height="20"
-              className={styles.spotlightIcon}
-              aria-hidden="true"
-            >
+            <svg viewBox="0 0 20 20" width="20" height="20" className={styles.spotlightIcon} aria-hidden="true">
               <defs>
                 <linearGradient id="spotlightBlueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="#7CB8FF" />
@@ -592,29 +585,18 @@ export function MenuBar() {
           </button>
 
           {spotlightOpen && (
-            <div className={`${styles.dropdown} ${styles.spotlightDropdown}`} data-testid="spotlight-dropdown">
-              <div className={styles.spotlightSearchBox}>
-                <svg viewBox="0 0 16 16" width="14" height="14" className={styles.spotlightSearchIcon}>
-                  <circle cx="6.5" cy="6.5" r="4" fill="none" stroke="#666" strokeWidth="1.5" />
-                  <line x1="10" y1="10" x2="14" y2="14" stroke="#666" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+            <div className={styles.spotlightDropdown} data-testid="spotlight-dropdown">
+              <div className={styles.spotlightBar}>
+                <span className={styles.spotlightLabel}>Spotlight</span>
                 <input
                   ref={spotlightInputRef}
                   type="text"
                   className={styles.spotlightInput}
-                  placeholder="Spotlight Search"
                   value={spotlightQuery}
                   onChange={(e) => setSpotlightQuery(e.target.value)}
                   aria-label="Search"
                 />
               </div>
-              {spotlightQuery && (
-                <div className={styles.spotlightResults}>
-                  <div className={styles.spotlightNoResults}>
-                    No results found for "{spotlightQuery}"
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </div>

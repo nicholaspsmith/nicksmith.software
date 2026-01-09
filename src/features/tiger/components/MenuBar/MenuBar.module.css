@@ -293,14 +293,17 @@
 }
 
 .clockDateDisplay {
-  padding: 12px 16px;
-  text-align: center;
+  padding: 8px 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 400;
+  color: #000;
 }
 
-.clockFullDate {
-  font-size: 13px;
-  font-weight: 500;
-  color: #333;
+/* Checkmark for menu items */
+.checkmark {
+  margin-right: 4px;
+  font-size: 12px;
 }
 
 /* Spotlight Button */
@@ -315,48 +318,47 @@
   cursor: var(--aqua-cursor-pointer);
 }
 
-/* Spotlight Dropdown */
+/* Spotlight Dropdown - Tiger horizontal bar style */
 .spotlightDropdown {
+  position: absolute;
+  top: calc(100% + 2px);
   right: 0;
-  left: auto;
-  min-width: 300px;
-  padding: 0;
+  z-index: var(--aqua-z-dropdown);
 }
 
-.spotlightSearchBox {
+.spotlightBar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: #fff;
-  border-bottom: 1px solid #d0d0d0;
+  height: 22px;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-.spotlightSearchIcon {
-  flex-shrink: 0;
-  opacity: 0.6;
+.spotlightLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  height: 100%;
+  background: linear-gradient(180deg, #7CB8FF 0%, #3B82F6 50%, #1E40AF 100%);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .spotlightInput {
-  flex: 1;
+  width: 180px;
+  height: 100%;
   border: none;
-  background: transparent;
+  background: #fff;
   font-family: var(--aqua-font-family);
-  font-size: 14px;
+  font-size: 12px;
+  padding: 0 8px;
   outline: none;
 }
 
 .spotlightInput::placeholder {
   color: #999;
-}
-
-.spotlightResults {
-  padding: 8px 0;
-}
-
-.spotlightNoResults {
-  padding: 16px;
-  text-align: center;
-  color: #666;
-  font-size: 12px;
 }

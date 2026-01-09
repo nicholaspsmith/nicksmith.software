@@ -254,8 +254,8 @@ describe('MenuBar', () => {
       render(<MenuBar />);
       fireEvent.click(screen.getByTestId('menu-file'));
 
-      // Check for keyboard shortcut display
-      const newItem = screen.getByTestId('menu-item-new');
+      // Check for keyboard shortcut display (Finder shows "New Finder Window")
+      const newItem = screen.getByTestId('menu-item-new-finder-window');
       expect(newItem).toHaveTextContent('⌘N');
     });
 
