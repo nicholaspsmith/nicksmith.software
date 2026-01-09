@@ -23,6 +23,7 @@ import { Projects } from '@/features/apps/Projects';
 import { Resume } from '@/features/apps/Resume';
 import { Contact } from '@/features/apps/Contact';
 import { UntitledDocument } from '@/features/apps/UntitledDocument';
+import { Finder } from '@/features/apps/Finder';
 
 // Lazy load Terminal to reduce initial bundle size (xterm.js is ~300KB)
 const TerminalApp = lazy(() =>
@@ -137,6 +138,12 @@ function WindowContent({ app }: { app: string }) {
       );
     case 'untitled':
       return <UntitledDocument />;
+    case 'finder-home':
+      return <Finder location="home" />;
+    case 'finder-hd':
+      return <Finder location="hd" />;
+    case 'finder-trash':
+      return <Finder location="trash" />;
     default:
       return null;
   }
@@ -183,6 +190,13 @@ function TigerDesktop() {
   }, [alertConfig, hideAlert]);
 
   const handleDoubleClick = (icon: IconConfig) => {
+    // Special case: Macintosh HD opens Finder with HD view
+    if (icon.id === 'macintosh-hd') {
+      openWindow('finder-hd');
+      useAppStore.getState().clearSelection();
+      return;
+    }
+
     if (icon.opensWindow) {
       openWindow(icon.id);
       // Clear selection after opening window (Tiger behavior)

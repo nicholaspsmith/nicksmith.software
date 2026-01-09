@@ -138,11 +138,11 @@ development_status:
   11-5-style-spotlight-button: done
 
   # Epic 12: Finder & Navigation (Tier 4)
-  epic-12: backlog
-  12-1-create-finder-window-component: backlog
-  12-2-implement-trash-folder-view: backlog
-  12-3-implement-macintosh-hd-view: backlog
-  12-4-implement-finder-icon-behavior: backlog
+  epic-12: done
+  12-1-create-finder-window-component: done
+  12-2-implement-trash-folder-view: done
+  12-3-implement-macintosh-hd-view: done
+  12-4-implement-finder-icon-behavior: done
 
   # Epic 13: Menu Content (Tier 5)
   epic-13: backlog

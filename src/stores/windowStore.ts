@@ -4,6 +4,7 @@ import { create } from 'zustand';
  * App groups - maps document types to their parent application
  * About, Projects, Resume, Contact are "documents" opened in TextEdit
  * Untitled is a blank TextEdit document
+ * Finder windows (home, hd, trash) are grouped under Finder
  */
 export const APP_GROUPS: Record<string, string> = {
   about: 'textEdit',
@@ -11,6 +12,10 @@ export const APP_GROUPS: Record<string, string> = {
   resume: 'textEdit',
   contact: 'textEdit',
   untitled: 'textEdit',
+  // Finder locations
+  'finder-home': 'finder',
+  'finder-hd': 'finder',
+  'finder-trash': 'finder',
   // Terminal is its own app (not grouped)
 };
 
@@ -20,6 +25,24 @@ export const APP_GROUPS: Record<string, string> = {
  */
 export function getParentApp(app: string): string {
   return APP_GROUPS[app] || app;
+}
+
+/**
+ * Custom window titles for specific apps
+ * Falls back to capitalized app name if not specified
+ */
+const WINDOW_TITLES: Record<string, string> = {
+  'finder-home': 'Home',
+  'finder-hd': 'Macintosh HD',
+  'finder-trash': 'Trash',
+  untitled: 'Untitled',
+};
+
+/**
+ * Get display title for a window
+ */
+export function getWindowTitle(app: string): string {
+  return WINDOW_TITLES[app] || app.charAt(0).toUpperCase() + app.slice(1);
 }
 
 export interface WindowBounds {
@@ -101,7 +124,7 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
         id,
         app,
         parentApp,
-        title: app.charAt(0).toUpperCase() + app.slice(1), // Capitalize app name for display
+        title: getWindowTitle(app),
         x: 100 + (state.windows.length * 30), // Cascade positioning
         y: 100 + (state.windows.length * 30),
         width: 400,

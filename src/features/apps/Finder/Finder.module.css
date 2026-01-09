@@ -1,0 +1,292 @@
+/**
+ * Finder.module.css - Tiger-style Finder window
+ *
+ * Authentic Mac OS X Tiger Finder appearance with:
+ * - Brushed metal toolbar
+ * - Gray sidebar with location icons
+ * - White content area with icon grid
+ * - Status bar at bottom
+ */
+
+.finder {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  font-family: var(--aqua-font-family);
+}
+
+/* ========================================
+ * TOOLBAR
+ * ======================================== */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  background:
+    var(--aqua-brushed-metal),
+    linear-gradient(180deg, #e0e0e0 0%, #c8c8c8 100%);
+  border-bottom: 1px solid #999;
+  min-height: 32px;
+}
+
+.toolbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toolbarRight {
+  display: flex;
+  align-items: center;
+}
+
+/* Navigation buttons (back/forward) */
+.navButtons {
+  display: flex;
+  gap: 2px;
+}
+
+.navButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid #888;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #f8f8f8 0%, #d8d8d8 100%);
+  color: #333;
+  cursor: var(--aqua-cursor-default);
+}
+
+.navButton:disabled {
+  opacity: 0.5;
+  color: #999;
+}
+
+.navButton:not(:disabled):hover {
+  background: linear-gradient(180deg, #fff 0%, #e0e0e0 100%);
+}
+
+.navButton:not(:disabled):active {
+  background: linear-gradient(180deg, #d0d0d0 0%, #e0e0e0 100%);
+}
+
+/* View mode buttons */
+.viewButtons {
+  display: flex;
+  border: 1px solid #888;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.viewButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 24px;
+  border: none;
+  border-right: 1px solid #888;
+  background: linear-gradient(180deg, #f8f8f8 0%, #d8d8d8 100%);
+  color: #666;
+  cursor: var(--aqua-cursor-default);
+}
+
+.viewButton:last-child {
+  border-right: none;
+}
+
+.viewButton:hover {
+  background: linear-gradient(180deg, #fff 0%, #e0e0e0 100%);
+}
+
+.viewButtonActive {
+  background: linear-gradient(180deg, #c0c0c0 0%, #a8a8a8 100%);
+  color: #333;
+}
+
+/* Action button (gear) */
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 24px;
+  border: 1px solid #888;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #f8f8f8 0%, #d8d8d8 100%);
+  color: #666;
+  cursor: var(--aqua-cursor-default);
+}
+
+.actionButton:hover {
+  background: linear-gradient(180deg, #fff 0%, #e0e0e0 100%);
+  color: #333;
+}
+
+/* Search field */
+.searchField {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: #fff;
+  border: 1px solid #888;
+  border-radius: 12px;
+  min-width: 120px;
+}
+
+.searchField svg {
+  color: #888;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  border: none;
+  background: transparent;
+  font-size: 11px;
+  width: 100%;
+  outline: none;
+}
+
+/* ========================================
+ * MAIN AREA (Sidebar + Content)
+ * ======================================== */
+
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ========================================
+ * SIDEBAR
+ * ======================================== */
+
+.sidebar {
+  width: 140px;
+  min-width: 140px;
+  background: linear-gradient(180deg, #e8e8e8 0%, #d8d8d8 100%);
+  border-right: 1px solid #b0b0b0;
+  padding: 8px 0;
+  overflow-y: auto;
+}
+
+.sidebarItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 4px 12px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: var(--aqua-cursor-default);
+  font-size: 11px;
+  color: #000;
+}
+
+.sidebarItem:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.sidebarItemSelected {
+  background: var(--aqua-selection-bg);
+  color: #fff;
+  border-radius: 3px;
+  margin: 0 4px;
+  width: calc(100% - 8px);
+}
+
+.sidebarItemSelected:hover {
+  background: var(--aqua-selection-bg);
+}
+
+.sidebarLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ========================================
+ * CONTENT AREA
+ * ======================================== */
+
+.content {
+  flex: 1;
+  background: #fff;
+  overflow: auto;
+  padding: 16px;
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #888;
+  font-size: 13px;
+}
+
+.iconGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 16px;
+  justify-items: center;
+}
+
+.contentItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  cursor: var(--aqua-cursor-default);
+  border-radius: 4px;
+  width: 90px;
+}
+
+.contentItem:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.contentItemSelected {
+  background: var(--aqua-selection-bg);
+}
+
+.contentItemSelected .contentLabel {
+  color: #fff;
+  background: var(--aqua-selection-bg);
+  border-radius: 2px;
+  padding: 1px 4px;
+}
+
+.contentLabel {
+  font-size: 11px;
+  color: #000;
+  text-align: center;
+  word-break: break-word;
+  max-width: 80px;
+}
+
+/* ========================================
+ * STATUS BAR
+ * ======================================== */
+
+.statusBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  background: linear-gradient(180deg, #e8e8e8 0%, #d0d0d0 100%);
+  border-top: 1px solid #b0b0b0;
+  font-size: 11px;
+  color: #444;
+}

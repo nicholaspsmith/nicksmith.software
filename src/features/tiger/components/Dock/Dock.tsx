@@ -29,6 +29,7 @@ const bounceAnimation = {
 const PARENT_APP_CONFIG: Record<string, { label: string }> = {
   textEdit: { label: 'TextEdit' },
   terminal: { label: 'Terminal' },
+  finder: { label: 'Finder' },
 };
 
 /**
@@ -82,12 +83,15 @@ export function Dock() {
   // Get running apps (open or minimized, but not closed)
   const runningApps = windows.filter((w) => w.state !== 'closed');
 
-  // Get unique parent app IDs that are running, excluding TextEdit (it's in default icons)
+  // Get unique parent app IDs that are running, excluding TextEdit and Finder (they're in default icons)
   const runningParentAppIds = [...new Set(runningApps.map((w) => w.parentApp))]
-    .filter((id) => id !== 'textEdit');
+    .filter((id) => id !== 'textEdit' && id !== 'finder');
 
   // Check if TextEdit has any running windows (for showing indicator)
   const hasTextEditWindows = runningApps.some((w) => w.parentApp === 'textEdit');
+
+  // Check if Finder has any running windows (for showing indicator)
+  const hasFinderWindows = runningApps.some((w) => w.parentApp === 'finder');
 
   // Get only minimized windows for thumbnails
   const minimizedWindows = windows.filter((w) => w.state === 'minimized');
@@ -119,11 +123,27 @@ export function Dock() {
         openWindow('untitled');
       }
     } else if (iconId === 'finder') {
-      showAlert({
-        title: 'Finder',
-        message: 'Finder is coming soon!',
-        type: 'note',
-      });
+      // Finder: focus or restore windows if any exist
+      const finderWindows = windows
+        .filter((w) => w.parentApp === 'finder' && w.state !== 'closed')
+        .sort((a, b) => b.zIndex - a.zIndex);
+
+      // Only bounce if Finder has no running windows
+      if (!hasFinderWindows) {
+        triggerBounce('finder');
+      }
+
+      if (finderWindows.length > 0) {
+        const topWindow = finderWindows[0];
+        if (topWindow.state === 'minimized') {
+          restoreWindow(topWindow.id);
+        } else {
+          focusWindow(topWindow.id);
+        }
+      } else {
+        // No Finder windows open - open home folder
+        openWindow('finder-home');
+      }
     } else if (iconId === 'system-preferences') {
       showAlert({
         title: 'System Preferences',
@@ -162,13 +182,19 @@ export function Dock() {
 
   const handleTrashClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Don't bounce - Trash doesn't launch an app
-    showAlert({
-      title: 'Trash',
-      message: 'The Trash is empty.',
-      type: 'note',
-      playSound: false, // No error sound for info
-    });
+    // Trash opens Finder with Trash view
+    // Check if Finder Trash window already exists
+    const trashWindow = windows.find((w) => w.app === 'finder-trash' && w.state !== 'closed');
+    if (trashWindow) {
+      if (trashWindow.state === 'minimized') {
+        restoreWindow(trashWindow.id);
+      } else {
+        focusWindow(trashWindow.id);
+      }
+    } else {
+      triggerBounce('trash');
+      openWindow('finder-trash');
+    }
   };
 
   return (
@@ -186,8 +212,10 @@ export function Dock() {
           {/* Default system icons */}
           <div className={styles.appSection}>
             {DEFAULT_DOCK_ICONS.map((icon) => {
-              const isTextEdit = icon.id === 'textEdit';
-              const showIndicator = isTextEdit && hasTextEditWindows;
+              // Show running indicator for TextEdit or Finder when they have windows
+              const showIndicator =
+                (icon.id === 'textEdit' && hasTextEditWindows) ||
+                (icon.id === 'finder' && hasFinderWindows);
               const isBouncing = bouncingIcons.has(icon.id);
 
               return (
