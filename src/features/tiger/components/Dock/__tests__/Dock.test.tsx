@@ -43,6 +43,7 @@ describe('Dock', () => {
         {
           id: 'test-1',
           app: 'about',
+          parentApp: 'textEdit',
           title: 'About Me',
           x: 100,
           y: 100,
@@ -58,6 +59,7 @@ describe('Dock', () => {
         {
           id: 'test-2',
           app: 'projects',
+          parentApp: 'textEdit',
           title: 'Projects',
           x: 150,
           y: 150,
@@ -86,6 +88,7 @@ describe('Dock', () => {
         {
           id: 'minimized-1',
           app: 'about',
+          parentApp: 'textEdit',
           title: 'About Me',
           x: 100,
           y: 100,
@@ -101,6 +104,7 @@ describe('Dock', () => {
         {
           id: 'open-1',
           app: 'projects',
+          parentApp: 'textEdit',
           title: 'Projects',
           x: 150,
           y: 150,
@@ -129,6 +133,7 @@ describe('Dock', () => {
         {
           id: 'test-1',
           app: 'about',
+          parentApp: 'textEdit',
           title: 'About Me',
           x: 100,
           y: 100,
@@ -163,6 +168,7 @@ describe('Dock', () => {
         {
           id: 'test-1',
           app: 'resume',
+          parentApp: 'textEdit',
           title: 'Resume',
           x: 100,
           y: 100,

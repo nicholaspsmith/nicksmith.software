@@ -35,13 +35,14 @@ describe('MenuBar', () => {
     expect(screen.getByTestId('app-name')).toHaveTextContent('Finder');
   });
 
-  it('displays focused window app name', () => {
+  it('displays focused window parent app name (TextEdit for documents)', () => {
     // Add a window and set it as active
     useWindowStore.setState({
       windows: [
         {
           id: 'test-123',
           app: 'resume',
+          parentApp: 'textEdit',
           title: 'Resume',
           x: 100,
           y: 100,
@@ -58,16 +59,18 @@ describe('MenuBar', () => {
       activeWindowId: 'test-123',
     });
     render(<MenuBar />);
-    expect(screen.getByTestId('app-name')).toHaveTextContent('Resume');
+    // Should show TextEdit (parent app), not Resume (document name)
+    expect(screen.getByTestId('app-name')).toHaveTextContent('TextEdit');
   });
 
   it('updates app name when focus changes', () => {
-    // Start with two windows
+    // Start with two windows - one TextEdit doc, one Terminal
     useWindowStore.setState({
       windows: [
         {
           id: 'win-1',
           app: 'resume',
+          parentApp: 'textEdit',
           title: 'Resume',
           x: 100,
           y: 100,
@@ -82,8 +85,9 @@ describe('MenuBar', () => {
         },
         {
           id: 'win-2',
-          app: 'projects',
-          title: 'Projects',
+          app: 'terminal',
+          parentApp: 'terminal',
+          title: 'Terminal',
           x: 150,
           y: 150,
           width: 400,
@@ -100,12 +104,14 @@ describe('MenuBar', () => {
     });
 
     const { rerender } = render(<MenuBar />);
-    expect(screen.getByTestId('app-name')).toHaveTextContent('Projects');
+    // win-2 is Terminal, so should show Terminal
+    expect(screen.getByTestId('app-name')).toHaveTextContent('Terminal');
 
-    // Change focus
+    // Change focus to win-1 (Resume document in TextEdit)
     useWindowStore.setState({ activeWindowId: 'win-1' });
     rerender(<MenuBar />);
-    expect(screen.getByTestId('app-name')).toHaveTextContent('Resume');
+    // Should show TextEdit (parent app), not Resume (document name)
+    expect(screen.getByTestId('app-name')).toHaveTextContent('TextEdit');
   });
 
   it('displays clock', () => {

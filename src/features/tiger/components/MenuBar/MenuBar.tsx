@@ -100,7 +100,12 @@ export function MenuBar() {
 
   // Derive app name from focused window, default to "Finder"
   const activeWindow = windows.find((w) => w.id === activeWindowId);
-  const appName = activeWindow?.title ?? 'Finder';
+  // Show parent app name (e.g., TextEdit), not document title (e.g., Resume)
+  // Capitalize: textEdit → TextEdit, terminal → Terminal
+  const parentApp = activeWindow?.parentApp;
+  const appName = parentApp
+    ? parentApp.charAt(0).toUpperCase() + parentApp.slice(1)
+    : 'Finder';
 
   useEffect(() => {
     const timer = setInterval(() => {

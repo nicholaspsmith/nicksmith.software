@@ -23,14 +23,13 @@ const bounceAnimation = {
 };
 
 /**
- * App configurations for dock icons
- * Maps app IDs to their display labels
+ * Parent app configurations for dock icons
+ * Maps parentApp IDs to their display labels
+ * TextEdit groups: about, projects, resume, contact
+ * Terminal is its own app
  */
-const APP_CONFIG: Record<string, { label: string }> = {
-  about: { label: 'About Me' },
-  projects: { label: 'Projects' },
-  resume: { label: 'Resume' },
-  contact: { label: 'Contact' },
+const PARENT_APP_CONFIG: Record<string, { label: string }> = {
+  textEdit: { label: 'TextEdit' },
   terminal: { label: 'Terminal' },
 };
 
@@ -84,8 +83,8 @@ export function Dock() {
   // Get running apps (open or minimized, but not closed)
   const runningApps = windows.filter((w) => w.state !== 'closed');
 
-  // Get unique app IDs that are running
-  const runningAppIds = [...new Set(runningApps.map((w) => w.app))];
+  // Get unique parent app IDs that are running (TextEdit shows once, not four times)
+  const runningParentAppIds = [...new Set(runningApps.map((w) => w.parentApp))];
 
   // Get only minimized windows for thumbnails
   const minimizedWindows = windows.filter((w) => w.state === 'minimized');
@@ -108,16 +107,20 @@ export function Dock() {
     }
   };
 
-  const handleRunningAppClick = (e: React.MouseEvent, appId: string) => {
+  const handleParentAppClick = (e: React.MouseEvent, parentAppId: string) => {
     e.stopPropagation();
-    triggerBounce(`app-${appId}`);
-    // Find the window for this app
-    const appWindow = windows.find((w) => w.app === appId && w.state !== 'closed');
-    if (appWindow) {
-      if (appWindow.state === 'minimized') {
-        restoreWindow(appWindow.id);
+    triggerBounce(`app-${parentAppId}`);
+    // Find all windows for this parent app, sorted by z-index (most recent first)
+    const appWindows = windows
+      .filter((w) => w.parentApp === parentAppId && w.state !== 'closed')
+      .sort((a, b) => b.zIndex - a.zIndex);
+
+    if (appWindows.length > 0) {
+      const topWindow = appWindows[0];
+      if (topWindow.state === 'minimized') {
+        restoreWindow(topWindow.id);
       } else {
-        focusWindow(appWindow.id);
+        focusWindow(topWindow.id);
       }
     }
   };
@@ -165,28 +168,28 @@ export function Dock() {
             ))}
           </div>
 
-          {/* Running application icons */}
+          {/* Running application icons (one per parent app, e.g., one TextEdit icon) */}
           <AnimatePresence>
-            {runningAppIds.map((appId) => {
-              const config = APP_CONFIG[appId];
+            {runningParentAppIds.map((parentAppId) => {
+              const config = PARENT_APP_CONFIG[parentAppId];
               if (!config) return null;
-              const iconKey = `app-${appId}`;
+              const iconKey = `app-${parentAppId}`;
               const isBouncing = bouncingIcons.has(iconKey);
               return (
                 <motion.button
                   key={iconKey}
                   className={styles.dockIcon}
-                  onClick={(e) => handleRunningAppClick(e, appId)}
+                  onClick={(e) => handleParentAppClick(e, parentAppId)}
                   initial={{ scale: 0, opacity: 0 }}
                   animate={isBouncing ? { ...bounceAnimation, scale: 1, opacity: 1 } : { scale: 1, opacity: 1, y: 0 }}
                   exit={{ scale: 0, opacity: 0 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                   aria-label={config.label}
                   data-label={config.label}
-                  data-testid={`dock-icon-app-${appId}`}
+                  data-testid={`dock-icon-app-${parentAppId}`}
                 >
                   <div className={styles.iconImage}>
-                    <AppIcon appId={appId} />
+                    <AppIcon parentAppId={parentAppId} />
                   </div>
                   <div className={styles.runningIndicator} aria-hidden="true" />
                 </motion.button>
@@ -263,10 +266,10 @@ function DefaultIcon({ iconId }: { iconId: string }) {
 
 /**
  * App icon for running applications in dock
- * Terminal uses custom SVG, others use document.png
+ * Shows parent app icon (TextEdit for documents, Terminal for terminal)
  */
-function AppIcon({ appId }: { appId: string }) {
-  if (appId === 'terminal') {
+function AppIcon({ parentAppId }: { parentAppId: string }) {
+  if (parentAppId === 'terminal') {
     return (
       <svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true">
         <rect x="4" y="4" width="40" height="40" rx="8" fill="#1A1A1A" />
@@ -275,7 +278,12 @@ function AppIcon({ appId }: { appId: string }) {
     );
   }
 
-  // Generic document icon for other apps
+  if (parentAppId === 'textEdit') {
+    // TextEdit icon - document with pencil
+    return <img src="/icons/textedit.png" alt="" width={48} height={48} draggable={false} aria-hidden="true" />;
+  }
+
+  // Fallback: generic document icon
   return <img src="/icons/document.png" alt="" width={48} height={48} draggable={false} aria-hidden="true" />;
 }
 

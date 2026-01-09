@@ -1,5 +1,25 @@
 import { create } from 'zustand';
 
+/**
+ * App groups - maps document types to their parent application
+ * About, Projects, Resume, Contact are "documents" opened in TextEdit
+ */
+export const APP_GROUPS: Record<string, string> = {
+  about: 'textEdit',
+  projects: 'textEdit',
+  resume: 'textEdit',
+  contact: 'textEdit',
+  // Terminal is its own app (not grouped)
+};
+
+/**
+ * Get the parent app for a given app/document ID
+ * Returns the parentApp if grouped, otherwise returns the app itself
+ */
+export function getParentApp(app: string): string {
+  return APP_GROUPS[app] || app;
+}
+
 export interface WindowBounds {
   x: number;
   y: number;
@@ -9,7 +29,10 @@ export interface WindowBounds {
 
 export interface WindowState {
   id: string;
+  /** The document/app ID (e.g., 'about', 'projects', 'terminal') */
   app: string;
+  /** The parent application (e.g., 'textEdit' for documents, or same as app if not grouped) */
+  parentApp: string;
   title: string;
   x: number;
   y: number;
@@ -70,10 +93,12 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
 
     const id = crypto.randomUUID();
     const newZIndex = maxZIndex + 1;
+    const parentApp = getParentApp(app);
     set((state) => ({
       windows: [...state.windows, {
         id,
         app,
+        parentApp,
         title: app.charAt(0).toUpperCase() + app.slice(1), // Capitalize app name for display
         x: 100 + (state.windows.length * 30), // Cascade positioning
         y: 100 + (state.windows.length * 30),
