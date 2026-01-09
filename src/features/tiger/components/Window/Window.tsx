@@ -183,8 +183,11 @@ export function Window({ id, title, children }: WindowProps) {
       );
       setDockTarget(target);
     }
+    // Update store immediately so dock can start growing right away
+    // Window continues rendering during animation due to animationState check
+    minimizeWindowAction(id);
     setAnimationState('minimizing');
-  }, [windowState, minimizedCount]);
+  }, [windowState, minimizedCount, minimizeWindowAction, id]);
 
   const handleZoom = useCallback(() => {
     zoomWindow(id);
@@ -204,10 +207,10 @@ export function Window({ id, title, children }: WindowProps) {
       clearRestoredFlag(id);
     } else if (animationState === 'closing') {
       closeWindow(id);
-    } else if (animationState === 'minimizing') {
-      minimizeWindowAction(id);
     }
-  }, [animationState, id, closeWindow, minimizeWindowAction, clearRestoredFlag]);
+    // Note: 'minimizing' doesn't need handling here - store is updated immediately
+    // in handleMinimize so dock can grow right away
+  }, [animationState, id, closeWindow, clearRestoredFlag]);
 
   // Listen for keyboard shortcut events to trigger animations
   useEffect(() => {

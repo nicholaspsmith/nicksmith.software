@@ -181,7 +181,7 @@ export function Dock() {
         <motion.div
           className={styles.shelf}
           layout
-          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          transition={{ duration: 0.2, ease: 'linear' }}
         >
           {/* Default system icons */}
           <div className={styles.appSection}>
@@ -220,7 +220,7 @@ export function Dock() {
           </div>
 
           {/* Running application icons (one per parent app, e.g., one TextEdit icon) */}
-          <AnimatePresence>
+          <AnimatePresence mode="popLayout">
             {runningParentAppIds.map((parentAppId) => {
               const config = PARENT_APP_CONFIG[parentAppId];
               if (!config) return null;
@@ -260,7 +260,7 @@ export function Dock() {
           )}
 
           {/* Minimized window thumbnails */}
-          <AnimatePresence>
+          <AnimatePresence mode="popLayout">
             {minimizedWindows.map((window) => {
               const isBouncing = bouncingIcons.has(window.id);
               return (
