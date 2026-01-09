@@ -134,7 +134,7 @@ describe('Window', () => {
     const rndWrapper = screen.getByTestId(`window-${windowId}`);
     // dragHandleClassName is stored in data-drag-handle by our mock
     expect(rndWrapper.dataset.dragHandle).toBeDefined();
-    expect(rndWrapper.dataset.dragHandle).toContain('dragHandle');
+    expect(rndWrapper.dataset.dragHandle).toBe('window-drag-handle');
   });
 
   describe('minimize animation lifecycle', () => {

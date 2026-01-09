@@ -29,30 +29,109 @@ body {
   color: #000;
 }
 
-/* Scrollbar styling (WebKit browsers) */
+/* ========================================
+ * SCROLLBAR STYLING - Tiger Aqua Style
+ * Blue pill thumb with glossy 3D effect
+ * ======================================== */
+
+/* WebKit browsers (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+  width: 15px;
+  height: 15px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f0f0f0;
+  /* Tiger scrollbar track with texture */
+  background: url('/textures/scrollbar-texture-vertical.png') repeat-y;
+  background-size: 15px auto;
+  border-left: 1px solid #c0c0c0;
+}
+
+::-webkit-scrollbar-track:horizontal {
+  /* Horizontal uses rotated texture or gradient fallback */
+  background: url('/textures/scrollbar-texture-vertical.png') repeat-x;
+  background-size: auto 15px;
+  border-left: none;
+  border-top: 1px solid #c0c0c0;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c0c0c0;
-  border-radius: 6px;
-  border: 2px solid #f0f0f0;
+  /* Aqua blue pill with glossy gel effect */
+  background:
+    linear-gradient(
+      180deg,
+      #a8d4f8 0%,
+      #6bb5f0 15%,
+      #3d9ae8 50%,
+      #2d7bc9 85%,
+      #1e5a9e 100%
+    );
+  border-radius: 8px;
+  border: 1px solid #2a6cb0;
+  /* Add glossy highlight */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  /* Margin from track edges */
+  margin: 2px;
+}
+
+::-webkit-scrollbar-thumb:horizontal {
+  background:
+    linear-gradient(
+      90deg,
+      #a8d4f8 0%,
+      #6bb5f0 15%,
+      #3d9ae8 50%,
+      #2d7bc9 85%,
+      #1e5a9e 100%
+    );
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a0a0a0;
+  background:
+    linear-gradient(
+      180deg,
+      #b8e0fc 0%,
+      #7cc4f8 15%,
+      #4da8f0 50%,
+      #3d8bd9 85%,
+      #2e6aae 100%
+    );
 }
 
-/* Firefox scrollbar */
+::-webkit-scrollbar-thumb:horizontal:hover {
+  background:
+    linear-gradient(
+      90deg,
+      #b8e0fc 0%,
+      #7cc4f8 15%,
+      #4da8f0 50%,
+      #3d8bd9 85%,
+      #2e6aae 100%
+    );
+}
+
+::-webkit-scrollbar-corner {
+  background: #e8e8e8;
+}
+
+/* Scrollbar buttons (arrows) */
+::-webkit-scrollbar-button {
+  background: linear-gradient(180deg, #f8f8f8 0%, #d8d8d8 100%);
+  border: 1px solid #a0a0a0;
+  height: 15px;
+  width: 15px;
+}
+
+::-webkit-scrollbar-button:hover {
+  background: linear-gradient(180deg, #fff 0%, #e8e8e8 100%);
+}
+
+/* Firefox scrollbar - limited styling */
 * {
-  scrollbar-width: thin;
-  scrollbar-color: #c0c0c0 #f0f0f0;
+  scrollbar-width: auto;
+  scrollbar-color: #3d9ae8 #e8e8e8;
 }
 
 /* ========================================

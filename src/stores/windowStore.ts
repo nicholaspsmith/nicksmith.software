@@ -57,10 +57,10 @@ interface WindowSizeConfig {
 }
 
 const WINDOW_SIZE_CONFIGS: Record<string, WindowSizeConfig> = {
-  // Finder windows - opens at 650x380, min size 365x365
-  'finder-home': { width: 650, height: 380, minWidth: 365, minHeight: 365 },
-  'finder-hd': { width: 650, height: 380, minWidth: 365, minHeight: 365 },
-  'finder-trash': { width: 650, height: 380, minWidth: 365, minHeight: 365 },
+  // Finder windows - opens at 650x380, min size 650x400
+  'finder-home': { width: 650, height: 380, minWidth: 650, minHeight: 400 },
+  'finder-hd': { width: 650, height: 380, minWidth: 650, minHeight: 400 },
+  'finder-trash': { width: 650, height: 380, minWidth: 650, minHeight: 400 },
 };
 
 /**

@@ -29,7 +29,6 @@
   background: linear-gradient(170deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%, rgba(0, 0, 0, 0.08) 100%), var(--aqua-brushed-metal-texture);
   background-size: auto, 530px 482px;
   background-repeat: repeat;
-  border-bottom: 1px solid #808080;
   min-height: 36px;
 }
 
@@ -166,6 +165,7 @@
   background: linear-gradient(173deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%, rgba(0, 0, 0, 0.08) 100%), var(--aqua-brushed-metal-texture);
   background-size: auto, 530px 482px;
   background-repeat: repeat;
+  background-position: auto, 1847px 321px;
   padding: 0 5px;
 }
 
@@ -456,9 +456,9 @@
   background: linear-gradient(173deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%, rgba(0, 0, 0, 0.08) 100%), var(--aqua-brushed-metal-texture);
   background-size: auto, 530px 482px;
   background-repeat: repeat;
-  border-top: 1px solid #888;
   font-size: 11px;
   color: #333;
+  user-select: none;
 }
 
 /* Resize grip in bottom right corner */

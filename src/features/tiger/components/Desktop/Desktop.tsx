@@ -62,6 +62,8 @@ export function Desktop({ children, iconPositions, onIconsSelected }: DesktopPro
   const clearSelection = useAppStore((s) => s.clearSelection);
   const resetIconPositions = useAppStore((s) => s.resetIconPositions);
   const clearActiveWindow = useWindowStore((s) => s.clearActiveWindow);
+  const windows = useWindowStore((s) => s.windows);
+  const activeWindowId = useWindowStore((s) => s.activeWindowId);
   const desktopRef = useRef<HTMLDivElement>(null);
 
   // Track if we just finished a marquee selection (to prevent click from clearing)
@@ -91,23 +93,67 @@ export function Desktop({ children, iconPositions, onIconsSelected }: DesktopPro
     // Check if click is on or inside elements that should NOT unfocus windows
     const isMenuBar = target.closest('[data-testid="menu-bar"]');
     const isWindow = target.closest('[data-testid^="window-"]');
-    const isDock = target.closest('[data-testid="dock"]');
-    const isDesktopIcon = target.closest('[data-testid="desktop-icon"]');
     const isContextMenu = target.closest('[data-testid="context-menu"]');
 
-    // Don't unfocus if clicking on these elements
-    if (isMenuBar || isWindow || isDock || isContextMenu) {
+    // Never unfocus when clicking menu bar, windows, or context menu
+    if (isMenuBar || isWindow || isContextMenu) {
       return;
     }
 
-    // Clear selection for clicks on desktop background (but not on icons)
-    if (!isDesktopIcon) {
-      clearSelection();
+    // Get the active window's info for exception checking
+    const activeWindow = activeWindowId ? windows.find((w) => w.id === activeWindowId) : null;
+
+    // Check for dock click
+    const dockElement = target.closest('[data-testid="dock"]');
+    if (dockElement) {
+      // Find which dock icon was clicked
+      const dockIcon = target.closest('[data-testid^="dock-icon-"]');
+      if (dockIcon && activeWindow) {
+        const testId = dockIcon.getAttribute('data-testid') || '';
+        // Extract the app/icon ID from data-testid="dock-icon-{id}"
+        const dockItemId = testId.replace('dock-icon-', '').replace('app-', '');
+
+        // Check if this dock item belongs to the active window's app
+        // Dock items use parentApp IDs (e.g., 'finder', 'textEdit', 'terminal')
+        if (dockItemId === activeWindow.parentApp || dockItemId === activeWindow.app) {
+          // Clicking on the dock item of the active window's app - don't unfocus
+          return;
+        }
+
+        // Also check if it's a minimized window thumbnail of the active window
+        if (dockItemId === activeWindow.id) {
+          return;
+        }
+      }
+      // Clicking on dock but not on the active app's icon - unfocus
+      clearActiveWindow();
+      return;
     }
 
-    // Always clear active window when clicking outside windows, dock, and menu bar
+    // Check for desktop icon click
+    const desktopIconElement = target.closest('[data-testid^="desktop-icon-"]');
+    if (desktopIconElement) {
+      if (activeWindow) {
+        const testId = desktopIconElement.getAttribute('data-testid') || '';
+        // Extract the icon ID from data-testid="desktop-icon-{id}"
+        const iconAppId = testId.replace('desktop-icon-', '');
+
+        // Check if this desktop icon is for the active window's app
+        if (iconAppId === activeWindow.app) {
+          // Clicking on the desktop icon of the active window - don't unfocus
+          // But still don't clear selection (handled below)
+          return;
+        }
+      }
+      // Clicking on a different desktop icon - unfocus the window
+      clearActiveWindow();
+      return;
+    }
+
+    // Clicking on desktop background - clear selection and unfocus
+    clearSelection();
     clearActiveWindow();
-  }, [clearSelection, clearActiveWindow]);
+  }, [clearSelection, clearActiveWindow, activeWindowId, windows]);
 
   // Handle right-click to show context menu
   const handleContextMenu = useCallback((e: React.MouseEvent) => {

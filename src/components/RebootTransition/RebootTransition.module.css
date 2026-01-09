@@ -6,6 +6,10 @@
   z-index: 9999;
   /* Tiger boot screen gray - matches Loading-Screen-No-Spinner.png */
   background: #c0c0c0;
+  /* Center the Apple logo */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .content {

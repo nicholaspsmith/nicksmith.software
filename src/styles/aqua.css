@@ -141,6 +141,16 @@
   /* Pointer cursor - same as default (Tiger uses arrow for everything) */
   --aqua-cursor-pointer: url('/icons/cursor.png') 1 1, auto;
 
+  /* Resize cursors - Official Tiger resize cursors (16x16, hotspot at center) */
+  --aqua-cursor-resize-n: url('/cursors/northResizeCursor.png') 8 8, ns-resize;
+  --aqua-cursor-resize-s: url('/cursors/southResizeCursor.png') 8 8, ns-resize;
+  --aqua-cursor-resize-e: url('/cursors/eastResizeCursor.png') 8 8, ew-resize;
+  --aqua-cursor-resize-w: url('/cursors/westResizeCursor.png') 8 8, ew-resize;
+  --aqua-cursor-resize-ne: url('/cursors/northEastResizeCursor.png') 8 8, nesw-resize;
+  --aqua-cursor-resize-nw: url('/cursors/northWestResizeCursor.png') 8 8, nwse-resize;
+  --aqua-cursor-resize-se: url('/cursors/southEastResizeCursor.png') 8 8, nwse-resize;
+  --aqua-cursor-resize-sw: url('/cursors/southWestResizeCursor.png') 8 8, nesw-resize;
+
   /* ========================================
    * TEXTURES
    * ======================================== */

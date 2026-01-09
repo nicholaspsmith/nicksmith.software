@@ -16,6 +16,7 @@ function calculateDockTargetPosition(
   windowX: number,
   windowY: number,
   windowWidth: number,
+  windowHeight: number,
   minimizedIndex: number
 ): { x: number; y: number } {
   // Dock is centered at bottom, thumbnail section starts after separator
@@ -25,17 +26,22 @@ function calculateDockTargetPosition(
 
   // Dock center is at 50% of viewport
   // Thumbnails appear after app icons and separator
-  // Estimate: Finder(50) + SysPrefs(50) + running apps(~150) + separator(13) ≈ 263px from center-left
-  const baseOffset = 263;
+  // Estimate: Finder(50) + TextEdit(50) + SysPrefs(50) + separator(13) ≈ 163px from center-left
+  const baseOffset = 163;
 
   // Calculate x position: dock center + offset for this thumbnail
   const targetX = window.innerWidth / 2 + baseOffset + (minimizedIndex * thumbnailWidth);
+  // Target the center of the dock (where thumbnails appear), not the top edge
   const targetY = window.innerHeight - dockHeight / 2;
 
-  // Return offset from current window position
+  // Since transform origin is at bottom center (originY: 1, originX: 0.5),
+  // we need to offset from the window's bottom center point
+  const windowBottomY = windowY + windowHeight;
+  const windowCenterX = windowX + windowWidth / 2;
+
   return {
-    x: targetX - windowX - windowWidth / 2,
-    y: targetY - windowY,
+    x: targetX - windowCenterX,
+    y: targetY - windowBottomY,
   };
 }
 
@@ -101,15 +107,15 @@ export function Window({ id, title, children }: WindowProps) {
       // Simplified genie-like effect: scale down while moving to dock
       // Uses CSS transforms - true genie distortion requires WebGL/Canvas
       return {
-        opacity: [1, 0.8, 0],
-        scaleX: [1, 0.5, 0.1],
-        scaleY: [1, 0.3, 0.05],
-        x: [0, dockTarget.x * 0.5, dockTarget.x],
-        y: [0, dockTarget.y * 0.6, dockTarget.y],
+        opacity: [1, 0.9, 0],
+        scaleX: [1, 0.3, 0.02],
+        scaleY: [1, 0.15, 0.01],
+        x: [0, dockTarget.x * 0.6, dockTarget.x],
+        y: [0, dockTarget.y * 0.7, dockTarget.y],
         transition: {
-          duration: 0.4,
-          times: [0, 0.5, 1],
-          ease: [0.4, 0, 0.2, 1] as [number, number, number, number],
+          duration: 0.35,
+          times: [0, 0.6, 1],
+          ease: 'linear',
         },
       };
     }
@@ -124,7 +130,7 @@ export function Window({ id, title, children }: WindowProps) {
         y: 0,
         transition: {
           duration: 0.35,
-          ease: [0.2, 0.8, 0.2, 1] as [number, number, number, number],
+          ease: 'linear',
         },
       };
     }
@@ -179,6 +185,7 @@ export function Window({ id, title, children }: WindowProps) {
         windowState.x,
         windowState.y,
         windowState.width,
+        windowState.height,
         minimizedCount
       );
       setDockTarget(target);
@@ -253,16 +260,22 @@ export function Window({ id, title, children }: WindowProps) {
   // When shaded, collapse to just title bar height
   const displayHeight = isShaded ? SACRED.titleBarHeight : windowState.height;
 
-  // Tiger-style: only allow resize from bottom-right corner (where the resize grip is)
+  // Resize handle styles with proper z-index and size for all corners/edges
+  // Uses official Tiger resize cursors from CSS variables
+  // Finder windows have larger bottom-right to cover the visual resize grip
+  const isFinderWindow = windowState.parentApp === 'finder';
+  const bottomRightStyle = isFinderWindow
+    ? { cursor: 'var(--aqua-cursor-resize-se)', zIndex: 9999, width: '20px', height: '20px', right: '-1px', bottom: '-1px' }
+    : { cursor: 'var(--aqua-cursor-resize-se)', zIndex: 9999, width: '12px', height: '12px' };
   const resizeHandleStyles = {
-    bottomRight: {
-      width: '20px',
-      height: '20px',
-      right: '0px',
-      bottom: '0px',
-      cursor: 'nwse-resize',
-      zIndex: 10,
-    },
+    top: { cursor: 'var(--aqua-cursor-resize-n)', zIndex: 9999, height: '8px', top: '-5px' },
+    right: { cursor: 'var(--aqua-cursor-resize-e)', zIndex: 9999, width: '5px', right: '-5px' },
+    bottom: { cursor: 'var(--aqua-cursor-resize-s)', zIndex: 9999, height: '4px', left: '0px', bottom: '-1px' },
+    left: { cursor: 'var(--aqua-cursor-resize-w)', zIndex: 9999, width: '5px', left: '-4px' },
+    topRight: { cursor: 'var(--aqua-cursor-resize-ne)', zIndex: 9999, width: '12px', height: '12px' },
+    bottomRight: bottomRightStyle,
+    bottomLeft: { cursor: 'var(--aqua-cursor-resize-sw)', zIndex: 9999, width: '12px', height: '12px', left: '-5px', bottom: '-5px' },
+    topLeft: { cursor: 'var(--aqua-cursor-resize-nw)', zIndex: 9999, width: '12px', height: '12px', left: '-5px', top: '-5px' },
   };
 
   return (
@@ -272,12 +285,12 @@ export function Window({ id, title, children }: WindowProps) {
       minWidth={windowState.minWidth ?? SACRED.windowMinWidth}
       minHeight={isShaded ? SACRED.titleBarHeight : (windowState.minHeight ?? SACRED.windowMinHeight)}
       style={{ zIndex: windowState.zIndex }}
-      dragHandleClassName={styles.dragHandle}
+      dragHandleClassName="window-drag-handle"
       bounds="#window-bounds"
       onDragStop={handleDragStop}
       onResizeStop={handleResizeStop}
       onMouseDown={handleMouseDown}
-      enableResizing={!isShaded ? { bottomRight: true } : false}
+      enableResizing={!isShaded}
       resizeHandleStyles={resizeHandleStyles}
       data-testid={`window-${id}`}
     >
@@ -299,7 +312,7 @@ export function Window({ id, title, children }: WindowProps) {
           titleId={titleId}
           isFocused={isFocused}
           isShaded={isShaded}
-          className={styles.dragHandle}
+          className="window-drag-handle"
           onClose={handleClose}
           onMinimize={handleMinimize}
           onZoom={handleZoom}

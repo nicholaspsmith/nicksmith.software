@@ -32,7 +32,7 @@ export const windowVariants: Variants = {
     scale: 1,
     transition: {
       duration: 0.2,
-      ease: 'easeOut',
+      ease: 'linear',
     },
   },
 
@@ -53,7 +53,7 @@ export const windowVariants: Variants = {
     scale: 0.8,
     transition: {
       duration: 0.2,
-      ease: 'easeIn',
+      ease: 'linear',
     },
   },
 
@@ -74,7 +74,7 @@ export const windowVariants: Variants = {
     x: 'calc(50vw - 50%)',
     transition: {
       duration: 0.4,
-      ease: [0.4, 0, 0.6, 1], // Custom easing for genie "suction"
+      ease: 'linear',
       opacity: { duration: 0.3, delay: 0.1 },
     },
   },
@@ -101,7 +101,7 @@ export const windowVariants: Variants = {
     x: 0,
     transition: {
       duration: 0.35,
-      ease: [0, 0.4, 0.2, 1], // Reverse easing for "expansion"
+      ease: 'linear',
       opacity: { duration: 0.2 },
     },
   },

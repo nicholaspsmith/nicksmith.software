@@ -155,8 +155,8 @@ export function Finder({ location = 'home' }: FinderProps) {
 
   return (
     <div className={styles.finder} data-testid="finder">
-      {/* Toolbar */}
-      <div className={styles.toolbar}>
+      {/* Toolbar - also acts as drag handle for window */}
+      <div className={`${styles.toolbar} window-drag-handle`}>
         <div className={styles.toolbarLeft}>
           {/* Navigation buttons */}
           <div className={styles.navButtons}>
