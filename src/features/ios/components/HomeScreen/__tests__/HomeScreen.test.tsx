@@ -52,10 +52,27 @@ describe('HomeScreen', () => {
     expect(screen.getByTestId('ios-app-dock-safari')).toBeInTheDocument();
   });
 
-  it('renders page indicator dot', () => {
+  it('renders page indicator with multiple dots', () => {
     render(<HomeScreen />);
 
-    expect(screen.getByLabelText('Page 1 of 1')).toBeInTheDocument();
+    expect(screen.getByLabelText('Page 1 of 2')).toBeInTheDocument();
+    // Should have 2 page dots
+    const dots = screen.getAllByRole('button', { name: /Go to page/i });
+    expect(dots).toHaveLength(2);
+  });
+
+  it('navigates between pages when page dots are clicked', () => {
+    render(<HomeScreen />);
+
+    const pagesTrack = screen.getByTestId('pages-track');
+    expect(pagesTrack).toHaveStyle({ transform: 'translateX(-0%)' });
+
+    // Click second page dot
+    const page2Dot = screen.getByRole('button', { name: 'Go to page 2' });
+    fireEvent.click(page2Dot);
+
+    expect(pagesTrack).toHaveStyle({ transform: 'translateX(-100%)' });
+    expect(screen.getByTestId('info-page')).toBeInTheDocument();
   });
 
   it('calls onAppTap when an app icon is clicked', () => {

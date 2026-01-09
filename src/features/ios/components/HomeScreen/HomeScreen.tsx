@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { StatusBar } from '../StatusBar';
 import {
   AppIcon,
@@ -13,6 +13,7 @@ import { NotesApp } from '../NotesApp';
 import { PhotosApp } from '../PhotosApp';
 import { IBooksApp } from '../IBooksApp';
 import { MailApp } from '../MailApp';
+import { useSwipe } from '@/hooks';
 import styles from './HomeScreen.module.css';
 
 /** App IDs that have implemented views */
@@ -46,6 +47,9 @@ export interface HomeScreenProps {
   onAppTap?: (appId: string) => void;
 }
 
+/** Total number of home screen pages */
+const TOTAL_PAGES = 2;
+
 /**
  * iOS 6 Home Screen
  *
@@ -55,12 +59,14 @@ export interface HomeScreenProps {
  * - Page indicator dots
  * - Dock with 4 favorite apps
  * - iOS 6 linen wallpaper texture
+ * - Swipe navigation between pages
  *
  * Manages app navigation state internally, rendering
  * the appropriate app view when an icon is tapped.
  */
 export function HomeScreen({ onAppTap }: HomeScreenProps) {
   const [activeApp, setActiveApp] = useState<AppId>(null);
+  const [currentPage, setCurrentPage] = useState(0);
 
   const handleAppTap = (appId: string) => {
     setActiveApp(appId as AppId);
@@ -70,6 +76,38 @@ export function HomeScreen({ onAppTap }: HomeScreenProps) {
   const handleBack = () => {
     setActiveApp(null);
   };
+
+  // Swipe handlers for page navigation
+  const goToNextPage = useCallback(() => {
+    setCurrentPage((p) => Math.min(p + 1, TOTAL_PAGES - 1));
+  }, []);
+
+  const goToPrevPage = useCallback(() => {
+    setCurrentPage((p) => Math.max(p - 1, 0));
+  }, []);
+
+  const swipeHandlers = useSwipe(
+    {
+      onSwipeLeft: goToNextPage,
+      onSwipeRight: goToPrevPage,
+    },
+    { threshold: 50 }
+  );
+
+  // Page indicator dots
+  const pageDots = useMemo(
+    () =>
+      Array.from({ length: TOTAL_PAGES }, (_, i) => (
+        <button
+          key={i}
+          className={`${styles.pageDot} ${i === currentPage ? styles.active : ''}`}
+          onClick={() => setCurrentPage(i)}
+          aria-label={`Go to page ${i + 1}`}
+          aria-current={i === currentPage ? 'page' : undefined}
+        />
+      )),
+    [currentPage]
+  );
 
   // Render the active app if one is selected
   if (activeApp === 'about') {
@@ -86,27 +124,61 @@ export function HomeScreen({ onAppTap }: HomeScreenProps) {
   }
 
   return (
-    <div className={styles.homeScreen} data-testid="ios-home-screen">
+    <div
+      className={styles.homeScreen}
+      data-testid="ios-home-screen"
+      {...swipeHandlers}
+    >
       <StatusBar />
 
-      {/* Main content area with app grid */}
-      <div className={styles.content}>
-        <div className={styles.appGrid}>
-          {HOME_SCREEN_APPS.map((app) => (
-            <AppIcon
-              key={app.id}
-              id={app.id}
-              label={app.label}
-              icon={app.icon}
-              onClick={() => handleAppTap(app.id)}
-            />
-          ))}
-        </div>
+      {/* Pages container - slides horizontally */}
+      <div className={styles.pagesContainer}>
+        <div
+          className={styles.pagesTrack}
+          style={{ transform: `translateX(-${currentPage * 100}%)` }}
+          data-testid="pages-track"
+        >
+          {/* Page 1: App Grid */}
+          <div className={styles.page}>
+            <div className={styles.content}>
+              <div className={styles.appGrid}>
+                {HOME_SCREEN_APPS.map((app) => (
+                  <AppIcon
+                    key={app.id}
+                    id={app.id}
+                    label={app.label}
+                    icon={app.icon}
+                    onClick={() => handleAppTap(app.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
 
-        {/* Page indicator dots */}
-        <div className={styles.pageIndicator} aria-label="Page 1 of 1">
-          <div className={`${styles.pageDot} ${styles.active}`} />
+          {/* Page 2: Additional Info */}
+          <div className={styles.page}>
+            <div className={styles.content}>
+              <div className={styles.infoPage} data-testid="info-page">
+                <h2 className={styles.infoTitle}>Welcome</h2>
+                <p className={styles.infoText}>
+                  Swipe left and right to navigate between pages.
+                </p>
+                <p className={styles.infoText}>
+                  Tap any app icon to explore my portfolio.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+
+      {/* Page indicator dots */}
+      <div
+        className={styles.pageIndicator}
+        aria-label={`Page ${currentPage + 1} of ${TOTAL_PAGES}`}
+        data-testid="page-indicator"
+      >
+        {pageDots}
       </div>
 
       {/* Dock */}
