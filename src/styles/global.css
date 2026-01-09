@@ -57,8 +57,18 @@ body {
 
 /* ========================================
  * CURSOR OVERRIDES
- * Apply Tiger cursor to interactive elements
+ * Ensure Tiger cursor is ALWAYS visible
+ * Never show the host OS cursor
  * ======================================== */
+
+/* Universal cursor override - applies to everything */
+*,
+*::before,
+*::after {
+  cursor: var(--aqua-cursor-default) !important;
+}
+
+/* Interactive elements use pointer variant (same cursor, just semantic) */
 button,
 a,
 [role="button"],
@@ -70,5 +80,5 @@ input[type="radio"],
 select,
 summary,
 .clickable {
-  cursor: var(--aqua-cursor-pointer);
+  cursor: var(--aqua-cursor-pointer) !important;
 }

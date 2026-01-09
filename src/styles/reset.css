@@ -93,7 +93,7 @@ select {
 button {
   background: none;
   border: none;
-  cursor: pointer;
+  /* Cursor handled by global.css - don't override here */
 }
 
 /* Remove animations for people who prefer not to see them */

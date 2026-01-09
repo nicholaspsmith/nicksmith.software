@@ -26,11 +26,12 @@
   align-items: center;
   justify-content: space-between;
   padding: 4px 8px;
-  /* Tiger Finder brushed aluminum - using authentic texture image */
+  /* Tiger Finder brushed aluminum - tiled texture at correct scale */
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(0,0,0,0.1) 100%),
+    linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%, rgba(0,0,0,0.08) 100%),
     var(--aqua-brushed-metal-texture);
-  background-size: auto, cover;
+  background-size: auto, 256px 256px;
+  background-repeat: repeat;
   border-bottom: 1px solid #808080;
   min-height: 36px;
 }
@@ -253,18 +254,20 @@
   border: none;
   background: transparent;
   cursor: var(--aqua-cursor-default);
-  border-radius: 4px;
   width: 90px;
 }
 
+/* No hover background on icon grid items - Tiger style */
 .contentItem:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: transparent;
 }
 
+/* No background on selected icon - only label highlights */
 .contentItemSelected {
-  background: var(--aqua-selection-bg);
+  background: transparent;
 }
 
+/* Only the label gets highlighted when selected */
 .contentItemSelected .contentLabel {
   color: #fff;
   background: var(--aqua-selection-bg);

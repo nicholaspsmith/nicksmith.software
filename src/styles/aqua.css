@@ -132,14 +132,14 @@
   /* ========================================
    * CURSORS
    * Authentic Mac OS X 10.4 Tiger arrow cursor
-   * - Classic pixelated black arrow
+   * - Classic pixelated black arrow (11x16px, 50% scaled)
    * - Hotspot at top-left (1, 1)
    * Tiger always uses the arrow cursor (no pointer/hand)
    * ======================================== */
-  --aqua-cursor-default: url('/icons/cursor-pixelated.png') 1 1, default;
+  --aqua-cursor-default: url('/icons/cursor.png') 1 1, auto;
 
   /* Pointer cursor - same as default (Tiger uses arrow for everything) */
-  --aqua-cursor-pointer: url('/icons/cursor-pixelated.png') 1 1, default;
+  --aqua-cursor-pointer: url('/icons/cursor.png') 1 1, auto;
 
   /* ========================================
    * TEXTURES
