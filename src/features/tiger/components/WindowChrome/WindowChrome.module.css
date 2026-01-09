@@ -23,11 +23,15 @@
 }
 
 .focused {
-  background: var(--aqua-titlebar-active);
+  background:
+    var(--aqua-brushed-metal),
+    var(--aqua-titlebar-active);
 }
 
 .unfocused {
-  background: var(--aqua-titlebar-inactive);
+  background:
+    var(--aqua-brushed-metal),
+    var(--aqua-titlebar-inactive);
 }
 
 .title {

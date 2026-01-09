@@ -121,21 +121,21 @@ development_status:
   9-7-implement-selection-rectangle: done
 
   # Epic 10: Dock & Window Polish (Tier 2)
-  epic-10: backlog
-  10-1-implement-minimize-to-dock-position: backlog
-  10-2-implement-genie-effect-minimize-animation: backlog
-  10-3-change-running-indicator-to-triangles: backlog
-  10-4-implement-dock-icon-hover-labels: backlog
-  10-5-implement-dock-icon-bounce-on-click: backlog
-  10-6-implement-textedit-app-grouping: backlog
+  epic-10: done
+  10-1-implement-minimize-to-dock-position: done
+  10-2-implement-genie-effect-minimize-animation: done
+  10-3-change-running-indicator-to-triangles: done
+  10-4-implement-dock-icon-hover-labels: done
+  10-5-implement-dock-icon-bounce-on-click: done
+  10-6-implement-textedit-app-grouping: done
 
   # Epic 11: Visual Polish (Tier 3)
-  epic-11: backlog
-  11-1-implement-window-brushed-metal-texture: backlog
-  11-2-style-alert-dialogs-with-tiger-aesthetics: backlog
-  11-3-implement-aqua-capsule-button-styling: backlog
-  11-4-implement-primary-button-pulse-animation: backlog
-  11-5-style-spotlight-button: backlog
+  epic-11: done
+  11-1-implement-window-brushed-metal-texture: done
+  11-2-style-alert-dialogs-with-tiger-aesthetics: done
+  11-3-implement-aqua-capsule-button-styling: done
+  11-4-implement-primary-button-pulse-animation: done
+  11-5-style-spotlight-button: done
 
   # Epic 12: Finder & Navigation (Tier 4)
   epic-12: backlog

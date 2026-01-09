@@ -43,21 +43,35 @@
    * WINDOW CHROME COLORS
    * Title bar, borders, shadows - Tiger authentic styling
    * ======================================== */
+
+  /* Brushed metal texture - subtle horizontal lines */
+  --aqua-brushed-metal: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 1px,
+    rgba(255, 255, 255, 0.03) 1px,
+    rgba(255, 255, 255, 0.03) 2px,
+    transparent 2px,
+    transparent 3px,
+    rgba(0, 0, 0, 0.02) 3px,
+    rgba(0, 0, 0, 0.02) 4px
+  );
+
   --aqua-titlebar-active: linear-gradient(
     180deg,
-    #f0f0f0 0%,
-    #e6e6e6 2%,
-    #d6d6d6 48%,
-    #c4c4c4 52%,
-    #d2d2d2 100%
+    #e8e8e8 0%,
+    #dcdcdc 2%,
+    #c8c8c8 48%,
+    #b8b8b8 52%,
+    #c6c6c6 100%
   );
   --aqua-titlebar-inactive: linear-gradient(
     180deg,
-    #f8f8f8 0%,
-    #f2f2f2 2%,
-    #e8e8e8 48%,
-    #e0e0e0 52%,
-    #ececec 100%
+    #f4f4f4 0%,
+    #ececec 2%,
+    #e0e0e0 48%,
+    #d8d8d8 52%,
+    #e4e4e4 100%
   );
   --aqua-window-border: rgba(0, 0, 0, 0.35);
   --aqua-window-shadow:

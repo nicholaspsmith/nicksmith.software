@@ -239,9 +239,20 @@
 }
 
 .spotlightIcon {
-  /* Tiger Spotlight: blue circle button - no opacity reduction */
+  /* Tiger Spotlight: blue circle button */
   margin-left: var(--aqua-spacing-sm);
   cursor: var(--aqua-cursor-pointer);
+  /* Subtle button appearance */
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
+  transition: filter 0.15s ease-out;
+}
+
+.spotlightIcon:hover {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3)) brightness(1.1);
+}
+
+.spotlightIcon:active {
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.2)) brightness(0.95);
 }
 
 /* Apple Logo SVG - always shows blue gradient */
