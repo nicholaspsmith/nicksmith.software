@@ -58,38 +58,51 @@ export const windowVariants: Variants = {
   },
 
   /**
-   * Minimizing animation - fade out, scale down, move toward dock
-   * Duration: 300ms for smooth minimize feel
+   * Minimizing animation - Genie effect
+   * Simulates the iconic Tiger genie effect:
+   * - Scales down dramatically
+   * - Moves toward dock (bottom center)
+   * - Applies perspective distortion via scaleX squeeze
+   * - Uses custom easing for "sucking" effect
+   * Duration: 400ms for smooth genie feel
    */
   minimizing: {
     opacity: 0,
-    scale: 0.5,
-    y: 100,
+    scale: 0.1,
+    scaleX: 0.3,
+    y: 'calc(100vh - 100px)',
+    x: 'calc(50vw - 50%)',
     transition: {
-      duration: 0.3,
-      ease: 'easeIn',
+      duration: 0.4,
+      ease: [0.4, 0, 0.6, 1], // Custom easing for genie "suction"
+      opacity: { duration: 0.3, delay: 0.1 },
     },
   },
 
   /**
-   * Minimized state - fully hidden
+   * Minimized state - fully hidden at dock position
    */
   minimized: {
     opacity: 0,
     scale: 0,
+    y: 'calc(100vh - 50px)',
   },
 
   /**
-   * Restoring animation - fade in, scale up, return from dock position
-   * Duration: 300ms to match minimize timing
+   * Restoring animation - Reverse genie effect
+   * Window appears to "pop out" from the dock
+   * Duration: 350ms for snappy restore
    */
   restoring: {
     opacity: 1,
     scale: 1,
+    scaleX: 1,
     y: 0,
+    x: 0,
     transition: {
-      duration: 0.3,
-      ease: 'easeOut',
+      duration: 0.35,
+      ease: [0, 0.4, 0.2, 1], // Reverse easing for "expansion"
+      opacity: { duration: 0.2 },
     },
   },
 };

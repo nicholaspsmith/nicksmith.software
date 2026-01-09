@@ -162,6 +162,27 @@ describe('windowStore', () => {
       const window = useWindowStore.getState().windows.find(w => w.id === id);
       expect(window?.zIndex).toBe(2);
     });
+
+    it('should set restoredFromMinimized flag to true', () => {
+      const id = useWindowStore.getState().openWindow('About');
+      useWindowStore.getState().minimizeWindow(id);
+      useWindowStore.getState().restoreWindow(id);
+
+      const window = useWindowStore.getState().windows.find(w => w.id === id);
+      expect(window?.restoredFromMinimized).toBe(true);
+    });
+  });
+
+  describe('clearRestoredFlag', () => {
+    it('should set restoredFromMinimized flag to false', () => {
+      const id = useWindowStore.getState().openWindow('About');
+      useWindowStore.getState().minimizeWindow(id);
+      useWindowStore.getState().restoreWindow(id);
+      useWindowStore.getState().clearRestoredFlag(id);
+
+      const window = useWindowStore.getState().windows.find(w => w.id === id);
+      expect(window?.restoredFromMinimized).toBe(false);
+    });
   });
 
   describe('updatePosition', () => {

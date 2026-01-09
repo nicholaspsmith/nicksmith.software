@@ -34,9 +34,15 @@ export function Window({ id, title, children }: WindowProps) {
   const closeWindow = useWindowStore((s) => s.closeWindow);
   const minimizeWindow = useWindowStore((s) => s.minimizeWindow);
   const zoomWindow = useWindowStore((s) => s.zoomWindow);
+  const clearRestoredFlag = useWindowStore((s) => s.clearRestoredFlag);
 
-  // Animation state: starts as 'opening' to trigger the open animation
-  const [animationState, setAnimationState] = useState<'opening' | 'open' | 'closing' | 'minimizing'>('opening');
+  // Determine initial animation state based on whether this is a restore from minimized
+  const isRestoring = windowState?.restoredFromMinimized ?? false;
+
+  // Animation state: starts as 'opening' for new windows or 'restoring' for restored windows
+  const [animationState, setAnimationState] = useState<'opening' | 'open' | 'closing' | 'minimizing' | 'restoring'>(
+    isRestoring ? 'restoring' : 'opening'
+  );
 
   const isFocused = activeWindowId === id;
 
@@ -114,13 +120,16 @@ export function Window({ id, title, children }: WindowProps) {
     if (animationState === 'opening') {
       // Transition to stable 'open' state after opening animation
       setAnimationState('open');
+    } else if (animationState === 'restoring') {
+      // Transition to stable 'open' state after restore animation, clear the flag
+      setAnimationState('open');
+      clearRestoredFlag(id);
     } else if (animationState === 'closing') {
       closeWindow(id);
     } else if (animationState === 'minimizing') {
       minimizeWindow(id);
-      setAnimationState('opening'); // Reset for when restored (will re-animate in)
     }
-  }, [animationState, id, closeWindow, minimizeWindow]);
+  }, [animationState, id, closeWindow, minimizeWindow, clearRestoredFlag]);
 
   // Don't render if window not found or minimized
   if (!windowState || windowState.state === 'minimized') {
@@ -149,7 +158,7 @@ export function Window({ id, title, children }: WindowProps) {
         aria-labelledby={titleId}
         aria-modal="false"
         variants={windowVariants}
-        initial="closed"
+        initial={isRestoring ? 'minimized' : 'closed'}
         animate={animationState}
         onAnimationComplete={handleAnimationComplete}
         onClick={handleClick}

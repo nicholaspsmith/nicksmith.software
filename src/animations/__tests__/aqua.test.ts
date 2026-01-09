@@ -30,7 +30,8 @@ describe('Animation Variants', () => {
     });
 
     it('should use only GPU-accelerated properties', () => {
-      const gpuSafeProps = ['opacity', 'scale', 'x', 'y', 'rotate', 'transition'];
+      // All transform properties are GPU-accelerated: scale, scaleX, scaleY, x, y, rotate
+      const gpuSafeProps = ['opacity', 'scale', 'scaleX', 'scaleY', 'x', 'y', 'rotate', 'transition'];
 
       Object.entries(windowVariants).forEach(([, variant]) => {
         if (typeof variant === 'object' && variant !== null) {
@@ -61,16 +62,18 @@ describe('Animation Variants', () => {
       expect(transition.duration).toBeCloseTo(0.2, 1);
     });
 
-    it('should have minimizing transition around 300ms', () => {
+    it('should have minimizing transition around 400ms', () => {
+      // Genie effect needs a longer duration for the "suction" feel
       const minimizing = windowVariants.minimizing as Record<string, unknown>;
       const transition = minimizing.transition as { duration: number };
-      expect(transition.duration).toBeCloseTo(0.3, 1);
+      expect(transition.duration).toBeCloseTo(0.4, 1);
     });
 
-    it('should have restoring transition around 300ms', () => {
+    it('should have restoring transition around 350ms', () => {
+      // Reverse genie effect - snappy restore
       const restoring = windowVariants.restoring as Record<string, unknown>;
       const transition = restoring.transition as { duration: number };
-      expect(transition.duration).toBeCloseTo(0.3, 1);
+      expect(transition.duration).toBeCloseTo(0.35, 2);
     });
   });
 

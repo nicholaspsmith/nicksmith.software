@@ -51,6 +51,7 @@ describe('MenuBar', () => {
           state: 'open',
           isZoomed: false,
           previousBounds: null,
+          restoredFromMinimized: false,
         },
       ],
       activeWindowId: 'test-123',
@@ -75,6 +76,7 @@ describe('MenuBar', () => {
           state: 'open',
           isZoomed: false,
           previousBounds: null,
+          restoredFromMinimized: false,
         },
         {
           id: 'win-2',
@@ -88,6 +90,7 @@ describe('MenuBar', () => {
           state: 'open',
           isZoomed: false,
           previousBounds: null,
+          restoredFromMinimized: false,
         },
       ],
       activeWindowId: 'win-2',

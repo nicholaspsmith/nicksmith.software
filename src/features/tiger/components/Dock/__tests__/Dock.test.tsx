@@ -43,6 +43,7 @@ describe('Dock', () => {
           state: 'minimized',
           isZoomed: false,
           previousBounds: null,
+          restoredFromMinimized: false,
         },
       ],
       activeWindowId: null,
@@ -68,6 +69,7 @@ describe('Dock', () => {
           state: 'minimized',
           isZoomed: false,
           previousBounds: null,
+          restoredFromMinimized: false,
         },
         {
           id: 'test-2',
@@ -81,6 +83,7 @@ describe('Dock', () => {
           state: 'minimized',
           isZoomed: false,
           previousBounds: null,
+          restoredFromMinimized: false,
         },
       ],
       activeWindowId: null,
@@ -107,6 +110,7 @@ describe('Dock', () => {
           state: 'minimized',
           isZoomed: false,
           previousBounds: null,
+          restoredFromMinimized: false,
         },
         {
           id: 'open-1',
@@ -120,6 +124,7 @@ describe('Dock', () => {
           state: 'open',
           isZoomed: false,
           previousBounds: null,
+          restoredFromMinimized: false,
         },
       ],
       activeWindowId: 'open-1',
@@ -146,6 +151,7 @@ describe('Dock', () => {
           state: 'minimized',
           isZoomed: false,
           previousBounds: null,
+          restoredFromMinimized: false,
         },
       ],
       activeWindowId: null,
@@ -159,6 +165,7 @@ describe('Dock', () => {
     const state = useWindowStore.getState();
     const window = state.windows.find((w) => w.id === 'test-1');
     expect(window?.state).toBe('open');
+    expect(window?.restoredFromMinimized).toBe(true);
     expect(state.activeWindowId).toBe('test-1');
   });
 
@@ -177,6 +184,7 @@ describe('Dock', () => {
           state: 'minimized',
           isZoomed: false,
           previousBounds: null,
+          restoredFromMinimized: false,
         },
       ],
       activeWindowId: null,

@@ -19,6 +19,8 @@ export interface WindowState {
   state: 'open' | 'minimized' | 'closed';
   isZoomed: boolean;
   previousBounds: WindowBounds | null;
+  /** True when window was just restored from minimized - triggers reverse genie animation */
+  restoredFromMinimized: boolean;
 }
 
 interface WindowStore {
@@ -34,6 +36,7 @@ interface WindowStore {
   clearActiveWindow: () => void;
   minimizeWindow: (id: string) => void;
   restoreWindow: (id: string) => void;
+  clearRestoredFlag: (id: string) => void;
   zoomWindow: (id: string) => void;
   updatePosition: (id: string, x: number, y: number) => void;
   updateSize: (id: string, width: number, height: number) => void;
@@ -76,6 +79,7 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
         state: 'open',
         isZoomed: false,
         previousBounds: null,
+        restoredFromMinimized: false,
       }],
       activeWindowId: id,
       maxZIndex: newZIndex,
@@ -120,10 +124,20 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
     const newZIndex = maxZIndex + 1;
     set((state) => ({
       windows: state.windows.map((w) =>
-        w.id === id ? { ...w, state: 'open' as const, zIndex: newZIndex } : w
+        w.id === id
+          ? { ...w, state: 'open' as const, zIndex: newZIndex, restoredFromMinimized: true }
+          : w
       ),
       activeWindowId: id,
       maxZIndex: newZIndex,
+    }));
+  },
+
+  clearRestoredFlag: (id) => {
+    set((state) => ({
+      windows: state.windows.map((w) =>
+        w.id === id ? { ...w, restoredFromMinimized: false } : w
+      ),
     }));
   },
 
