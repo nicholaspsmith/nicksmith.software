@@ -6,11 +6,13 @@ export interface SoundStore {
   initialized: boolean;
   startupChimePlayed: boolean;
   sosumiLoaded: boolean;
+  volume: number; // 0-1 range
 
   initialize: () => Promise<void>;
   play: (soundName: string) => void;
   playStartupChime: () => void;
   playSosumi: () => void;
+  setVolume: (volume: number) => void;
 }
 
 /**
@@ -31,12 +33,18 @@ async function loadAudioBuffer(
 }
 
 /**
- * Play an audio buffer
+ * Play an audio buffer with volume control
  */
-function playBuffer(audioContext: AudioContext, buffer: AudioBuffer): void {
+function playBuffer(audioContext: AudioContext, buffer: AudioBuffer, volume: number = 1): void {
   const source = audioContext.createBufferSource();
   source.buffer = buffer;
-  source.connect(audioContext.destination);
+
+  // Create gain node for volume control
+  const gainNode = audioContext.createGain();
+  gainNode.gain.value = volume;
+
+  source.connect(gainNode);
+  gainNode.connect(audioContext.destination);
   source.start();
 }
 
@@ -80,6 +88,7 @@ export const useSoundStore = create<SoundStore>((set, get) => ({
   initialized: false,
   startupChimePlayed: false,
   sosumiLoaded: false,
+  volume: 0.75, // Default volume at 75%
 
   initialize: async () => {
     // Browser requires user gesture before AudioContext
@@ -122,7 +131,7 @@ export const useSoundStore = create<SoundStore>((set, get) => ({
   },
 
   playSosumi: () => {
-    const { audioContext, initialized, buffers, sosumiLoaded } = get();
+    const { audioContext, initialized, buffers, sosumiLoaded, volume } = get();
 
     // Initialize audio context if needed (requires user gesture)
     if (!initialized || !audioContext) {
@@ -134,14 +143,14 @@ export const useSoundStore = create<SoundStore>((set, get) => ({
         if (buffer) {
           get().buffers.set('sosumi', buffer);
           set({ sosumiLoaded: true });
-          playBuffer(ctx, buffer);
+          playBuffer(ctx, buffer, get().volume);
         }
       });
     } else if (sosumiLoaded) {
       // Play from preloaded buffer
       const buffer = buffers.get('sosumi');
       if (buffer) {
-        playBuffer(audioContext, buffer);
+        playBuffer(audioContext, buffer, volume);
       }
     } else {
       // Buffer not loaded yet, load and play
@@ -149,9 +158,15 @@ export const useSoundStore = create<SoundStore>((set, get) => ({
         if (buffer) {
           get().buffers.set('sosumi', buffer);
           set({ sosumiLoaded: true });
-          playBuffer(audioContext, buffer);
+          playBuffer(audioContext, buffer, get().volume);
         }
       });
     }
+  },
+
+  setVolume: (volume: number) => {
+    // Clamp volume between 0 and 1
+    const clampedVolume = Math.max(0, Math.min(1, volume));
+    set({ volume: clampedVolume });
   },
 }));

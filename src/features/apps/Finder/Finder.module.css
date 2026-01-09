@@ -26,20 +26,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 4px 8px;
-  /* Tiger Finder brushed aluminum - more pronounced horizontal streaks */
+  /* Tiger Finder brushed aluminum - using authentic texture image */
   background:
-    repeating-linear-gradient(
-      0deg,
-      transparent 0px,
-      transparent 1px,
-      rgba(255, 255, 255, 0.15) 1px,
-      rgba(255, 255, 255, 0.15) 2px,
-      transparent 2px,
-      transparent 3px,
-      rgba(0, 0, 0, 0.05) 3px,
-      rgba(0, 0, 0, 0.05) 4px
-    ),
-    linear-gradient(180deg, #c8c8c8 0%, #b8b8b8 50%, #a8a8a8 100%);
+    linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(0,0,0,0.1) 100%),
+    var(--aqua-brushed-metal-texture);
+  background-size: auto, cover;
   border-bottom: 1px solid #808080;
   min-height: 36px;
 }
@@ -180,25 +171,25 @@
  * ======================================== */
 
 .sidebar {
-  width: 140px;
-  min-width: 140px;
-  background: linear-gradient(180deg, #e8e8e8 0%, #d8d8d8 100%);
-  border-right: 1px solid #b0b0b0;
-  padding: 8px 0;
+  width: 180px;
+  min-width: 180px;
+  background: linear-gradient(180deg, #e8e8e8 0%, #d0d0d0 100%);
+  border-right: 1px solid #a0a0a0;
+  padding: 4px 0;
   overflow-y: auto;
 }
 
 .sidebarItem {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
-  padding: 4px 12px;
+  padding: 3px 8px;
   border: none;
   background: transparent;
   text-align: left;
   cursor: var(--aqua-cursor-default);
-  font-size: 11px;
+  font-size: 12px;
   color: #000;
 }
 
@@ -209,9 +200,6 @@
 .sidebarItemSelected {
   background: var(--aqua-selection-bg);
   color: #fff;
-  border-radius: 3px;
-  margin: 0 4px;
-  width: calc(100% - 8px);
 }
 
 .sidebarItemSelected:hover {
@@ -222,6 +210,11 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-weight: 400;
+}
+
+.sidebarItemSelected .sidebarLabel {
+  font-weight: 500;
 }
 
 /* ========================================

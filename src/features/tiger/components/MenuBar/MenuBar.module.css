@@ -366,3 +366,124 @@
 .spotlightInput::placeholder {
   color: #999;
 }
+
+/* Volume Control */
+.volumeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  background: transparent;
+  border: none;
+  cursor: var(--aqua-cursor-pointer);
+  color: #333;
+}
+
+.volumeButton.menuActive {
+  background: var(--aqua-selection-bg);
+  color: #fff;
+}
+
+/* Volume Dropdown */
+.volumeDropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  right: 0;
+  background-color: #fff;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    rgba(0, 0, 0, 0.03) 1px,
+    rgba(0, 0, 0, 0.03) 2px
+  );
+  border: 1px solid #808080;
+  border-radius: 4px;
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.25),
+    0 0 1px rgba(0, 0, 0, 0.3);
+  padding: 12px;
+  z-index: var(--aqua-z-dropdown);
+}
+
+.volumeSliderContainer {
+  position: relative;
+  width: 24px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.volumeSlider {
+  position: absolute;
+  width: 120px;
+  height: 24px;
+  transform: rotate(-90deg);
+  transform-origin: center center;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: var(--aqua-cursor-pointer);
+  z-index: 2;
+}
+
+.volumeSlider::-webkit-slider-track {
+  width: 100%;
+  height: 6px;
+  background: transparent;
+  border-radius: 3px;
+}
+
+.volumeSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  /* Aqua blue sphere */
+  background: linear-gradient(180deg, #7CB8FF 0%, #3B82F6 50%, #1E40AF 100%);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  cursor: var(--aqua-cursor-pointer);
+}
+
+.volumeSlider::-moz-range-track {
+  width: 100%;
+  height: 6px;
+  background: transparent;
+  border-radius: 3px;
+}
+
+.volumeSlider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #7CB8FF 0%, #3B82F6 50%, #1E40AF 100%);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  cursor: var(--aqua-cursor-pointer);
+}
+
+.volumeTrack {
+  position: absolute;
+  width: 6px;
+  height: 100%;
+  background: linear-gradient(180deg, #e0e0e0 0%, #c0c0c0 100%);
+  border-radius: 3px;
+  border: 1px solid #999;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.volumeFill {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: linear-gradient(180deg, #7CB8FF 0%, #3B82F6 50%, #1E40AF 100%);
+  border-radius: 3px;
+  transition: height 0.05s ease-out;
+}

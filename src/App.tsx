@@ -81,11 +81,10 @@ function calculateInitialPositions(): Record<string, IconPosition> {
  * Renders the appropriate icon based on config
  * Uses official Tiger PNG icons where available
  */
-function DesktopIconImage({ icon, isSelected }: { icon: IconConfig; isSelected?: boolean }) {
-  // Special case for Macintosh HD - changes when selected
+function DesktopIconImage({ icon, isSelected: _isSelected }: { icon: IconConfig; isSelected?: boolean }) {
+  // Macintosh HD - always use the same icon (no selection change)
   if (icon.id === 'macintosh-hd') {
-    const src = isSelected ? '/icons/macintosh-hd-selected.png' : '/icons/macintosh-hd.png';
-    return <img src={src} alt="" width={48} height={48} draggable={false} />;
+    return <img src="/icons/macintosh-hd.png" alt="" width={48} height={48} draggable={false} />;
   }
 
   // Terminal uses custom SVG (no official icon available)
@@ -142,8 +141,6 @@ function WindowContent({ app }: { app: string }) {
       return <Finder location="home" />;
     case 'finder-hd':
       return <Finder location="hd" />;
-    case 'finder-trash':
-      return <Finder location="trash" />;
     default:
       return null;
   }

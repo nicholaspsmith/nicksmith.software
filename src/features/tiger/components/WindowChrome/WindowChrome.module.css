@@ -24,14 +24,17 @@
 
 .focused {
   background:
-    var(--aqua-brushed-metal),
-    var(--aqua-titlebar-active);
+    linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%, rgba(0,0,0,0.1) 100%),
+    var(--aqua-brushed-metal-texture);
+  background-size: auto, cover;
 }
 
 .unfocused {
   background:
-    var(--aqua-brushed-metal),
-    var(--aqua-titlebar-inactive);
+    linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%, rgba(0,0,0,0.05) 100%),
+    var(--aqua-brushed-metal-texture);
+  background-size: auto, cover;
+  filter: brightness(1.05) saturate(0.8);
 }
 
 .title {

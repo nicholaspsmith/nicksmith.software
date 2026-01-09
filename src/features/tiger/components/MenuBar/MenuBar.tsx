@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useWindowStore } from '@/stores/windowStore';
+import { useSoundStore } from '@/stores/soundStore';
 import styles from './MenuBar.module.css';
 
 type MenuItem = { label: string; shortcut?: string; disabled?: boolean; hasSubmenu?: boolean; checked?: boolean } | { type: 'divider' };
@@ -205,11 +206,15 @@ const TEXTEDIT_MENUS: MenuConfig[] = [
 export function MenuBar() {
   const activeWindowId = useWindowStore((s) => s.activeWindowId);
   const windows = useWindowStore((s) => s.windows);
+  const volume = useSoundStore((s) => s.volume);
+  const setVolume = useSoundStore((s) => s.setVolume);
+  const playSosumi = useSoundStore((s) => s.playSosumi);
   const [time, setTime] = useState(new Date());
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [spotlightOpen, setSpotlightOpen] = useState(false);
   const [spotlightQuery, setSpotlightQuery] = useState('');
   const [clockDropdownOpen, setClockDropdownOpen] = useState(false);
+  const [volumeDropdownOpen, setVolumeDropdownOpen] = useState(false);
   const menuBarRef = useRef<HTMLElement>(null);
   const spotlightInputRef = useRef<HTMLInputElement>(null);
 
@@ -243,6 +248,7 @@ export function MenuBar() {
         setOpenMenuId(null);
         setSpotlightOpen(false);
         setClockDropdownOpen(false);
+        setVolumeDropdownOpen(false);
       }
     };
 
@@ -254,10 +260,11 @@ export function MenuBar() {
           setSpotlightQuery('');
         }
         if (clockDropdownOpen) setClockDropdownOpen(false);
+        if (volumeDropdownOpen) setVolumeDropdownOpen(false);
       }
     };
 
-    if (openMenuId || spotlightOpen || clockDropdownOpen) {
+    if (openMenuId || spotlightOpen || clockDropdownOpen || volumeDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('keydown', handleKeyDown);
       return () => {
@@ -265,7 +272,7 @@ export function MenuBar() {
         document.removeEventListener('keydown', handleKeyDown);
       };
     }
-  }, [openMenuId, spotlightOpen, clockDropdownOpen]);
+  }, [openMenuId, spotlightOpen, clockDropdownOpen, volumeDropdownOpen]);
 
   // Focus spotlight input when opened
   useEffect(() => {
@@ -308,7 +315,24 @@ export function MenuBar() {
     setClockDropdownOpen((prev) => !prev);
     setOpenMenuId(null);
     setSpotlightOpen(false);
+    setVolumeDropdownOpen(false);
   }, []);
+
+  const handleVolumeClick = useCallback(() => {
+    setVolumeDropdownOpen((prev) => !prev);
+    setOpenMenuId(null);
+    setSpotlightOpen(false);
+    setClockDropdownOpen(false);
+  }, []);
+
+  const handleVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setVolume(parseFloat(e.target.value));
+  }, [setVolume]);
+
+  const handleVolumeMouseUp = useCallback(() => {
+    // Play sosumi to preview volume when user releases slider
+    playSosumi();
+  }, [playSosumi]);
 
   const formatTime = (date: Date): string => {
     return date.toLocaleString('en-US', {
@@ -516,11 +540,45 @@ export function MenuBar() {
       </div>
 
       <div className={styles.right}>
-        {/* Status Icons */}
-        <div className={styles.statusIcons}>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" className={styles.statusIcon} aria-label="Volume">
-            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
-          </svg>
+        {/* Volume Control */}
+        <div className={styles.menuContainer}>
+          <button
+            type="button"
+            className={`${styles.volumeButton} ${volumeDropdownOpen ? styles.menuActive : ''}`}
+            onClick={handleVolumeClick}
+            aria-label="Volume control"
+            aria-expanded={volumeDropdownOpen}
+            data-testid="volume-button"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+            </svg>
+          </button>
+
+          {volumeDropdownOpen && (
+            <div className={styles.volumeDropdown} data-testid="volume-dropdown">
+              <div className={styles.volumeSliderContainer}>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={volume}
+                  onChange={handleVolumeChange}
+                  onMouseUp={handleVolumeMouseUp}
+                  onTouchEnd={handleVolumeMouseUp}
+                  className={styles.volumeSlider}
+                  aria-label="Volume"
+                />
+                <div className={styles.volumeTrack}>
+                  <div
+                    className={styles.volumeFill}
+                    style={{ height: `${volume * 100}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Clock with Dropdown */}
