@@ -26,11 +26,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 4px 8px;
-  /* Tiger Finder brushed aluminum - tiled texture at correct scale */
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%, rgba(0,0,0,0.08) 100%),
-    var(--aqua-brushed-metal-texture);
-  background-size: auto, 256px 256px;
+  background: linear-gradient(170deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%, rgba(0, 0, 0, 0.08) 100%), var(--aqua-brushed-metal-texture);
+  background-size: auto, 530px 482px;
   background-repeat: repeat;
   border-bottom: 1px solid #808080;
   min-height: 36px;
@@ -271,8 +268,6 @@
 .contentItemSelected .contentLabel {
   color: #fff;
   background: var(--aqua-selection-bg);
-  border-radius: 2px;
-  padding: 1px 4px;
 }
 
 .contentLabel {
@@ -281,6 +276,9 @@
   text-align: center;
   word-break: break-word;
   max-width: 80px;
+  /* Fixed padding to prevent height change on selection */
+  padding: 1px 4px;
+  border-radius: 2px;
 }
 
 /* ========================================

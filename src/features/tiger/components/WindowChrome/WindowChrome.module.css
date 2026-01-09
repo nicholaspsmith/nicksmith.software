@@ -17,24 +17,19 @@
   height: var(--aqua-titlebar-height);
   min-height: var(--aqua-titlebar-height);
   padding: 0 var(--aqua-spacing-sm);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   cursor: var(--aqua-cursor-default);
   user-select: none;
 }
 
 .focused {
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%, rgba(0,0,0,0.08) 100%),
-    var(--aqua-brushed-metal-texture);
-  background-size: auto, 256px 256px;
+  background: linear-gradient(173deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%, rgba(0, 0, 0, 0.08) 100%), var(--aqua-brushed-metal-texture);
+  background-size: auto, 530px 482px;
   background-repeat: repeat;
 }
 
 .unfocused {
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%, rgba(0,0,0,0.05) 100%),
-    var(--aqua-brushed-metal-texture);
-  background-size: auto, 256px 256px;
+  background: linear-gradient(173deg, rgba(255, 255, 255, 0.2) 0%, transparent 50%, rgba(0, 0, 0, 0.05) 100%), var(--aqua-brushed-metal-texture);
+  background-size: auto, 530px 482px;
   background-repeat: repeat;
   filter: brightness(1.05) saturate(0.8);
 }
