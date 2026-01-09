@@ -17,6 +17,7 @@ import { AboutMe } from '@/features/apps/AboutMe';
 import { Projects } from '@/features/apps/Projects';
 import { Resume } from '@/features/apps/Resume';
 import { Contact } from '@/features/apps/Contact';
+import { Terminal as TerminalApp } from '@/features/apps/Terminal';
 
 /**
  * Portfolio app configuration
@@ -56,37 +57,7 @@ function WindowContent({ app }: { app: string }) {
     case 'contact':
       return <Contact />;
     case 'terminal':
-      // Terminal app placeholder - will be implemented in Story 7.4
-      return (
-        <div
-          style={{
-            padding: 16,
-            backgroundColor: '#0a0a0a',
-            color: '#33ff33',
-            fontFamily: 'Monaco, monospace',
-            fontSize: 14,
-            height: '100%',
-            minHeight: 200,
-          }}
-        >
-          <div>Last login: {new Date().toLocaleString()}</div>
-          <div style={{ marginTop: 8 }}>
-            <span style={{ color: '#4ca1e4' }}>nick@macbook</span>
-            <span style={{ color: '#fff' }}>:</span>
-            <span style={{ color: '#ffbd2e' }}>~</span>
-            <span style={{ color: '#fff' }}>$ </span>
-            <span
-              style={{
-                display: 'inline-block',
-                width: 8,
-                height: 14,
-                backgroundColor: '#33ff33',
-                animation: 'blink 1s step-end infinite',
-              }}
-            />
-          </div>
-        </div>
-      );
+      return <TerminalApp />;
     default:
       return <div style={{ padding: 16 }}>{app} content</div>;
   }

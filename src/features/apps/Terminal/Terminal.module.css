@@ -1,0 +1,46 @@
+/**
+ * Terminal App Styles
+ * Mac OS X Tiger terminal aesthetic with modern xterm.js
+ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 250px;
+  background-color: #0a0a0a;
+}
+
+.terminal {
+  flex: 1;
+  padding: 8px;
+  overflow: hidden;
+}
+
+/* Override xterm.js styles for Tiger look */
+.terminal :global(.xterm) {
+  padding: 4px;
+}
+
+.terminal :global(.xterm-viewport) {
+  overflow-y: auto;
+}
+
+/* Custom scrollbar for Tiger feel */
+.terminal :global(.xterm-viewport::-webkit-scrollbar) {
+  width: 12px;
+}
+
+.terminal :global(.xterm-viewport::-webkit-scrollbar-track) {
+  background: #1a1a1a;
+}
+
+.terminal :global(.xterm-viewport::-webkit-scrollbar-thumb) {
+  background: #444;
+  border-radius: 6px;
+  border: 2px solid #1a1a1a;
+}
+
+.terminal :global(.xterm-viewport::-webkit-scrollbar-thumb:hover) {
+  background: #555;
+}
