@@ -289,15 +289,15 @@
 .clockDropdown {
   right: 0;
   left: auto;
-  min-width: 200px;
+  min-width: 180px;
 }
 
 .clockDateDisplay {
-  padding: 8px 16px;
+  padding: 3px 16px 3px 20px;
   text-align: left;
-  font-size: 13px;
-  font-weight: 400;
-  color: #000;
+  font-size: var(--aqua-font-size-sm);
+  font-weight: 500;
+  color: #666;
 }
 
 /* Checkmark for menu items */
@@ -330,26 +330,30 @@
   display: flex;
   align-items: center;
   height: 22px;
-  border-radius: 4px;
+  border-radius: 11px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(0, 0, 0, 0.1);
 }
 
 .spotlightLabel {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 12px;
+  padding: 0 10px;
   height: 100%;
-  background: linear-gradient(180deg, #7CB8FF 0%, #3B82F6 50%, #1E40AF 100%);
+  background: linear-gradient(180deg, #6FADE8 0%, #3875D7 50%, #2654A0 100%);
   color: #fff;
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+  border-right: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 .spotlightInput {
-  width: 180px;
+  width: 160px;
   height: 100%;
   border: none;
   background: #fff;

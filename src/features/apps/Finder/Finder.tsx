@@ -79,6 +79,9 @@ const HD_CONTENTS: ContentItem[] = [
  */
 const TRASH_CONTENTS: ContentItem[] = [];
 
+/** View mode types */
+type ViewMode = 'icon' | 'list' | 'column';
+
 export interface FinderProps {
   /** Initial location to display */
   location?: 'home' | 'hd' | 'trash';
@@ -90,7 +93,7 @@ export interface FinderProps {
  * Displays a Finder-like interface with:
  * - Toolbar with navigation and view controls
  * - Sidebar with common locations
- * - Content area with folder contents
+ * - Content area with folder contents (Icon, List, or Column view)
  * - Status bar with item count
  */
 export function Finder({ location = 'home' }: FinderProps) {
@@ -98,6 +101,7 @@ export function Finder({ location = 'home' }: FinderProps) {
     location === 'trash' ? 'trash' : location === 'hd' ? 'macintosh-hd' : 'user'
   );
   const [selectedContentItem, setSelectedContentItem] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('icon');
 
   // Get view config based on selected sidebar item
   const getViewConfig = (): FinderViewConfig => {
@@ -181,13 +185,28 @@ export function Finder({ location = 'home' }: FinderProps) {
 
           {/* View mode buttons */}
           <div className={styles.viewButtons}>
-            <button className={`${styles.viewButton} ${styles.viewButtonActive}`} aria-label="Icon view">
+            <button
+              className={`${styles.viewButton} ${viewMode === 'icon' ? styles.viewButtonActive : ''}`}
+              aria-label="Icon view"
+              aria-pressed={viewMode === 'icon'}
+              onClick={() => setViewMode('icon')}
+            >
               <IconViewIcon />
             </button>
-            <button className={styles.viewButton} aria-label="List view">
+            <button
+              className={`${styles.viewButton} ${viewMode === 'list' ? styles.viewButtonActive : ''}`}
+              aria-label="List view"
+              aria-pressed={viewMode === 'list'}
+              onClick={() => setViewMode('list')}
+            >
               <ListViewIcon />
             </button>
-            <button className={styles.viewButton} aria-label="Column view">
+            <button
+              className={`${styles.viewButton} ${viewMode === 'column' ? styles.viewButtonActive : ''}`}
+              aria-label="Column view"
+              aria-pressed={viewMode === 'column'}
+              onClick={() => setViewMode('column')}
+            >
               <ColumnViewIcon />
             </button>
           </div>
@@ -234,7 +253,7 @@ export function Finder({ location = 'home' }: FinderProps) {
             <div className={styles.emptyState}>
               {selectedSidebarItem === 'trash' ? 'Trash is empty' : 'This folder is empty'}
             </div>
-          ) : (
+          ) : viewMode === 'icon' ? (
             <div className={styles.iconGrid}>
               {config.contentItems.map((item) => (
                 <button
@@ -246,6 +265,45 @@ export function Finder({ location = 'home' }: FinderProps) {
                   <span className={styles.contentLabel}>{item.name}</span>
                 </button>
               ))}
+            </div>
+          ) : viewMode === 'list' ? (
+            <div className={styles.listView}>
+              <div className={styles.listHeader}>
+                <span className={styles.listHeaderName}>Name</span>
+                <span className={styles.listHeaderDate}>Date Modified</span>
+              </div>
+              {config.contentItems.map((item) => (
+                <button
+                  key={item.id}
+                  className={`${styles.listRow} ${selectedContentItem === item.id ? styles.listRowSelected : ''}`}
+                  onClick={() => handleContentClick(item.id)}
+                >
+                  <span className={styles.listDisclosure}>▶</span>
+                  <SmallFolderIcon />
+                  <span className={styles.listName}>{item.name}</span>
+                  <span className={styles.listDate}>Jan 9, 2026, 12:00 PM</span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className={styles.columnView}>
+              <div className={styles.column}>
+                {config.contentItems.map((item) => (
+                  <button
+                    key={item.id}
+                    className={`${styles.columnItem} ${selectedContentItem === item.id ? styles.columnItemSelected : ''}`}
+                    onClick={() => handleContentClick(item.id)}
+                  >
+                    <SmallFolderIcon />
+                    <span className={styles.columnName}>{item.name}</span>
+                    {item.type === 'folder' && <span className={styles.columnArrow}>▶</span>}
+                  </button>
+                ))}
+              </div>
+              <div className={styles.columnDivider} />
+              <div className={styles.column} />
+              <div className={styles.columnDivider} />
+              <div className={styles.column} />
             </div>
           )}
         </div>
@@ -391,6 +449,28 @@ function ContentIcon({ type: _type }: { type: string }) {
       />
       <path
         d="M4 20h56v32a4 4 0 01-4 4H8a4 4 0 01-4-4V20z"
+        fill="#60A5FA"
+      />
+    </svg>
+  );
+}
+
+function SmallFolderIcon() {
+  // Small folder icon for list and column views
+  return (
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+      <defs>
+        <linearGradient id="smallFolderGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#93C5FD" />
+          <stop offset="100%" stopColor="#3B82F6" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M1 4a1 1 0 011-1h4l1 1h7a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V4z"
+        fill="url(#smallFolderGradient)"
+      />
+      <path
+        d="M1 5h14v8a1 1 0 01-1 1H2a1 1 0 01-1-1V5z"
         fill="#60A5FA"
       />
     </svg>

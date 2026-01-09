@@ -26,11 +26,22 @@
   align-items: center;
   justify-content: space-between;
   padding: 4px 8px;
+  /* Tiger Finder brushed aluminum - more pronounced horizontal streaks */
   background:
-    var(--aqua-brushed-metal),
-    linear-gradient(180deg, #e0e0e0 0%, #c8c8c8 100%);
-  border-bottom: 1px solid #999;
-  min-height: 32px;
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 1px,
+      rgba(255, 255, 255, 0.15) 1px,
+      rgba(255, 255, 255, 0.15) 2px,
+      transparent 2px,
+      transparent 3px,
+      rgba(0, 0, 0, 0.05) 3px,
+      rgba(0, 0, 0, 0.05) 4px
+    ),
+    linear-gradient(180deg, #c8c8c8 0%, #b8b8b8 50%, #a8a8a8 100%);
+  border-bottom: 1px solid #808080;
+  min-height: 36px;
 }
 
 .toolbarLeft {
@@ -274,6 +285,150 @@
   text-align: center;
   word-break: break-word;
   max-width: 80px;
+}
+
+/* ========================================
+ * LIST VIEW
+ * ======================================== */
+
+.listView {
+  display: flex;
+  flex-direction: column;
+}
+
+.listHeader {
+  display: flex;
+  padding: 4px 8px;
+  background: linear-gradient(180deg, #f0f0f0 0%, #e0e0e0 100%);
+  border-bottom: 1px solid #c0c0c0;
+  font-size: 11px;
+  font-weight: 500;
+  color: #333;
+}
+
+.listHeaderName {
+  flex: 1;
+  padding-left: 40px;
+}
+
+.listHeaderDate {
+  width: 160px;
+  text-align: left;
+}
+
+.listRow {
+  display: flex;
+  align-items: center;
+  padding: 2px 8px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: var(--aqua-cursor-default);
+  font-size: 12px;
+  color: #000;
+  gap: 4px;
+}
+
+.listRow:nth-child(odd) {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.listRow:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.listRowSelected {
+  background: var(--aqua-selection-bg) !important;
+  color: #fff;
+}
+
+.listDisclosure {
+  width: 16px;
+  font-size: 8px;
+  color: #666;
+  flex-shrink: 0;
+}
+
+.listRowSelected .listDisclosure {
+  color: #fff;
+}
+
+.listName {
+  flex: 1;
+  margin-left: 4px;
+}
+
+.listDate {
+  width: 160px;
+  color: #666;
+  font-size: 11px;
+}
+
+.listRowSelected .listDate {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ========================================
+ * COLUMN VIEW
+ * ======================================== */
+
+.columnView {
+  display: flex;
+  flex: 1;
+  overflow-x: auto;
+}
+
+.column {
+  min-width: 180px;
+  max-width: 200px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  overflow-y: auto;
+}
+
+.columnDivider {
+  width: 1px;
+  background: #c0c0c0;
+  flex-shrink: 0;
+}
+
+.columnItem {
+  display: flex;
+  align-items: center;
+  padding: 3px 8px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: var(--aqua-cursor-default);
+  font-size: 12px;
+  color: #000;
+  gap: 6px;
+}
+
+.columnItem:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.columnItemSelected {
+  background: var(--aqua-selection-bg);
+  color: #fff;
+}
+
+.columnName {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.columnArrow {
+  font-size: 10px;
+  color: #666;
+}
+
+.columnItemSelected .columnArrow {
+  color: #fff;
 }
 
 /* ========================================
