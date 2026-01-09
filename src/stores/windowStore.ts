@@ -45,6 +45,32 @@ export function getWindowTitle(app: string): string {
   return WINDOW_TITLES[app] || app.charAt(0).toUpperCase() + app.slice(1);
 }
 
+/**
+ * App-specific window size configurations
+ * Includes initial size and minimum size constraints
+ */
+interface WindowSizeConfig {
+  width: number;
+  height: number;
+  minWidth: number;
+  minHeight: number;
+}
+
+const WINDOW_SIZE_CONFIGS: Record<string, WindowSizeConfig> = {
+  // Finder windows - opens at 650x380, min size 365x365
+  'finder-home': { width: 650, height: 380, minWidth: 365, minHeight: 365 },
+  'finder-hd': { width: 650, height: 380, minWidth: 365, minHeight: 365 },
+  'finder-trash': { width: 650, height: 380, minWidth: 365, minHeight: 365 },
+};
+
+/**
+ * Get window size configuration for an app
+ * Falls back to default size if not specified
+ */
+function getWindowSizeConfig(app: string): WindowSizeConfig {
+  return WINDOW_SIZE_CONFIGS[app] || { width: 400, height: 300, minWidth: 200, minHeight: 100 };
+}
+
 export interface WindowBounds {
   x: number;
   y: number;
@@ -63,6 +89,10 @@ export interface WindowState {
   y: number;
   width: number;
   height: number;
+  /** Minimum width - window cannot be resized smaller than this */
+  minWidth?: number;
+  /** Minimum height - window cannot be resized smaller than this */
+  minHeight?: number;
   zIndex: number;
   state: 'open' | 'minimized' | 'closed';
   isZoomed: boolean;
@@ -119,6 +149,7 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
     const id = crypto.randomUUID();
     const newZIndex = maxZIndex + 1;
     const parentApp = getParentApp(app);
+    const sizeConfig = getWindowSizeConfig(app);
     set((state) => ({
       windows: [...state.windows, {
         id,
@@ -127,8 +158,10 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
         title: getWindowTitle(app),
         x: 100 + (state.windows.length * 30), // Cascade positioning
         y: 100 + (state.windows.length * 30),
-        width: 400,
-        height: 300,
+        width: sizeConfig.width,
+        height: sizeConfig.height,
+        minWidth: sizeConfig.minWidth,
+        minHeight: sizeConfig.minHeight,
         zIndex: newZIndex,
         state: 'open',
         isZoomed: false,

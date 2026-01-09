@@ -257,8 +257,8 @@ export function Window({ id, title, children }: WindowProps) {
     <Rnd
       position={{ x: windowState.x, y: windowState.y }}
       size={{ width: windowState.width, height: displayHeight }}
-      minWidth={SACRED.windowMinWidth}
-      minHeight={isShaded ? SACRED.titleBarHeight : SACRED.windowMinHeight}
+      minWidth={windowState.minWidth ?? SACRED.windowMinWidth}
+      minHeight={isShaded ? SACRED.titleBarHeight : (windowState.minHeight ?? SACRED.windowMinHeight)}
       style={{ zIndex: windowState.zIndex }}
       dragHandleClassName={styles.dragHandle}
       bounds="#window-bounds"
