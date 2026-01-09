@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, lazy, Suspense } from 'react';
 import { MotionConfig } from 'motion/react';
 import { useAppStore } from '@/stores/appStore';
 import { useWindowStore } from '@/stores/windowStore';
@@ -21,7 +21,11 @@ import { AboutMe } from '@/features/apps/AboutMe';
 import { Projects } from '@/features/apps/Projects';
 import { Resume } from '@/features/apps/Resume';
 import { Contact } from '@/features/apps/Contact';
-import { Terminal as TerminalApp } from '@/features/apps/Terminal';
+
+// Lazy load Terminal to reduce initial bundle size (xterm.js is ~300KB)
+const TerminalApp = lazy(() =>
+  import('@/features/apps/Terminal').then((m) => ({ default: m.Terminal }))
+);
 
 /** Viewport mode type */
 type ViewportMode = 'ios' | 'fallback' | 'desktop';
@@ -72,6 +76,26 @@ function DesktopIconImage({ icon, isSelected }: { icon: IconConfig; isSelected?:
 }
 
 /**
+ * Loading fallback for lazy-loaded components
+ */
+function TerminalLoading() {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100%',
+      background: '#0a0a0a',
+      color: '#33ff33',
+      fontFamily: 'Monaco, "Courier New", monospace',
+      fontSize: 13,
+    }}>
+      Loading Terminal...
+    </div>
+  );
+}
+
+/**
  * Renders the appropriate content for a window based on its app type
  */
 function WindowContent({ app }: { app: string }) {
@@ -85,7 +109,11 @@ function WindowContent({ app }: { app: string }) {
     case 'contact':
       return <Contact />;
     case 'terminal':
-      return <TerminalApp />;
+      return (
+        <Suspense fallback={<TerminalLoading />}>
+          <TerminalApp />
+        </Suspense>
+      );
     default:
       return <div style={{ padding: 16 }}>{app} content</div>;
   }
