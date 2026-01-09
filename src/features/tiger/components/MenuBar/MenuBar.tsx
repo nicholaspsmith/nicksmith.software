@@ -96,7 +96,11 @@ export function MenuBar() {
   const windows = useWindowStore((s) => s.windows);
   const [time, setTime] = useState(new Date());
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [spotlightOpen, setSpotlightOpen] = useState(false);
+  const [spotlightQuery, setSpotlightQuery] = useState('');
+  const [clockDropdownOpen, setClockDropdownOpen] = useState(false);
   const menuBarRef = useRef<HTMLElement>(null);
+  const spotlightInputRef = useRef<HTMLInputElement>(null);
 
   // Derive app name from focused window, default to "Finder"
   const activeWindow = windows.find((w) => w.id === activeWindowId);
@@ -115,21 +119,28 @@ export function MenuBar() {
     return () => clearInterval(timer);
   }, []);
 
-  // Close all menus when clicking outside or pressing Escape
+  // Close all menus/dropdowns when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (menuBarRef.current && !menuBarRef.current.contains(e.target as Node)) {
         setOpenMenuId(null);
+        setSpotlightOpen(false);
+        setClockDropdownOpen(false);
       }
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && openMenuId) {
-        setOpenMenuId(null);
+      if (e.key === 'Escape') {
+        if (openMenuId) setOpenMenuId(null);
+        if (spotlightOpen) {
+          setSpotlightOpen(false);
+          setSpotlightQuery('');
+        }
+        if (clockDropdownOpen) setClockDropdownOpen(false);
       }
     };
 
-    if (openMenuId) {
+    if (openMenuId || spotlightOpen || clockDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('keydown', handleKeyDown);
       return () => {
@@ -137,7 +148,14 @@ export function MenuBar() {
         document.removeEventListener('keydown', handleKeyDown);
       };
     }
-  }, [openMenuId]);
+  }, [openMenuId, spotlightOpen, clockDropdownOpen]);
+
+  // Focus spotlight input when opened
+  useEffect(() => {
+    if (spotlightOpen && spotlightInputRef.current) {
+      spotlightInputRef.current.focus();
+    }
+  }, [spotlightOpen]);
 
   const handleMenuClick = useCallback((menuId: string) => {
     setOpenMenuId((prev) => (prev === menuId ? null : menuId));
@@ -160,6 +178,21 @@ export function MenuBar() {
       window.location.reload();
     }
     // Other menu items are decorative for now
+  }, []);
+
+  const handleSpotlightClick = useCallback(() => {
+    setSpotlightOpen((prev) => !prev);
+    setOpenMenuId(null);
+    setClockDropdownOpen(false);
+    if (!spotlightOpen) {
+      setSpotlightQuery('');
+    }
+  }, [spotlightOpen]);
+
+  const handleClockClick = useCallback(() => {
+    setClockDropdownOpen((prev) => !prev);
+    setOpenMenuId(null);
+    setSpotlightOpen(false);
   }, []);
 
   const formatTime = (date: Date): string => {
@@ -256,11 +289,67 @@ export function MenuBar() {
                 className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`}
                 role="menuitem"
                 aria-disabled="true"
+                data-testid="menu-item-software-update"
+              >
+                <span className={styles.dropdownItemLabel}>Software Update...</span>
+              </button>
+              <div className={styles.dropdownDivider} role="separator" />
+              <button
+                type="button"
+                className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`}
+                role="menuitem"
+                aria-disabled="true"
                 data-testid="menu-item-system-preferences"
               >
                 <span className={styles.dropdownItemLabel}>System Preferences...</span>
               </button>
+              <button
+                type="button"
+                className={`${styles.dropdownItem} ${styles.hasSubmenu}`}
+                role="menuitem"
+                data-testid="menu-item-dock"
+              >
+                <span className={styles.dropdownItemLabel}>Dock</span>
+                <span className={styles.dropdownItemShortcut}>▶</span>
+              </button>
+              <button
+                type="button"
+                className={`${styles.dropdownItem} ${styles.hasSubmenu}`}
+                role="menuitem"
+                data-testid="menu-item-location"
+              >
+                <span className={styles.dropdownItemLabel}>Location</span>
+                <span className={styles.dropdownItemShortcut}>▶</span>
+              </button>
+              <button
+                type="button"
+                className={`${styles.dropdownItem} ${styles.hasSubmenu}`}
+                role="menuitem"
+                data-testid="menu-item-recent-items"
+              >
+                <span className={styles.dropdownItemLabel}>Recent Items</span>
+                <span className={styles.dropdownItemShortcut}>▶</span>
+              </button>
               <div className={styles.dropdownDivider} role="separator" />
+              <button
+                type="button"
+                className={styles.dropdownItem}
+                onClick={() => handleMenuItemClick('Force Quit')}
+                role="menuitem"
+                data-testid="menu-item-force-quit"
+              >
+                <span className={styles.dropdownItemLabel}>Force Quit {appName}</span>
+              </button>
+              <div className={styles.dropdownDivider} role="separator" />
+              <button
+                type="button"
+                className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`}
+                role="menuitem"
+                aria-disabled="true"
+                data-testid="menu-item-sleep"
+              >
+                <span className={styles.dropdownItemLabel}>Sleep</span>
+              </button>
               <button
                 type="button"
                 className={styles.dropdownItem}
@@ -278,6 +367,17 @@ export function MenuBar() {
                 data-testid="menu-item-shut-down"
               >
                 <span className={styles.dropdownItemLabel}>Shut Down...</span>
+              </button>
+              <div className={styles.dropdownDivider} role="separator" />
+              <button
+                type="button"
+                className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`}
+                role="menuitem"
+                aria-disabled="true"
+                data-testid="menu-item-log-out"
+              >
+                <span className={styles.dropdownItemLabel}>Log Out Nick Smith...</span>
+                <span className={styles.dropdownItemShortcut}>⇧⌘Q</span>
               </button>
             </div>
           )}
@@ -425,32 +525,99 @@ export function MenuBar() {
           </svg>
         </div>
 
-        {/* Clock */}
-        <span className={styles.clock} data-testid="clock">
-          {formatTime(time)}
-        </span>
+        {/* Clock with Dropdown */}
+        <div className={styles.menuContainer}>
+          <button
+            type="button"
+            className={`${styles.clockButton} ${clockDropdownOpen ? styles.menuActive : ''}`}
+            onClick={handleClockClick}
+            data-testid="clock"
+          >
+            {formatTime(time)}
+          </button>
 
-        {/* Spotlight Icon - Tiger blue circle with white magnifying glass */}
-        <svg
-          viewBox="0 0 20 20"
-          width="20"
-          height="20"
-          className={styles.spotlightIcon}
-          aria-label="Spotlight"
-        >
-          {/* Blue gradient circle background - fills most of the icon */}
-          <defs>
-            <linearGradient id="spotlightBlueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#7CB8FF" />
-              <stop offset="50%" stopColor="#3B82F6" />
-              <stop offset="100%" stopColor="#1E40AF" />
-            </linearGradient>
-          </defs>
-          <circle cx="10" cy="10" r="9.5" fill="url(#spotlightBlueGradient)" />
-          {/* White magnifying glass - smaller and centered */}
-          <circle cx="8.5" cy="8.5" r="3" fill="none" stroke="white" strokeWidth="1.5" />
-          <line x1="11" y1="11" x2="14" y2="14" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
+          {clockDropdownOpen && (
+            <div className={`${styles.dropdown} ${styles.clockDropdown}`} data-testid="clock-dropdown">
+              <div className={styles.clockDateDisplay}>
+                <div className={styles.clockFullDate}>
+                  {time.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </div>
+              </div>
+              <div className={styles.dropdownDivider} role="separator" />
+              <button
+                type="button"
+                className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`}
+                role="menuitem"
+                aria-disabled="true"
+              >
+                <span className={styles.dropdownItemLabel}>Open Date & Time Preferences...</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Spotlight Icon with Dropdown */}
+        <div className={styles.menuContainer}>
+          <button
+            type="button"
+            className={styles.spotlightButton}
+            onClick={handleSpotlightClick}
+            aria-label="Spotlight search"
+            aria-expanded={spotlightOpen}
+            data-testid="spotlight-button"
+          >
+            <svg
+              viewBox="0 0 20 20"
+              width="20"
+              height="20"
+              className={styles.spotlightIcon}
+              aria-hidden="true"
+            >
+              <defs>
+                <linearGradient id="spotlightBlueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#7CB8FF" />
+                  <stop offset="50%" stopColor="#3B82F6" />
+                  <stop offset="100%" stopColor="#1E40AF" />
+                </linearGradient>
+              </defs>
+              <circle cx="10" cy="10" r="9.5" fill="url(#spotlightBlueGradient)" />
+              <circle cx="8.5" cy="8.5" r="3" fill="none" stroke="white" strokeWidth="1.5" />
+              <line x1="11" y1="11" x2="14" y2="14" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+
+          {spotlightOpen && (
+            <div className={`${styles.dropdown} ${styles.spotlightDropdown}`} data-testid="spotlight-dropdown">
+              <div className={styles.spotlightSearchBox}>
+                <svg viewBox="0 0 16 16" width="14" height="14" className={styles.spotlightSearchIcon}>
+                  <circle cx="6.5" cy="6.5" r="4" fill="none" stroke="#666" strokeWidth="1.5" />
+                  <line x1="10" y1="10" x2="14" y2="14" stroke="#666" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+                <input
+                  ref={spotlightInputRef}
+                  type="text"
+                  className={styles.spotlightInput}
+                  placeholder="Spotlight Search"
+                  value={spotlightQuery}
+                  onChange={(e) => setSpotlightQuery(e.target.value)}
+                  aria-label="Search"
+                />
+              </div>
+              {spotlightQuery && (
+                <div className={styles.spotlightResults}>
+                  <div className={styles.spotlightNoResults}>
+                    No results found for "{spotlightQuery}"
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

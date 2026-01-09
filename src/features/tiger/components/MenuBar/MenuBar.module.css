@@ -170,6 +170,18 @@
   background: #d0d0d0;
 }
 
+/* Submenu indicator - items that have nested menus */
+.hasSubmenu {
+  /* Submenu items don't trigger action, just indicate submenu exists */
+  cursor: default;
+}
+
+.hasSubmenu:hover {
+  /* Still show hover highlight even for submenu indicators */
+  background: #3875d7;
+  color: white;
+}
+
 .appName {
   font-weight: 600;
   padding: 2px 6px;
@@ -185,10 +197,6 @@
 .appName.menuActive {
   background: var(--aqua-selection-bg);
   color: #fff;
-}
-
-.clock {
-  font-variant-numeric: tabular-nums;
 }
 
 /* Menu Items */
@@ -258,4 +266,97 @@
 /* Apple Logo SVG - always shows blue gradient */
 .appleLogoSvg {
   display: block;
+}
+
+/* Clock Button */
+.clockButton {
+  font-family: var(--aqua-font-family);
+  font-size: var(--aqua-font-size-sm);
+  font-variant-numeric: tabular-nums;
+  background: transparent;
+  border: none;
+  padding: 2px 6px;
+  cursor: var(--aqua-cursor-pointer);
+  color: #000;
+}
+
+.clockButton.menuActive {
+  background: var(--aqua-selection-bg);
+  color: #fff;
+}
+
+/* Clock Dropdown */
+.clockDropdown {
+  right: 0;
+  left: auto;
+  min-width: 200px;
+}
+
+.clockDateDisplay {
+  padding: 12px 16px;
+  text-align: center;
+}
+
+.clockFullDate {
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Spotlight Button */
+.spotlightButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-left: var(--aqua-spacing-sm);
+  cursor: var(--aqua-cursor-pointer);
+}
+
+/* Spotlight Dropdown */
+.spotlightDropdown {
+  right: 0;
+  left: auto;
+  min-width: 300px;
+  padding: 0;
+}
+
+.spotlightSearchBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #fff;
+  border-bottom: 1px solid #d0d0d0;
+}
+
+.spotlightSearchIcon {
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.spotlightInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: var(--aqua-font-family);
+  font-size: 14px;
+  outline: none;
+}
+
+.spotlightInput::placeholder {
+  color: #999;
+}
+
+.spotlightResults {
+  padding: 8px 0;
+}
+
+.spotlightNoResults {
+  padding: 16px;
+  text-align: center;
+  color: #666;
+  font-size: 12px;
 }

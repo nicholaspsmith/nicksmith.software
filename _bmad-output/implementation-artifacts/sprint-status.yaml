@@ -145,11 +145,11 @@ development_status:
   12-4-implement-finder-icon-behavior: done
 
   # Epic 13: Menu Content (Tier 5)
-  epic-13: backlog
-  13-1-populate-apple-menu: backlog
-  13-2-populate-application-menus: backlog
-  13-3-implement-spotlight-search-dropdown: backlog
-  13-4-implement-time-date-dropdown: backlog
+  epic-13: done
+  13-1-populate-apple-menu: done
+  13-2-populate-application-menus: done
+  13-3-implement-spotlight-search-dropdown: done
+  13-4-implement-time-date-dropdown: done
 
 # ===========================================
 # NOTES
