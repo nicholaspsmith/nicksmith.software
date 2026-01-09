@@ -7,7 +7,7 @@ describe('appStore', () => {
     useAppStore.setState({
       mode: 'tiger',
       startupComplete: false,
-      selectedIconId: null,
+      selectedIconIds: [],
       alertOpen: false,
       alertConfig: null,
     });
@@ -22,8 +22,8 @@ describe('appStore', () => {
       expect(useAppStore.getState().startupComplete).toBe(false);
     });
 
-    it('should have no icon selected', () => {
-      expect(useAppStore.getState().selectedIconId).toBeNull();
+    it('should have no icons selected', () => {
+      expect(useAppStore.getState().selectedIconIds).toEqual([]);
     });
   });
 
@@ -56,26 +56,45 @@ describe('appStore', () => {
   describe('selectIcon', () => {
     it('should select an icon by id', () => {
       useAppStore.getState().selectIcon('resume');
-      expect(useAppStore.getState().selectedIconId).toBe('resume');
+      expect(useAppStore.getState().selectedIconIds).toEqual(['resume']);
     });
 
     it('should change selection when selecting a different icon', () => {
       useAppStore.getState().selectIcon('resume');
       useAppStore.getState().selectIcon('projects');
-      expect(useAppStore.getState().selectedIconId).toBe('projects');
+      expect(useAppStore.getState().selectedIconIds).toEqual(['projects']);
+    });
+  });
+
+  describe('selectMultipleIcons', () => {
+    it('should select multiple icons', () => {
+      useAppStore.getState().selectMultipleIcons(['resume', 'projects', 'contact']);
+      expect(useAppStore.getState().selectedIconIds).toEqual(['resume', 'projects', 'contact']);
+    });
+
+    it('should replace existing selection', () => {
+      useAppStore.getState().selectIcon('about');
+      useAppStore.getState().selectMultipleIcons(['resume', 'projects']);
+      expect(useAppStore.getState().selectedIconIds).toEqual(['resume', 'projects']);
     });
   });
 
   describe('clearSelection', () => {
-    it('should clear the selected icon', () => {
+    it('should clear the selected icons', () => {
       useAppStore.getState().selectIcon('resume');
       useAppStore.getState().clearSelection();
-      expect(useAppStore.getState().selectedIconId).toBeNull();
+      expect(useAppStore.getState().selectedIconIds).toEqual([]);
+    });
+
+    it('should clear multiple selected icons', () => {
+      useAppStore.getState().selectMultipleIcons(['resume', 'projects']);
+      useAppStore.getState().clearSelection();
+      expect(useAppStore.getState().selectedIconIds).toEqual([]);
     });
 
     it('should be safe to call when nothing is selected', () => {
       useAppStore.getState().clearSelection();
-      expect(useAppStore.getState().selectedIconId).toBeNull();
+      expect(useAppStore.getState().selectedIconIds).toEqual([]);
     });
   });
 

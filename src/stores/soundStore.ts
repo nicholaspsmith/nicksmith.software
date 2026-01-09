@@ -5,6 +5,7 @@ export interface SoundStore {
   buffers: Map<string, AudioBuffer>;
   initialized: boolean;
   startupChimePlayed: boolean;
+  sosumiLoaded: boolean;
 
   initialize: () => Promise<void>;
   play: (soundName: string) => void;
@@ -13,34 +14,30 @@ export interface SoundStore {
 }
 
 /**
- * Synthesize the Sosumi error sound using Web Audio API
- * Classic Mac "boing" - a quick descending tone with slight wobble
+ * Load and decode an audio file
  */
-function playSosumiSound(audioContext: AudioContext): void {
-  const now = audioContext.currentTime;
-  const duration = 0.15;
+async function loadAudioBuffer(
+  audioContext: AudioContext,
+  url: string
+): Promise<AudioBuffer | null> {
+  try {
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    return await audioContext.decodeAudioData(arrayBuffer);
+  } catch (error) {
+    console.warn(`Failed to load audio: ${url}`, error);
+    return null;
+  }
+}
 
-  const oscillator = audioContext.createOscillator();
-  const gainNode = audioContext.createGain();
-
-  // Triangle wave for softer tone
-  oscillator.type = 'triangle';
-
-  // Start at ~880Hz (A5) and descend to ~440Hz (A4)
-  oscillator.frequency.setValueAtTime(880, now);
-  oscillator.frequency.exponentialRampToValueAtTime(440, now + duration);
-
-  // Quick attack, sustain, then fade
-  gainNode.gain.setValueAtTime(0, now);
-  gainNode.gain.linearRampToValueAtTime(0.3, now + 0.01);
-  gainNode.gain.setValueAtTime(0.3, now + duration * 0.7);
-  gainNode.gain.exponentialRampToValueAtTime(0.01, now + duration);
-
-  oscillator.connect(gainNode);
-  gainNode.connect(audioContext.destination);
-
-  oscillator.start(now);
-  oscillator.stop(now + duration);
+/**
+ * Play an audio buffer
+ */
+function playBuffer(audioContext: AudioContext, buffer: AudioBuffer): void {
+  const source = audioContext.createBufferSource();
+  source.buffer = buffer;
+  source.connect(audioContext.destination);
+  source.start();
 }
 
 /**
@@ -82,17 +79,19 @@ export const useSoundStore = create<SoundStore>((set, get) => ({
   buffers: new Map(),
   initialized: false,
   startupChimePlayed: false,
+  sosumiLoaded: false,
 
   initialize: async () => {
     // Browser requires user gesture before AudioContext
     const audioContext = new AudioContext();
     set({ audioContext, initialized: true });
 
-    // Preload sounds would go here in future stories
-    // const response = await fetch('/sounds/startup.mp3');
-    // const arrayBuffer = await response.arrayBuffer();
-    // const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-    // get().buffers.set('startup', audioBuffer);
+    // Preload sosumi sound
+    const sosumiBuffer = await loadAudioBuffer(audioContext, '/sounds/sosumi.mp3');
+    if (sosumiBuffer) {
+      get().buffers.set('sosumi', sosumiBuffer);
+      set({ sosumiLoaded: true });
+    }
   },
 
   play: (soundName) => {
@@ -102,10 +101,7 @@ export const useSoundStore = create<SoundStore>((set, get) => ({
     const buffer = buffers.get(soundName);
     if (!buffer) return;
 
-    const source = audioContext.createBufferSource();
-    source.buffer = buffer;
-    source.connect(audioContext.destination);
-    source.start();
+    playBuffer(audioContext, buffer);
   },
 
   playStartupChime: () => {
@@ -126,15 +122,36 @@ export const useSoundStore = create<SoundStore>((set, get) => ({
   },
 
   playSosumi: () => {
-    const { audioContext, initialized } = get();
+    const { audioContext, initialized, buffers, sosumiLoaded } = get();
 
     // Initialize audio context if needed (requires user gesture)
     if (!initialized || !audioContext) {
       const ctx = new AudioContext();
       set({ audioContext: ctx, initialized: true });
-      playSosumiSound(ctx);
+
+      // Load and play sosumi asynchronously
+      loadAudioBuffer(ctx, '/sounds/sosumi.mp3').then((buffer) => {
+        if (buffer) {
+          get().buffers.set('sosumi', buffer);
+          set({ sosumiLoaded: true });
+          playBuffer(ctx, buffer);
+        }
+      });
+    } else if (sosumiLoaded) {
+      // Play from preloaded buffer
+      const buffer = buffers.get('sosumi');
+      if (buffer) {
+        playBuffer(audioContext, buffer);
+      }
     } else {
-      playSosumiSound(audioContext);
+      // Buffer not loaded yet, load and play
+      loadAudioBuffer(audioContext, '/sounds/sosumi.mp3').then((buffer) => {
+        if (buffer) {
+          get().buffers.set('sosumi', buffer);
+          set({ sosumiLoaded: true });
+          playBuffer(audioContext, buffer);
+        }
+      });
     }
   },
 }));

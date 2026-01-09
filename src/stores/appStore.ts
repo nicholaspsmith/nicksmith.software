@@ -26,8 +26,8 @@ interface AppStore {
   mode: AppMode;
   startupComplete: boolean;
 
-  // Desktop icon selection
-  selectedIconId: string | null;
+  // Desktop icon selection (supports multi-select via marquee)
+  selectedIconIds: string[];
 
   // Desktop icon positions (for drag-and-drop)
   iconPositions: Record<string, IconPosition>;
@@ -42,6 +42,7 @@ interface AppStore {
   setMode: (mode: AppMode) => void;
   completeStartup: () => void;
   selectIcon: (iconId: string) => void;
+  selectMultipleIcons: (iconIds: string[]) => void;
   clearSelection: () => void;
 
   // Icon position actions
@@ -57,7 +58,7 @@ interface AppStore {
 export const useAppStore = create<AppStore>((set, get) => ({
   mode: 'tiger',
   startupComplete: false,
-  selectedIconId: null,
+  selectedIconIds: [],
   iconPositions: {},
   initialIconPositions: {},
   iconPositionsInitialized: false,
@@ -66,8 +67,9 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   setMode: (mode) => set({ mode }),
   completeStartup: () => set({ startupComplete: true }),
-  selectIcon: (iconId) => set({ selectedIconId: iconId }),
-  clearSelection: () => set({ selectedIconId: null }),
+  selectIcon: (iconId) => set({ selectedIconIds: [iconId] }),
+  selectMultipleIcons: (iconIds) => set({ selectedIconIds: iconIds }),
+  clearSelection: () => set({ selectedIconIds: [] }),
 
   initializeIconPositions: (positions) => {
     // Only initialize once

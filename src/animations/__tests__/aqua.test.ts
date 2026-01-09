@@ -107,9 +107,9 @@ describe('Animation Variants', () => {
       expect(hover.scale).toBe(1);
     });
 
-    it('should have active scale smaller than 1', () => {
+    it('should have active scale equal to 1 (no shrink - Tiger behavior)', () => {
       const active = iconVariants.active as { scale: number };
-      expect(active.scale).toBeLessThan(1);
+      expect(active.scale).toBe(1);
     });
   });
 

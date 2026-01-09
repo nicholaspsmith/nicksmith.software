@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef, useEffect } from 'react';
 import { motion, useAnimationControls, type PanInfo } from 'motion/react';
 import { iconVariants } from '@/animations/aqua';
 import { SACRED } from '../../constants/sacred';
@@ -41,6 +41,34 @@ export function DesktopIcon({
   onPositionChange,
 }: DesktopIconProps) {
   const controls = useAnimationControls();
+  const prevPosition = useRef({ x, y });
+  const isDragging = useRef(false);
+
+  // Animate to new position when x/y props change (e.g., from Clean Up)
+  useEffect(() => {
+    const prevX = prevPosition.current.x;
+    const prevY = prevPosition.current.y;
+
+    // Only animate if position actually changed and we're not dragging
+    if ((prevX !== x || prevY !== y) && !isDragging.current) {
+      // Calculate the offset from new position to old position
+      const offsetX = prevX - x;
+      const offsetY = prevY - y;
+
+      // Immediately set transform to offset (so icon appears at old position)
+      controls.set({ x: offsetX, y: offsetY });
+
+      // Animate transform to 0 (moving icon to new CSS position)
+      controls.start({
+        x: 0,
+        y: 0,
+        transition: { duration: 0.3, ease: 'easeOut' },
+      });
+    }
+
+    // Update ref for next comparison
+    prevPosition.current = { x, y };
+  }, [x, y, controls]);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -75,6 +103,10 @@ export function DesktopIcon({
     };
   }, [x, y]);
 
+  const handleDragStart = useCallback(() => {
+    isDragging.current = true;
+  }, []);
+
   const handleDragEnd = useCallback(
     (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
       // Calculate new position based on drag offset
@@ -94,8 +126,12 @@ export function DesktopIcon({
       onPositionChange?.(constrainedX, constrainedY);
 
       // Reset the transform to 0 since left/top will now have the correct position
-      // This prevents the "jump" where transform + left/top would double-count the offset
       controls.set({ x: 0, y: 0 });
+
+      // Update prev position to match new position (skip animation)
+      prevPosition.current = { x: constrainedX, y: constrainedY };
+
+      isDragging.current = false;
     },
     [x, y, onPositionChange, controls]
   );
@@ -127,6 +163,7 @@ export function DesktopIcon({
       dragMomentum={false}
       dragElastic={0}
       dragConstraints={dragConstraints}
+      onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       whileDrag={{
         opacity: 0.7,
@@ -145,7 +182,6 @@ export function DesktopIcon({
       </div>
       <span
         className={styles.label}
-        style={{ maxWidth: SACRED.iconLabelMaxWidth }}
       >
         {label}
       </span>

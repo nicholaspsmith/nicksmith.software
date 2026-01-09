@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useSoundStore } from '../soundStore';
 
+// Mock audio buffer
+const mockAudioBuffer = { duration: 0.5, length: 22050 };
+
 // Mock AudioContext as a proper constructor class
 class MockAudioContext {
   destination = {};
@@ -28,9 +31,16 @@ class MockAudioContext {
     },
     connect: vi.fn(),
   }));
+  decodeAudioData = vi.fn().mockResolvedValue(mockAudioBuffer);
 }
 
 vi.stubGlobal('AudioContext', MockAudioContext);
+
+// Mock fetch for loading audio files
+const mockFetch = vi.fn().mockResolvedValue({
+  arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(100)),
+});
+vi.stubGlobal('fetch', mockFetch);
 
 describe('soundStore', () => {
   beforeEach(() => {
@@ -40,8 +50,10 @@ describe('soundStore', () => {
       buffers: new Map(),
       initialized: false,
       startupChimePlayed: false,
+      sosumiLoaded: false,
     });
     vi.clearAllMocks();
+    mockFetch.mockClear();
   });
 
   describe('initial state', () => {
@@ -154,32 +166,48 @@ describe('soundStore', () => {
       expect(useSoundStore.getState().initialized).toBe(true);
     });
 
-    it('should create oscillator and gain node', () => {
+    it('should fetch sosumi.mp3 audio file', async () => {
       useSoundStore.getState().playSosumi();
 
-      const ctx = useSoundStore.getState().audioContext as unknown as MockAudioContext;
-      expect(ctx.createOscillator).toHaveBeenCalledTimes(1);
-      expect(ctx.createGain).toHaveBeenCalledTimes(1);
+      // Wait for async fetch
+      await vi.waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith('/sounds/sosumi.mp3');
+      });
     });
 
-    it('should use triangle wave for softer tone', () => {
-      useSoundStore.getState().playSosumi();
+    it('should play from preloaded buffer when available', async () => {
+      // Initialize first to preload buffer
+      await useSoundStore.getState().initialize();
+
+      // Wait for sosumi to load
+      await vi.waitFor(() => {
+        expect(useSoundStore.getState().sosumiLoaded).toBe(true);
+      });
 
       const ctx = useSoundStore.getState().audioContext as unknown as MockAudioContext;
-      const oscillatorMock = ctx.createOscillator.mock.results[0].value;
-      expect(oscillatorMock.type).toBe('triangle');
-    });
-
-    it('should play multiple times (unlike startup chime)', () => {
-      useSoundStore.getState().playSosumi();
-      const ctx = useSoundStore.getState().audioContext as unknown as MockAudioContext;
-
-      // Clear mocks and play again
       vi.clearAllMocks();
+
+      // Now play
       useSoundStore.getState().playSosumi();
 
-      // Should create new oscillator for second play
-      expect(ctx.createOscillator).toHaveBeenCalledTimes(1);
+      // Should create buffer source (not oscillator)
+      expect(ctx.createBufferSource).toHaveBeenCalledTimes(1);
+    });
+
+    it('should play multiple times (unlike startup chime)', async () => {
+      // Initialize and load buffer
+      await useSoundStore.getState().initialize();
+      await vi.waitFor(() => {
+        expect(useSoundStore.getState().sosumiLoaded).toBe(true);
+      });
+
+      const ctx = useSoundStore.getState().audioContext as unknown as MockAudioContext;
+
+      useSoundStore.getState().playSosumi();
+      useSoundStore.getState().playSosumi();
+
+      // Should create buffer source for each play
+      expect(ctx.createBufferSource).toHaveBeenCalledTimes(2);
     });
 
     it('should use existing AudioContext if already initialized', async () => {

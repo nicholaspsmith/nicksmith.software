@@ -111,14 +111,14 @@ development_status:
 # ===========================================
 
   # Epic 9: Interaction Fundamentals (Tier 1 - Do First)
-  epic-9: in-progress
+  epic-9: done
   9-1-implement-right-click-context-menu: done
   9-2-implement-menu-bar-dropdowns-for-all-items: done
   9-3-remove-menu-bar-hover-effects: done
   9-4-implement-menu-pinstripe-texture: done
   9-5-fix-cursor-to-match-tiger-reference: done
   9-6-implement-desktop-icon-dragging: done
-  9-7-implement-selection-rectangle: backlog
+  9-7-implement-selection-rectangle: done
 
   # Epic 10: Dock & Window Polish (Tier 2)
   epic-10: backlog

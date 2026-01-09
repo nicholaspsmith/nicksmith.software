@@ -207,11 +207,11 @@ export function MenuBar() {
             aria-haspopup="menu"
             data-testid="apple-menu-button"
           >
-            {/* Tiger-era blue Apple logo */}
+            {/* Tiger-era blue Apple logo - 20x20 to almost fill menu bar height */}
             <svg
               viewBox="0 0 24 24"
-              width="18"
-              height="18"
+              width="20"
+              height="20"
               aria-hidden="true"
               className={styles.appleLogoSvg}
             >
@@ -425,16 +425,26 @@ export function MenuBar() {
           {formatTime(time)}
         </span>
 
-        {/* Spotlight Icon */}
+        {/* Spotlight Icon - Tiger blue circle with white magnifying glass */}
         <svg
-          viewBox="0 0 24 24"
-          width="16"
-          height="16"
-          fill="currentColor"
+          viewBox="0 0 18 18"
+          width="18"
+          height="18"
           className={styles.spotlightIcon}
           aria-label="Spotlight"
         >
-          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+          {/* Blue gradient circle background */}
+          <defs>
+            <linearGradient id="spotlightBlueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#7CB8FF" />
+              <stop offset="50%" stopColor="#3B82F6" />
+              <stop offset="100%" stopColor="#1E40AF" />
+            </linearGradient>
+          </defs>
+          <circle cx="9" cy="9" r="8" fill="url(#spotlightBlueGradient)" />
+          {/* White magnifying glass */}
+          <circle cx="7.5" cy="7.5" r="3.5" fill="none" stroke="white" strokeWidth="1.5" />
+          <line x1="10" y1="10" x2="13" y2="13" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       </div>
     </header>

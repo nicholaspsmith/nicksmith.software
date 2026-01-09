@@ -146,8 +146,9 @@ function WindowContent({ app }: { app: string }) {
  * the top-right corner following Tiger's column-first layout.
  */
 function TigerDesktop() {
-  const selectedIconId = useAppStore((s) => s.selectedIconId);
+  const selectedIconIds = useAppStore((s) => s.selectedIconIds);
   const selectIcon = useAppStore((s) => s.selectIcon);
+  const selectMultipleIcons = useAppStore((s) => s.selectMultipleIcons);
   const iconPositions = useAppStore((s) => s.iconPositions);
   const iconPositionsInitialized = useAppStore((s) => s.iconPositionsInitialized);
   const initializeIconPositions = useAppStore((s) => s.initializeIconPositions);
@@ -192,6 +193,14 @@ function TigerDesktop() {
     [setIconPosition]
   );
 
+  // Handle marquee selection of icons
+  const handleIconsSelected = useCallback(
+    (iconIds: string[]) => {
+      selectMultipleIcons(iconIds);
+    },
+    [selectMultipleIcons]
+  );
+
   // Get icon position (fallback to calculated position if not yet initialized)
   const getIconPosition = (iconId: string, index: number) => {
     if (iconPositions[iconId]) {
@@ -207,7 +216,7 @@ function TigerDesktop() {
 
   return (
     <>
-      <Desktop>
+      <Desktop iconPositions={iconPositions} onIconsSelected={handleIconsSelected}>
         <DesktopIconGrid>
           {DESKTOP_ICONS.map((icon, index) => {
             const position = getIconPosition(icon.id, index);
@@ -216,8 +225,8 @@ function TigerDesktop() {
                 key={icon.id}
                 id={icon.id}
                 label={icon.label}
-                icon={<DesktopIconImage icon={icon} isSelected={selectedIconId === icon.id} />}
-                isSelected={selectedIconId === icon.id}
+                icon={<DesktopIconImage icon={icon} isSelected={selectedIconIds.includes(icon.id)} />}
+                isSelected={selectedIconIds.includes(icon.id)}
                 x={position.x}
                 y={position.y}
                 onClick={() => selectIcon(icon.id)}
