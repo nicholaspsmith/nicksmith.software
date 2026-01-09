@@ -216,10 +216,12 @@ export function Finder({ location = 'home' }: FinderProps) {
         </div>
       </div>
 
-      {/* Main content area */}
-      <div className={styles.main}>
-        {/* Sidebar */}
-        <div className={styles.sidebar}>
+      {/* Content wrapper with brushed metal borders */}
+      <div className={styles.contentWrapper}>
+        {/* Main content area */}
+        <div className={styles.main}>
+          {/* Sidebar */}
+          <div className={styles.sidebar}>
           {config.sidebarItems.map((item) => (
             <button
               key={item.id}
@@ -292,11 +294,13 @@ export function Finder({ location = 'home' }: FinderProps) {
             </div>
           )}
         </div>
+        </div>
       </div>
 
       {/* Status bar */}
       <div className={styles.statusBar}>
         {config.statusText}
+        <div className={styles.resizeGrip} />
       </div>
     </div>
   );
