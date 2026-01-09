@@ -79,7 +79,12 @@ export function Desktop({ children, iconPositions, onIconsSelected }: DesktopPro
     currentY: 0,
   });
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    // Only clear when clicking directly on desktop background, not on children
+    // This prevents MenuBar, Dock, and Window clicks from deactivating windows
+    if (e.target !== e.currentTarget) {
+      return;
+    }
     // Skip clearing if we just finished a marquee selection
     if (justFinishedMarquee.current) {
       justFinishedMarquee.current = false;
