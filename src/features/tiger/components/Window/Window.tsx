@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { Rnd } from 'react-rnd';
 import { motion } from 'motion/react';
 import { useWindowStore } from '@/stores/windowStore';
@@ -6,6 +6,38 @@ import { SACRED } from '../../constants/sacred';
 import { WindowChrome } from '../WindowChrome';
 import { windowVariants } from '@/animations/aqua';
 import styles from './Window.module.css';
+
+/**
+ * Calculate the dock target position for minimize animation.
+ * The thumbnail appears after the separator, so we need to calculate
+ * based on existing minimized windows.
+ */
+function calculateDockTargetPosition(
+  windowX: number,
+  windowY: number,
+  windowWidth: number,
+  minimizedIndex: number
+): { x: number; y: number } {
+  // Dock is centered at bottom, thumbnail section starts after separator
+  // Each thumbnail is ~64px wide with 2px gap
+  const thumbnailWidth = 66; // 64 icon + 2 gap
+  const dockHeight = SACRED.dockHeight;
+
+  // Dock center is at 50% of viewport
+  // Thumbnails appear after app icons and separator
+  // Estimate: Finder(50) + SysPrefs(50) + running apps(~150) + separator(13) ≈ 263px from center-left
+  const baseOffset = 263;
+
+  // Calculate x position: dock center + offset for this thumbnail
+  const targetX = window.innerWidth / 2 + baseOffset + (minimizedIndex * thumbnailWidth);
+  const targetY = window.innerHeight - dockHeight / 2;
+
+  // Return offset from current window position
+  return {
+    x: targetX - windowX - windowWidth / 2,
+    y: targetY - windowY,
+  };
+}
 
 export interface WindowProps {
   id: string;
@@ -27,6 +59,7 @@ export interface WindowProps {
  */
 export function Window({ id, title, children }: WindowProps) {
   const windowState = useWindowStore((s) => s.windows.find((w) => w.id === id));
+  const windows = useWindowStore((s) => s.windows);
   const activeWindowId = useWindowStore((s) => s.activeWindowId);
   const updatePosition = useWindowStore((s) => s.updatePosition);
   const updateSize = useWindowStore((s) => s.updateSize);
@@ -39,6 +72,15 @@ export function Window({ id, title, children }: WindowProps) {
 
   // Animation state: starts as 'opening' for new windows
   const [animationState, setAnimationState] = useState<'opening' | 'open' | 'closing' | 'minimizing' | 'restoring'>('opening');
+
+  // Track dock target position for minimize animation
+  const [dockTarget, setDockTarget] = useState<{ x: number; y: number } | null>(null);
+
+  // Calculate minimized window index for dock position
+  const minimizedCount = useMemo(
+    () => windows.filter((w) => w.state === 'minimized').length,
+    [windows]
+  );
 
   const isFocused = activeWindowId === id;
 
@@ -88,8 +130,18 @@ export function Window({ id, title, children }: WindowProps) {
   }, []);
 
   const handleMinimize = useCallback(() => {
+    // Calculate dock target position before starting animation
+    if (windowState) {
+      const target = calculateDockTargetPosition(
+        windowState.x,
+        windowState.y,
+        windowState.width,
+        minimizedCount
+      );
+      setDockTarget(target);
+    }
     setAnimationState('minimizing');
-  }, []);
+  }, [windowState, minimizedCount]);
 
   const handleZoom = useCallback(() => {
     zoomWindow(id);
@@ -151,6 +203,27 @@ export function Window({ id, title, children }: WindowProps) {
   // When shaded, collapse to just title bar height
   const displayHeight = isShaded ? SACRED.titleBarHeight : windowState.height;
 
+  // Calculate animation value - use dynamic target for minimizing
+  const animateValue = useMemo(() => {
+    if (animationState === 'minimizing' && dockTarget) {
+      // Dynamic minimize animation toward dock position
+      return {
+        opacity: 0,
+        scale: 0.1,
+        scaleX: 0.3,
+        x: dockTarget.x,
+        y: dockTarget.y,
+        transition: {
+          duration: 0.4,
+          ease: [0.4, 0, 0.6, 1] as [number, number, number, number], // Cubic bezier for genie "suction"
+          opacity: { duration: 0.3, delay: 0.1 },
+        },
+      };
+    }
+    // Use variant name for other states
+    return animationState;
+  }, [animationState, dockTarget]);
+
   return (
     <Rnd
       position={{ x: windowState.x, y: windowState.y }}
@@ -174,7 +247,7 @@ export function Window({ id, title, children }: WindowProps) {
         aria-modal="false"
         variants={windowVariants}
         initial={animationState === 'restoring' ? 'minimized' : 'closed'}
-        animate={animationState}
+        animate={animateValue}
         onAnimationComplete={handleAnimationComplete}
         onClick={handleClick}
       >

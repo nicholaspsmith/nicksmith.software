@@ -71,13 +71,7 @@
   position: relative;
 }
 
-.dockIcon:hover {
-  transform: translateY(-8px) scale(1.1);
-}
-
-.dockIcon:active {
-  transform: translateY(-4px) scale(1.05);
-}
+/* Icons don't scale or move on hover - only bounce on click */
 
 .dockIcon:focus {
   outline: none;
@@ -113,14 +107,41 @@
   pointer-events: none;
 }
 
-/* Running indicator dot (for open apps) */
+/* Hover label tooltip - appears above icon on hover */
+.dockIcon[data-label]::before {
+  content: attr(data-label);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+  padding: 4px 10px;
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  font-size: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Lucida Grande', sans-serif;
+  white-space: nowrap;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease-out;
+  z-index: 100;
+}
+
+.dockIcon[data-label]:hover::before {
+  opacity: 1;
+}
+
+/* Running indicator triangle (for open apps) - Tiger authentic */
 .runningIndicator {
   position: absolute;
   bottom: -8px;
   left: 50%;
   transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  background: rgba(0, 0, 0, 0.6);
-  border-radius: 50%;
+  /* CSS triangle using border trick - upward pointing */
+  width: 0;
+  height: 0;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-bottom: 5px solid rgba(0, 0, 0, 0.7);
 }

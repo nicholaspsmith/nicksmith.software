@@ -1,7 +1,21 @@
+import { useState, useCallback } from 'react';
 import { useWindowStore } from '@/stores/windowStore';
 import { useAppStore } from '@/stores/appStore';
 import { motion, AnimatePresence } from 'motion/react';
 import styles from './Dock.module.css';
+
+/**
+ * Bounce animation for dock icons when clicked
+ * Simulates the classic Tiger dock bounce effect - one complete cycle in 0.75s
+ */
+const bounceAnimation = {
+  y: [0, -20, 0, -12, 0, -6, 0],
+  transition: {
+    duration: 0.75,
+    times: [0, 0.2, 0.35, 0.5, 0.65, 0.8, 1],
+    ease: 'easeOut' as const,
+  },
+};
 
 /**
  * App configurations for dock icons
@@ -44,6 +58,22 @@ export function Dock() {
   const focusWindow = useWindowStore((s) => s.focusWindow);
   const showAlert = useAppStore((s) => s.showAlert);
 
+  // Track which icons are currently bouncing
+  const [bouncingIcons, setBouncingIcons] = useState<Set<string>>(new Set());
+
+  // Trigger bounce animation for an icon
+  const triggerBounce = useCallback((iconId: string) => {
+    setBouncingIcons((prev) => new Set(prev).add(iconId));
+    // Stop bouncing after animation completes (matches 0.75s duration)
+    setTimeout(() => {
+      setBouncingIcons((prev) => {
+        const next = new Set(prev);
+        next.delete(iconId);
+        return next;
+      });
+    }, 750);
+  }, []);
+
   // Get running apps (open or minimized, but not closed)
   const runningApps = windows.filter((w) => w.state !== 'closed');
 
@@ -55,6 +85,7 @@ export function Dock() {
 
   const handleDefaultIconClick = (e: React.MouseEvent, iconId: string) => {
     e.stopPropagation();
+    triggerBounce(iconId);
     if (iconId === 'finder') {
       showAlert({
         title: 'Finder',
@@ -72,6 +103,7 @@ export function Dock() {
 
   const handleRunningAppClick = (e: React.MouseEvent, appId: string) => {
     e.stopPropagation();
+    triggerBounce(`app-${appId}`);
     // Find the window for this app
     const appWindow = windows.find((w) => w.app === appId && w.state !== 'closed');
     if (appWindow) {
@@ -85,11 +117,13 @@ export function Dock() {
 
   const handleMinimizedWindowClick = (e: React.MouseEvent, windowId: string) => {
     e.stopPropagation();
+    triggerBounce(windowId);
     restoreWindow(windowId);
   };
 
   const handleTrashClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    triggerBounce('trash');
     showAlert({
       title: 'Trash',
       message: 'The Trash is empty.',
@@ -109,17 +143,19 @@ export function Dock() {
           {/* Default system icons */}
           <div className={styles.appSection}>
             {DEFAULT_DOCK_ICONS.map((icon) => (
-              <button
+              <motion.button
                 key={icon.id}
                 className={styles.dockIcon}
                 onClick={(e) => handleDefaultIconClick(e, icon.id)}
+                animate={bouncingIcons.has(icon.id) ? bounceAnimation : { y: 0 }}
                 aria-label={icon.label}
+                data-label={icon.label}
                 data-testid={`dock-icon-${icon.id}`}
               >
                 <div className={styles.iconImage}>
                   <DefaultIcon iconId={icon.id} />
                 </div>
-              </button>
+              </motion.button>
             ))}
           </div>
 
@@ -128,17 +164,19 @@ export function Dock() {
             {runningAppIds.map((appId) => {
               const config = APP_CONFIG[appId];
               if (!config) return null;
+              const iconKey = `app-${appId}`;
+              const isBouncing = bouncingIcons.has(iconKey);
               return (
                 <motion.button
-                  key={`app-${appId}`}
+                  key={iconKey}
                   className={styles.dockIcon}
                   onClick={(e) => handleRunningAppClick(e, appId)}
                   initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
+                  animate={isBouncing ? { ...bounceAnimation, scale: 1, opacity: 1 } : { scale: 1, opacity: 1, y: 0 }}
                   exit={{ scale: 0, opacity: 0 }}
-                  whileHover={{ scale: 1.15, y: -10 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                   aria-label={config.label}
+                  data-label={config.label}
                   data-testid={`dock-icon-app-${appId}`}
                 >
                   <div className={styles.iconImage}>
@@ -157,40 +195,45 @@ export function Dock() {
 
           {/* Minimized window thumbnails */}
           <AnimatePresence>
-            {minimizedWindows.map((window) => (
-              <motion.button
-                key={window.id}
-                className={styles.dockIcon}
-                onClick={(e) => handleMinimizedWindowClick(e, window.id)}
-                initial={{ scale: 0, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0, opacity: 0, y: 20 }}
-                whileHover={{ scale: 1.15, y: -10 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                aria-label={`Restore ${window.title}`}
-                data-testid={`dock-icon-${window.id}`}
-              >
-                <div className={styles.iconImage}>
-                  <MinimizedWindowThumbnail app={window.app} title={window.title} />
-                </div>
-              </motion.button>
-            ))}
+            {minimizedWindows.map((window) => {
+              const isBouncing = bouncingIcons.has(window.id);
+              return (
+                <motion.button
+                  key={window.id}
+                  className={styles.dockIcon}
+                  onClick={(e) => handleMinimizedWindowClick(e, window.id)}
+                  initial={{ scale: 0, opacity: 0, y: 20 }}
+                  animate={isBouncing ? { ...bounceAnimation, scale: 1, opacity: 1 } : { scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0, opacity: 0, y: 20 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  aria-label={`Restore ${window.title}`}
+                  data-label={window.title}
+                  data-testid={`dock-icon-${window.id}`}
+                >
+                  <div className={styles.iconImage}>
+                    <MinimizedWindowThumbnail app={window.app} title={window.title} />
+                  </div>
+                </motion.button>
+              );
+            })}
           </AnimatePresence>
 
           {/* Separator before trash */}
           <div className={styles.separator} aria-hidden="true" />
 
           {/* Trash icon */}
-          <button
+          <motion.button
             className={styles.dockIcon}
             onClick={(e) => handleTrashClick(e)}
+            animate={bouncingIcons.has('trash') ? bounceAnimation : { y: 0 }}
             aria-label="Trash"
+            data-label="Trash"
             data-testid="dock-icon-trash"
           >
             <div className={styles.iconImage}>
               <TrashIcon />
             </div>
-          </button>
+          </motion.button>
         </div>
       </div>
     </div>
