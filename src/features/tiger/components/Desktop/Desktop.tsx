@@ -189,6 +189,19 @@ export function Desktop({ children, iconPositions, onIconsSelected }: DesktopPro
       onContextMenu={handleContextMenu}
     >
       <MenuBar />
+      {/* Bounds container for windows - only constrains top (below menu bar) */}
+      {/* Extends far beyond viewport on left/right/bottom to allow dragging off-screen */}
+      <div
+        id="window-bounds"
+        style={{
+          position: 'absolute',
+          top: SACRED.menuBarHeight,
+          left: -5000,
+          width: 15000,
+          height: 10000,
+          pointerEvents: 'none',
+        }}
+      />
       {children}
       <Dock />
 

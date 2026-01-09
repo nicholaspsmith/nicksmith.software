@@ -34,6 +34,9 @@ interface AppStore {
   initialIconPositions: Record<string, IconPosition>;
   iconPositionsInitialized: boolean;
 
+  // Multi-drag state (tracks which icon is being dragged for multi-select)
+  draggingIconId: string | null;
+
   // Alert dialog state
   alertOpen: boolean;
   alertConfig: AlertConfig | null;
@@ -48,7 +51,12 @@ interface AppStore {
   // Icon position actions
   initializeIconPositions: (positions: Record<string, IconPosition>) => void;
   setIconPosition: (iconId: string, x: number, y: number) => void;
+  setMultipleIconPositions: (positions: Record<string, IconPosition>) => void;
   resetIconPositions: () => void;
+
+  // Multi-drag actions
+  startMultiDrag: (iconId: string) => void;
+  endMultiDrag: () => void;
 
   // Alert actions
   showAlert: (config: AlertConfig) => void;
@@ -62,6 +70,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   iconPositions: {},
   initialIconPositions: {},
   iconPositionsInitialized: false,
+  draggingIconId: null,
   alertOpen: false,
   alertConfig: null,
 
@@ -91,9 +100,26 @@ export const useAppStore = create<AppStore>((set, get) => ({
     }));
   },
 
+  setMultipleIconPositions: (positions) => {
+    set((state) => ({
+      iconPositions: {
+        ...state.iconPositions,
+        ...positions,
+      },
+    }));
+  },
+
   resetIconPositions: () => {
     const { initialIconPositions } = get();
     set({ iconPositions: { ...initialIconPositions } });
+  },
+
+  startMultiDrag: (iconId) => {
+    set({ draggingIconId: iconId });
+  },
+
+  endMultiDrag: () => {
+    set({ draggingIconId: null });
   },
 
   showAlert: (config) => set({ alertOpen: true, alertConfig: config }),

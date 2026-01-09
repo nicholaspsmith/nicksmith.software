@@ -1,2 +1,2 @@
 export { DesktopIcon } from './DesktopIcon';
-export type { DesktopIconProps } from './DesktopIcon';
+export type { DesktopIconProps, IconPositionRecord } from './DesktopIcon';

@@ -64,7 +64,7 @@ describe('DesktopIcon', () => {
   });
 
   describe('click handling', () => {
-    it('should call onClick when clicked', () => {
+    it('should call onClick on mouseDown (Tiger behavior: select on press)', () => {
       const handleClick = vi.fn();
       render(
         <DesktopIcon
@@ -75,8 +75,24 @@ describe('DesktopIcon', () => {
           {...defaultPosition}
         />
       );
-      fireEvent.click(screen.getByRole('button'));
+      fireEvent.mouseDown(screen.getByRole('button'));
       expect(handleClick).toHaveBeenCalledTimes(1);
+    });
+
+    it('should NOT call onClick on mouseDown if already selected (preserves multi-selection)', () => {
+      const handleClick = vi.fn();
+      render(
+        <DesktopIcon
+          id="test"
+          label="Test"
+          icon={<MockIcon />}
+          onClick={handleClick}
+          isSelected
+          {...defaultPosition}
+        />
+      );
+      fireEvent.mouseDown(screen.getByRole('button'));
+      expect(handleClick).not.toHaveBeenCalled();
     });
 
     it('should call onDoubleClick when double-clicked', () => {
@@ -94,11 +110,12 @@ describe('DesktopIcon', () => {
       expect(handleDoubleClick).toHaveBeenCalledTimes(1);
     });
 
-    it('should stop propagation on click', () => {
+    it('should stop propagation on mouseDown and click', () => {
+      const parentMouseDown = vi.fn();
       const parentClick = vi.fn();
       const iconClick = vi.fn();
       render(
-        <div onClick={parentClick}>
+        <div onMouseDown={parentMouseDown} onClick={parentClick}>
           <DesktopIcon
             id="test"
             label="Test"
@@ -108,8 +125,10 @@ describe('DesktopIcon', () => {
           />
         </div>
       );
+      fireEvent.mouseDown(screen.getByRole('button'));
       fireEvent.click(screen.getByRole('button'));
       expect(iconClick).toHaveBeenCalled();
+      expect(parentMouseDown).not.toHaveBeenCalled();
       expect(parentClick).not.toHaveBeenCalled();
     });
 

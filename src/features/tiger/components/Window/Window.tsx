@@ -51,7 +51,9 @@ export function Window({ id, title, children }: WindowProps) {
 
   const handleDragStop = useCallback(
     (_e: unknown, d: { x: number; y: number }) => {
-      updatePosition(id, d.x, d.y);
+      // Clamp y position to not go above menu bar (safety net)
+      const clampedY = Math.max(d.y, SACRED.menuBarHeight);
+      updatePosition(id, d.x, clampedY);
     },
     [id, updatePosition]
   );
@@ -157,6 +159,7 @@ export function Window({ id, title, children }: WindowProps) {
       minHeight={isShaded ? SACRED.titleBarHeight : SACRED.windowMinHeight}
       style={{ zIndex: windowState.zIndex }}
       dragHandleClassName={styles.dragHandle}
+      bounds="#window-bounds"
       onDragStop={handleDragStop}
       onResizeStop={handleResizeStop}
       onMouseDown={handleMouseDown}

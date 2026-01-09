@@ -49,7 +49,8 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
   // Initial state
   windows: [],
   activeWindowId: null,
-  maxZIndex: 0,
+  // Start at 100 to match --aqua-z-windows and stay above desktop icons
+  maxZIndex: 100,
 
   // Actions
   openWindow: (app) => {

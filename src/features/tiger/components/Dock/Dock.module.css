@@ -11,7 +11,8 @@
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  z-index: var(--aqua-z-menubar);
+  /* Below windows (100+) but above desktop icons (10) */
+  z-index: 90;
   padding-bottom: 4px;
 }
 

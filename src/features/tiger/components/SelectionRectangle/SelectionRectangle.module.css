@@ -2,15 +2,15 @@
  * SelectionRectangle.module.css - Tiger selection rectangle styling
  *
  * The marquee selection box in Tiger is:
- * - Semi-transparent blue fill (#3875D7 at ~30% opacity)
- * - 1px solid blue border
+ * - Semi-transparent white fill (30% opacity)
+ * - 1px solid white border
  * - No border-radius (crisp rectangle)
  */
 
 .selectionRectangle {
   position: fixed;
   pointer-events: none;
-  background-color: rgba(56, 117, 215, 0.3);
-  border: 1px solid #3875d7;
+  background-color: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.8);
   z-index: 50;
 }

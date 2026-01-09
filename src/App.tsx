@@ -153,6 +153,7 @@ function TigerDesktop() {
   const iconPositionsInitialized = useAppStore((s) => s.iconPositionsInitialized);
   const initializeIconPositions = useAppStore((s) => s.initializeIconPositions);
   const setIconPosition = useAppStore((s) => s.setIconPosition);
+  const setMultipleIconPositions = useAppStore((s) => s.setMultipleIconPositions);
   const alertOpen = useAppStore((s) => s.alertOpen);
   const alertConfig = useAppStore((s) => s.alertConfig);
   const hideAlert = useAppStore((s) => s.hideAlert);
@@ -201,6 +202,14 @@ function TigerDesktop() {
     [selectMultipleIcons]
   );
 
+  // Handle multi-icon drag (when dragging multiple selected icons)
+  const handleMultiPositionChange = useCallback(
+    (positions: Record<string, { x: number; y: number }>) => {
+      setMultipleIconPositions(positions);
+    },
+    [setMultipleIconPositions]
+  );
+
   // Get icon position (fallback to calculated position if not yet initialized)
   const getIconPosition = (iconId: string, index: number) => {
     if (iconPositions[iconId]) {
@@ -232,6 +241,9 @@ function TigerDesktop() {
                 onClick={() => selectIcon(icon.id)}
                 onDoubleClick={() => handleDoubleClick(icon)}
                 onPositionChange={(x, y) => handlePositionChange(icon.id, x, y)}
+                selectedIconIds={selectedIconIds}
+                allIconPositions={iconPositions}
+                onMultiPositionChange={handleMultiPositionChange}
               />
             );
           })}

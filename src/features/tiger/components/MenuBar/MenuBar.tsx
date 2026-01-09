@@ -427,13 +427,13 @@ export function MenuBar() {
 
         {/* Spotlight Icon - Tiger blue circle with white magnifying glass */}
         <svg
-          viewBox="0 0 18 18"
-          width="18"
-          height="18"
+          viewBox="0 0 20 20"
+          width="20"
+          height="20"
           className={styles.spotlightIcon}
           aria-label="Spotlight"
         >
-          {/* Blue gradient circle background */}
+          {/* Blue gradient circle background - fills most of the icon */}
           <defs>
             <linearGradient id="spotlightBlueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="#7CB8FF" />
@@ -441,10 +441,10 @@ export function MenuBar() {
               <stop offset="100%" stopColor="#1E40AF" />
             </linearGradient>
           </defs>
-          <circle cx="9" cy="9" r="8" fill="url(#spotlightBlueGradient)" />
-          {/* White magnifying glass */}
-          <circle cx="7.5" cy="7.5" r="3.5" fill="none" stroke="white" strokeWidth="1.5" />
-          <line x1="10" y1="10" x2="13" y2="13" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+          <circle cx="10" cy="10" r="9.5" fill="url(#spotlightBlueGradient)" />
+          {/* White magnifying glass - smaller and centered */}
+          <circle cx="8.5" cy="8.5" r="3" fill="none" stroke="white" strokeWidth="1.5" />
+          <line x1="11" y1="11" x2="14" y2="14" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       </div>
     </header>
