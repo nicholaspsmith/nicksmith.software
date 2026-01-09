@@ -9,6 +9,9 @@ vi.mock('motion/react', () => ({
     button: ({ children, onClick, ...props }: React.ComponentProps<'button'>) => (
       <button onClick={onClick} {...props}>{children}</button>
     ),
+    div: ({ children, ...props }: React.ComponentProps<'div'>) => (
+      <div {...props}>{children}</div>
+    ),
   },
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));

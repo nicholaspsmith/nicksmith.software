@@ -58,6 +58,10 @@ export interface WindowProps {
  * - Minimize: open → minimizing → (hidden)
  */
 export function Window({ id, title, children }: WindowProps) {
+  // ============================================
+  // ALL HOOKS MUST BE CALLED BEFORE ANY RETURN
+  // ============================================
+
   const windowState = useWindowStore((s) => s.windows.find((w) => w.id === id));
   const windows = useWindowStore((s) => s.windows);
   const activeWindowId = useWindowStore((s) => s.activeWindowId);
@@ -65,7 +69,7 @@ export function Window({ id, title, children }: WindowProps) {
   const updateSize = useWindowStore((s) => s.updateSize);
   const focusWindow = useWindowStore((s) => s.focusWindow);
   const closeWindow = useWindowStore((s) => s.closeWindow);
-  const minimizeWindow = useWindowStore((s) => s.minimizeWindow);
+  const minimizeWindowAction = useWindowStore((s) => s.minimizeWindow);
   const zoomWindow = useWindowStore((s) => s.zoomWindow);
   const shadeWindow = useWindowStore((s) => s.shadeWindow);
   const clearRestoredFlag = useWindowStore((s) => s.clearRestoredFlag);
@@ -91,6 +95,45 @@ export function Window({ id, title, children }: WindowProps) {
     }
   }, [windowState?.restoredFromMinimized]);
 
+  // Calculate animation value
+  const animateValue = useMemo(() => {
+    if (animationState === 'minimizing' && dockTarget) {
+      // Simplified genie-like effect: scale down while moving to dock
+      // Uses CSS transforms - true genie distortion requires WebGL/Canvas
+      return {
+        opacity: [1, 0.8, 0],
+        scaleX: [1, 0.5, 0.1],
+        scaleY: [1, 0.3, 0.05],
+        x: [0, dockTarget.x * 0.5, dockTarget.x],
+        y: [0, dockTarget.y * 0.6, dockTarget.y],
+        transition: {
+          duration: 0.4,
+          times: [0, 0.5, 1],
+          ease: [0.4, 0, 0.2, 1] as [number, number, number, number],
+        },
+      };
+    }
+
+    if (animationState === 'restoring') {
+      // Reverse: expand from dock back to position
+      return {
+        opacity: 1,
+        scaleX: 1,
+        scaleY: 1,
+        x: 0,
+        y: 0,
+        transition: {
+          duration: 0.35,
+          ease: [0.2, 0.8, 0.2, 1] as [number, number, number, number],
+        },
+      };
+    }
+
+    // Use variant name for other states
+    return animationState;
+  }, [animationState, dockTarget]);
+
+  // ALL useCallback hooks must be before any conditional return
   const handleDragStop = useCallback(
     (_e: unknown, d: { x: number; y: number }) => {
       // Clamp y position to not go above menu bar (safety net)
@@ -151,6 +194,21 @@ export function Window({ id, title, children }: WindowProps) {
     shadeWindow(id);
   }, [id, shadeWindow]);
 
+  const handleAnimationComplete = useCallback(() => {
+    if (animationState === 'opening') {
+      // Transition to stable 'open' state after opening animation
+      setAnimationState('open');
+    } else if (animationState === 'restoring') {
+      // Transition to stable 'open' state after restore animation, clear the flag
+      setAnimationState('open');
+      clearRestoredFlag(id);
+    } else if (animationState === 'closing') {
+      closeWindow(id);
+    } else if (animationState === 'minimizing') {
+      minimizeWindowAction(id);
+    }
+  }, [animationState, id, closeWindow, minimizeWindowAction, clearRestoredFlag]);
+
   // Listen for keyboard shortcut events to trigger animations
   useEffect(() => {
     // Skip in test environment where window may not have addEventListener
@@ -177,23 +235,12 @@ export function Window({ id, title, children }: WindowProps) {
     };
   }, [id, handleClose, handleMinimize]);
 
-  const handleAnimationComplete = useCallback(() => {
-    if (animationState === 'opening') {
-      // Transition to stable 'open' state after opening animation
-      setAnimationState('open');
-    } else if (animationState === 'restoring') {
-      // Transition to stable 'open' state after restore animation, clear the flag
-      setAnimationState('open');
-      clearRestoredFlag(id);
-    } else if (animationState === 'closing') {
-      closeWindow(id);
-    } else if (animationState === 'minimizing') {
-      minimizeWindow(id);
-    }
-  }, [animationState, id, closeWindow, minimizeWindow, clearRestoredFlag]);
+  // ============================================
+  // EARLY RETURNS MUST COME AFTER ALL HOOKS
+  // ============================================
 
-  // Don't render if window not found or minimized
-  if (!windowState || windowState.state === 'minimized') {
+  // Don't render if window not found or minimized (but not during minimize animation)
+  if (!windowState || (windowState.state === 'minimized' && animationState !== 'minimizing')) {
     return null;
   }
 
@@ -202,46 +249,6 @@ export function Window({ id, title, children }: WindowProps) {
 
   // When shaded, collapse to just title bar height
   const displayHeight = isShaded ? SACRED.titleBarHeight : windowState.height;
-
-  // Calculate animation value - use dynamic target for minimizing/restoring
-  const animateValue = useMemo(() => {
-    if (animationState === 'minimizing' && dockTarget) {
-      // Genie effect: window appears to be "sucked" into the dock
-      // - originY: 1 anchors transforms to bottom of window
-      // - scaleY compresses faster than scaleX (funnel effect)
-      // - Keyframes create phased animation for more dramatic effect
-      return {
-        opacity: [1, 1, 0],
-        scaleX: [1, 0.6, 0.15],
-        scaleY: [1, 0.3, 0.1],
-        x: [0, dockTarget.x * 0.3, dockTarget.x],
-        y: [0, dockTarget.y * 0.5, dockTarget.y],
-        transition: {
-          duration: 0.35,
-          times: [0, 0.4, 1], // Phase 1: 0-40%, Phase 2: 40-100%
-          ease: [0.4, 0, 0.9, 0.4] as [number, number, number, number], // Fast start, slow finish
-        },
-      };
-    }
-
-    if (animationState === 'restoring') {
-      // Reverse genie effect: window expands from dock back to position
-      return {
-        opacity: 1,
-        scaleX: 1,
-        scaleY: 1,
-        x: 0,
-        y: 0,
-        transition: {
-          duration: 0.3,
-          ease: [0, 0.5, 0.2, 1] as [number, number, number, number], // Bounce out feel
-        },
-      };
-    }
-
-    // Use variant name for other states
-    return animationState;
-  }, [animationState, dockTarget]);
 
   return (
     <Rnd

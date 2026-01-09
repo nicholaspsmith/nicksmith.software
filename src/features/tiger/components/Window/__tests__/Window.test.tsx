@@ -137,6 +137,48 @@ describe('Window', () => {
     expect(rndWrapper.dataset.dragHandle).toContain('dragHandle');
   });
 
+  describe('minimize animation lifecycle', () => {
+    it('does not crash when window state changes to minimized (hooks order preserved)', () => {
+      // This test catches the "Rendered fewer hooks than expected" bug
+      // The fix ensures useMemo runs before early return
+      useWindowStore.getState().openWindow('TestApp');
+      const windows = useWindowStore.getState().windows;
+      const windowId = windows[0].id;
+
+      const { rerender } = render(<Window id={windowId} title="Test App" />);
+      expect(screen.getByTestId('window-content')).toBeInTheDocument();
+
+      // Minimize the window - this changes windowState.state to 'minimized'
+      // The component should not crash even though it returns null
+      useWindowStore.getState().minimizeWindow(windowId);
+
+      // Re-render should not throw "Rendered fewer hooks" error
+      expect(() => {
+        rerender(<Window id={windowId} title="Test App" />);
+      }).not.toThrow();
+
+      // Window should not be visible when minimized
+      expect(screen.queryByTestId('window-content')).not.toBeInTheDocument();
+    });
+
+    it('handles rapid state changes without crashing', () => {
+      useWindowStore.getState().openWindow('TestApp');
+      const windows = useWindowStore.getState().windows;
+      const windowId = windows[0].id;
+
+      const { rerender } = render(<Window id={windowId} title="Test App" />);
+
+      // Rapid minimize/restore cycles should not cause hook order issues
+      for (let i = 0; i < 3; i++) {
+        useWindowStore.getState().minimizeWindow(windowId);
+        expect(() => rerender(<Window id={windowId} title="Test App" />)).not.toThrow();
+
+        useWindowStore.getState().restoreWindow(windowId);
+        expect(() => rerender(<Window id={windowId} title="Test App" />)).not.toThrow();
+      }
+    });
+  });
+
   describe('accessibility', () => {
     it('has role="dialog" on window content', () => {
       useWindowStore.getState().openWindow('TestApp');

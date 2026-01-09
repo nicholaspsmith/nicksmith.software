@@ -7,18 +7,19 @@ import styles from './Dock.module.css';
 /**
  * Bounce animation for dock icons when app is launching
  * - Constant height bounce (same y each time, not decreasing)
- * - Slow, steady rhythm
+ * - Smooth sinusoidal motion
  * - Only applies to app-launching icons (not Finder, System Preferences, Trash)
  */
-const BOUNCE_HEIGHT = -25;
-const BOUNCE_CYCLE_DURATION = 0.5; // seconds per bounce cycle
+const BOUNCE_HEIGHT = -20;
+const BOUNCE_CYCLE_DURATION = 0.6; // seconds per bounce cycle
 
 const bounceAnimation = {
   y: [0, BOUNCE_HEIGHT, 0],
   transition: {
     duration: BOUNCE_CYCLE_DURATION,
     repeat: Infinity,
-    ease: 'easeInOut' as const,
+    // Sinusoidal ease for smooth, natural bounce
+    ease: [0.37, 0, 0.63, 1] as [number, number, number, number],
   },
 };
 
@@ -46,7 +47,7 @@ const DEFAULT_DOCK_ICONS = [
  *
  * Layout (left to right):
  * - Default system icons (Finder, System Preferences)
- * - Running application icons (with indicator dot)
+ * - Running application icons (with indicator triangle)
  * - Separator
  * - Minimized window thumbnails
  * - Separator
@@ -176,23 +177,29 @@ export function Dock() {
               const iconKey = `app-${parentAppId}`;
               const isBouncing = bouncingIcons.has(iconKey);
               return (
-                <motion.button
+                <motion.div
                   key={iconKey}
-                  className={styles.dockIcon}
-                  onClick={(e) => handleParentAppClick(e, parentAppId)}
+                  className={styles.iconWrapper}
                   initial={{ scale: 0, opacity: 0 }}
-                  animate={isBouncing ? { ...bounceAnimation, scale: 1, opacity: 1 } : { scale: 1, opacity: 1, y: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0, opacity: 0 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                  aria-label={config.label}
-                  data-label={config.label}
-                  data-testid={`dock-icon-app-${parentAppId}`}
                 >
-                  <div className={styles.iconImage}>
-                    <AppIcon parentAppId={parentAppId} />
-                  </div>
+                  <motion.button
+                    className={styles.dockIcon}
+                    onClick={(e) => handleParentAppClick(e, parentAppId)}
+                    animate={isBouncing ? bounceAnimation : { y: 0 }}
+                    aria-label={config.label}
+                    data-label={config.label}
+                    data-testid={`dock-icon-app-${parentAppId}`}
+                  >
+                    <div className={styles.iconImage}>
+                      <AppIcon parentAppId={parentAppId} />
+                    </div>
+                  </motion.button>
+                  {/* Running indicator stays fixed - doesn't bounce with icon */}
                   <div className={styles.runningIndicator} aria-hidden="true" />
-                </motion.button>
+                </motion.div>
               );
             })}
           </AnimatePresence>
@@ -207,22 +214,27 @@ export function Dock() {
             {minimizedWindows.map((window) => {
               const isBouncing = bouncingIcons.has(window.id);
               return (
-                <motion.button
+                <motion.div
                   key={window.id}
-                  className={styles.dockIcon}
-                  onClick={(e) => handleMinimizedWindowClick(e, window.id)}
-                  initial={{ scale: 0, opacity: 0, y: 20 }}
-                  animate={isBouncing ? { ...bounceAnimation, scale: 1, opacity: 1 } : { scale: 1, opacity: 1, y: 0 }}
-                  exit={{ scale: 0, opacity: 0, y: 20 }}
+                  className={styles.iconWrapper}
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                  aria-label={`Restore ${window.title}`}
-                  data-label={window.title}
-                  data-testid={`dock-icon-${window.id}`}
                 >
-                  <div className={styles.iconImage}>
-                    <MinimizedWindowThumbnail app={window.app} title={window.title} />
-                  </div>
-                </motion.button>
+                  <motion.button
+                    className={styles.dockIcon}
+                    onClick={(e) => handleMinimizedWindowClick(e, window.id)}
+                    animate={isBouncing ? bounceAnimation : { y: 0 }}
+                    aria-label={`Restore ${window.title}`}
+                    data-label={window.title}
+                    data-testid={`dock-icon-${window.id}`}
+                  >
+                    <div className={styles.iconImage}>
+                      <MinimizedWindowThumbnail app={window.app} title={window.title} />
+                    </div>
+                  </motion.button>
+                </motion.div>
               );
             })}
           </AnimatePresence>

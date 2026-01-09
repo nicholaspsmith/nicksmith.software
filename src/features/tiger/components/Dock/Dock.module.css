@@ -39,12 +39,23 @@
   /* Glass effect */
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+
+  /* Smooth width transitions when icons are added/removed */
+  transition: width 0.3s ease-out;
 }
 
 .appSection {
   display: flex;
   align-items: flex-end;
   gap: 2px;
+}
+
+/* Wrapper for icons that need running indicator - keeps indicator stationary during bounce */
+.iconWrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .separator {
@@ -133,15 +144,18 @@
 }
 
 /* Running indicator triangle (for open apps) - Tiger authentic */
+/* Positioned relative to iconWrapper, not the bouncing button */
 .runningIndicator {
   position: absolute;
-  bottom: -8px;
+  bottom: -4px;
   left: 50%;
   transform: translateX(-50%);
   /* CSS triangle using border trick - upward pointing */
   width: 0;
   height: 0;
-  border-left: 3px solid transparent;
-  border-right: 3px solid transparent;
-  border-bottom: 5px solid rgba(0, 0, 0, 0.7);
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 6px solid rgba(0, 0, 0, 0.7);
+  /* Don't bounce with icon */
+  pointer-events: none;
 }
