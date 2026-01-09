@@ -1,0 +1,149 @@
+/* iOS 6 Home Screen */
+.homeScreen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  /* iOS 6 default wallpaper - galaxy/space theme */
+  background:
+    /* Radial gradient for depth */
+    radial-gradient(
+      ellipse at 50% 30%,
+      rgba(80, 40, 120, 0.8) 0%,
+      rgba(20, 10, 40, 0.9) 50%,
+      rgba(0, 0, 0, 1) 100%
+    ),
+    /* Base dark gradient */
+    linear-gradient(
+      to bottom,
+      #1a0a2e 0%,
+      #0d0518 50%,
+      #000000 100%
+    );
+  overflow: hidden;
+  touch-action: pan-x pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Add subtle star effect */
+.homeScreen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 40% 70%, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1px 1px at 60% 20%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 80% 50%, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 10% 80%, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1px 1px at 70% 90%, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 90% 10%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 30% 55%, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1px 1px at 55% 45%, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 15% 15%, rgba(255, 255, 255, 0.3), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Main content area */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px 20px; /* Account for status bar */
+  position: relative;
+  z-index: 1;
+}
+
+/* App icon grid */
+.appGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px 15px;
+  justify-items: center;
+  width: 100%;
+  max-width: 320px;
+}
+
+/* Page indicator dots */
+.pageIndicator {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: auto;
+  padding: 16px 0;
+}
+
+.pageDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transition: background-color 0.2s ease;
+}
+
+.pageDot.active {
+  background: white;
+}
+
+/* Dock */
+.dock {
+  position: relative;
+  padding: 10px 4px;
+  margin: 0 4px 4px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dockIcons {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 16px;
+  padding: 0 8px;
+}
+
+/* Safe area support for modern iPhones */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .dock {
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    margin-bottom: 0;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 375px) {
+  .appGrid {
+    gap: 16px 10px;
+  }
+
+  .dockIcons {
+    gap: 12px;
+  }
+}
+
+/* Landscape mode */
+@media (orientation: landscape) and (max-height: 500px) {
+  .content {
+    padding-top: 30px;
+  }
+
+  .appGrid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px 20px;
+  }
+
+  .pageIndicator {
+    padding: 8px 0;
+  }
+
+  .dock {
+    padding: 6px 4px;
+  }
+}

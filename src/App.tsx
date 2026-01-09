@@ -15,6 +15,7 @@ import { Window } from '@/features/tiger/components/Window';
 import { MobileFallback } from '@/features/tiger/components/MobileFallback';
 import { AlertDialog } from '@/features/tiger/components/AlertDialog';
 import { TerminalIcon } from '@/features/tiger/components/icons';
+import { HomeScreen, IOS_BREAKPOINT } from '@/features/ios';
 import { AboutMe } from '@/features/apps/AboutMe';
 import { Projects } from '@/features/apps/Projects';
 import { Resume } from '@/features/apps/Resume';
@@ -94,7 +95,12 @@ export function App() {
   // Track viewport for mobile fallback
   const viewport = useViewport();
 
-  // Show mobile fallback for small screens (< 1024px)
+  // Show iOS 6 home screen for small screens (< 768px)
+  if (viewport.width < IOS_BREAKPOINT) {
+    return <HomeScreen />;
+  }
+
+  // Show mobile fallback for medium screens (768px - 1024px)
   if (viewport.width < MOBILE_BREAKPOINT) {
     return <MobileFallback />;
   }
