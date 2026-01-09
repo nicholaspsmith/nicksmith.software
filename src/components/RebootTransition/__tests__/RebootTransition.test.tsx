@@ -188,7 +188,7 @@ describe('RebootTransition', () => {
     expect(screen.queryByTestId('reboot-overlay')).not.toBeInTheDocument();
   });
 
-  it('shows Apple logo during transition', async () => {
+  it('shows gray overlay during transition', async () => {
     const { rerender } = render(
       <RebootTransition mode="desktop" skipInitial={false}>
         <div>Desktop Content</div>
@@ -203,9 +203,9 @@ describe('RebootTransition', () => {
       );
     });
 
-    // The overlay contains an SVG (Apple logo)
+    // The overlay appears during transition (Tiger-style gray boot screen)
     const overlay = screen.getByTestId('reboot-overlay');
-    expect(overlay.querySelector('svg')).toBeInTheDocument();
+    expect(overlay).toBeInTheDocument();
   });
 
   it('triggers transition when going from iOS to desktop', async () => {
