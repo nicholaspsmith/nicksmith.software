@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { MotionConfig } from 'motion/react';
 import { useAppStore } from '@/stores/appStore';
 import { useWindowStore } from '@/stores/windowStore';
@@ -16,11 +16,24 @@ import { MobileFallback } from '@/features/tiger/components/MobileFallback';
 import { AlertDialog } from '@/features/tiger/components/AlertDialog';
 import { TerminalIcon } from '@/features/tiger/components/icons';
 import { HomeScreen, IOS_BREAKPOINT } from '@/features/ios';
+import { RebootTransition } from '@/components/RebootTransition';
 import { AboutMe } from '@/features/apps/AboutMe';
 import { Projects } from '@/features/apps/Projects';
 import { Resume } from '@/features/apps/Resume';
 import { Contact } from '@/features/apps/Contact';
 import { Terminal as TerminalApp } from '@/features/apps/Terminal';
+
+/** Viewport mode type */
+type ViewportMode = 'ios' | 'fallback' | 'desktop';
+
+/**
+ * Determines the viewport mode based on width
+ */
+function getViewportMode(width: number): ViewportMode {
+  if (width < IOS_BREAKPOINT) return 'ios';
+  if (width < MOBILE_BREAKPOINT) return 'fallback';
+  return 'desktop';
+}
 
 /**
  * Desktop icons configuration
@@ -79,32 +92,12 @@ function WindowContent({ app }: { app: string }) {
 }
 
 /**
- * App - Root application component
+ * TigerDesktop - The Mac OS X Tiger desktop experience
  *
- * Renders the Tiger desktop with portfolio icons.
- * Icons are arranged in the top-right corner following
- * Mac OS X Tiger's column-first layout pattern.
- *
- * Double-clicking an icon opens a window for that app.
+ * Renders the desktop with portfolio icons arranged in
+ * the top-right corner following Tiger's column-first layout.
  */
-export function App() {
-  // Enable Tiger keyboard shortcuts (⌘W, ⌘M)
-  useKeyboardShortcuts();
-  // Detect reduced motion preference
-  const prefersReducedMotion = useReducedMotion();
-  // Track viewport for mobile fallback
-  const viewport = useViewport();
-
-  // Show iOS 6 home screen for small screens (< 768px)
-  if (viewport.width < IOS_BREAKPOINT) {
-    return <HomeScreen />;
-  }
-
-  // Show mobile fallback for medium screens (768px - 1024px)
-  if (viewport.width < MOBILE_BREAKPOINT) {
-    return <MobileFallback />;
-  }
-
+function TigerDesktop() {
   const selectedIconId = useAppStore((s) => s.selectedIconId);
   const selectIcon = useAppStore((s) => s.selectIcon);
   const alertOpen = useAppStore((s) => s.alertOpen);
@@ -134,7 +127,7 @@ export function App() {
   };
 
   return (
-    <MotionConfig reducedMotion={prefersReducedMotion ? 'always' : 'never'}>
+    <>
       <Desktop>
         <DesktopIconGrid>
           {DESKTOP_ICONS.map((icon) => (
@@ -170,6 +163,49 @@ export function App() {
         onCancel={handleAlertCancel}
         playSound={alertConfig?.playSound}
       />
+    </>
+  );
+}
+
+/**
+ * App - Root application component
+ *
+ * Determines viewport mode and renders the appropriate experience:
+ * - iOS 6 home screen for mobile (< 768px)
+ * - MobileFallback for tablets (768px - 1024px)
+ * - Tiger desktop for large screens (>= 1024px)
+ *
+ * Transitions between iOS and Desktop/Fallback are animated
+ * with a "reboot" effect for a polished context switch.
+ */
+export function App() {
+  // Enable Tiger keyboard shortcuts (⌘W, ⌘M)
+  useKeyboardShortcuts();
+  // Detect reduced motion preference
+  const prefersReducedMotion = useReducedMotion();
+  // Track viewport for responsive experience
+  const viewport = useViewport();
+
+  // Determine current viewport mode
+  const mode = useMemo(() => getViewportMode(viewport.width), [viewport.width]);
+
+  // Render content based on mode
+  const content = useMemo(() => {
+    switch (mode) {
+      case 'ios':
+        return <HomeScreen />;
+      case 'fallback':
+        return <MobileFallback />;
+      case 'desktop':
+        return <TigerDesktop />;
+    }
+  }, [mode]);
+
+  return (
+    <MotionConfig reducedMotion={prefersReducedMotion ? 'always' : 'never'}>
+      <RebootTransition mode={mode} skipInitial={false}>
+        {content}
+      </RebootTransition>
     </MotionConfig>
   );
 }
