@@ -59,16 +59,17 @@ body {
  * CURSOR OVERRIDES
  * Ensure Tiger cursor is ALWAYS visible
  * Never show the host OS cursor
+ * BUT allow resize cursors to work (react-rnd)
  * ======================================== */
 
-/* Universal cursor override - applies to everything */
+/* Default cursor for most elements - no !important to allow resize cursors */
 *,
 *::before,
 *::after {
-  cursor: var(--aqua-cursor-default) !important;
+  cursor: var(--aqua-cursor-default);
 }
 
-/* Interactive elements use pointer variant (same cursor, just semantic) */
+/* Interactive elements use pointer variant */
 button,
 a,
 [role="button"],
@@ -80,5 +81,12 @@ input[type="radio"],
 select,
 summary,
 .clickable {
-  cursor: var(--aqua-cursor-pointer) !important;
+  cursor: var(--aqua-cursor-pointer);
+}
+
+/* Elements that should NEVER show host cursor - use !important sparingly */
+.react-draggable,
+[data-testid="desktop"],
+[data-testid="dock"] {
+  cursor: var(--aqua-cursor-default) !important;
 }

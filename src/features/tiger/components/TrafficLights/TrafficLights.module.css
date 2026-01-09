@@ -10,7 +10,7 @@
   display: flex;
   align-items: center;
   gap: var(--aqua-traffic-light-spacing);
-  margin-left: var(--aqua-traffic-light-margin);
+  margin-left: 0;
   flex-shrink: 0;
 }
 
@@ -32,7 +32,8 @@
 .icon {
   opacity: 0;
   transition: opacity var(--aqua-duration-fast) ease;
-  color: rgba(80, 30, 20, 0.85);
+  /* Dark reddish-brown to match Tiger reference */
+  color: rgba(64, 20, 10, 0.75);
 }
 
 /* Show icons on hover (group hover - Tiger behavior) */
@@ -43,66 +44,108 @@
 /* Button colors when focused - Tiger gel button style with sunken/inset look */
 .focused .close {
   background:
+    /* Glossy specular highlight - positioned upper center */
     radial-gradient(
-      ellipse 70% 50% at 50% 20%,
-      rgba(255, 255, 255, 0.9) 0%,
+      ellipse 80% 45% at 50% 15%,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.4) 40%,
       rgba(255, 255, 255, 0) 70%
     ),
+    /* Main color gradient - terracotta/burnt sienna tones */
     linear-gradient(
       180deg,
-      #ff7a70 0%,
-      #ff5145 40%,
-      #e02b1d 100%
+      #ff6f61 0%,
+      #e8453a 50%,
+      #c93326 100%
     );
   box-shadow:
-    0 0 1px 0 rgba(0, 0, 0, 0.9),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+    /* Outer dark border */
+    0 0.5px 0.5px 0 rgba(0, 0, 0, 0.5),
+    0 0 0 0.5px rgba(0, 0, 0, 0.4),
+    /* Inner top highlight */
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    /* Inner bottom shadow */
+    inset 0 -1px 1px rgba(0, 0, 0, 0.15);
 }
 
 .focused .minimize {
   background:
+    /* Glossy specular highlight - positioned upper center */
     radial-gradient(
-      ellipse 70% 50% at 50% 20%,
-      rgba(255, 255, 255, 0.9) 0%,
+      ellipse 80% 45% at 50% 15%,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.4) 40%,
       rgba(255, 255, 255, 0) 70%
     ),
+    /* Main color gradient - golden amber tones */
     linear-gradient(
       180deg,
-      #ffd048 0%,
-      #f5b820 40%,
-      #c99500 100%
+      #f5c342 0%,
+      #e2a82a 50%,
+      #c49012 100%
     );
   box-shadow:
-    0 0 1px 0 rgba(0, 0, 0, 0.9),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+    /* Outer dark border */
+    0 0.5px 0.5px 0 rgba(0, 0, 0, 0.5),
+    0 0 0 0.5px rgba(0, 0, 0, 0.4),
+    /* Inner top highlight */
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    /* Inner bottom shadow */
+    inset 0 -1px 1px rgba(0, 0, 0, 0.15);
 }
 
 .focused .zoom {
   background:
+    /* Glossy specular highlight - positioned upper center */
     radial-gradient(
-      ellipse 70% 50% at 50% 20%,
-      rgba(255, 255, 255, 0.9) 0%,
+      ellipse 80% 45% at 50% 15%,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.4) 40%,
       rgba(255, 255, 255, 0) 70%
     ),
+    /* Main color gradient - olive/sage green tones */
     linear-gradient(
       180deg,
-      #5be86a 0%,
-      #2bc840 40%,
-      #149922 100%
+      #5fc94f 0%,
+      #3db33a 50%,
+      #288f24 100%
     );
   box-shadow:
-    0 0 1px 0 rgba(0, 0, 0, 0.9),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+    /* Outer dark border */
+    0 0.5px 0.5px 0 rgba(0, 0, 0, 0.5),
+    0 0 0 0.5px rgba(0, 0, 0, 0.4),
+    /* Inner top highlight */
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    /* Inner bottom shadow */
+    inset 0 -1px 1px rgba(0, 0, 0, 0.15);
 }
 
-/* Unfocused state - circular outlines only (no fill) */
+/* Unfocused state - hemisphere/dome shading on brushed metal */
 .unfocused .button {
-  background: transparent;
-  border: 1px solid rgba(0, 0, 0, 0.35);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+  /* Radial gradient for rounded hemisphere appearance */
+  background:
+    /* Specular highlight at top - like light hitting a dome */
+    radial-gradient(
+      ellipse 90% 60% at 50% 25%,
+      rgba(255, 255, 255, 0.35) 0%,
+      rgba(255, 255, 255, 0.15) 40%,
+      transparent 70%
+    ),
+    /* Base shading - darker at bottom for 3D depth */
+    linear-gradient(
+      180deg,
+      rgba(180, 180, 180, 0.25) 0%,
+      rgba(140, 140, 140, 0.3) 50%,
+      rgba(100, 100, 100, 0.35) 100%
+    );
+  /* Outer dark ring */
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  /* Depth shadows for inset hemisphere look */
+  box-shadow:
+    /* Inner top highlight */
+    inset 0 1px 1px rgba(255, 255, 255, 0.25),
+    /* Inner bottom shadow */
+    inset 0 -1px 1px rgba(0, 0, 0, 0.15);
 }
 
 /* Hide icons when unfocused */
@@ -110,20 +153,41 @@
   opacity: 0;
 }
 
-/* Active/pressed state */
+/* Active/pressed state - slightly darker with reduced highlight */
 .focused .close:active {
-  background: var(--aqua-close-hover);
-  transform: scale(0.9);
+  background:
+    radial-gradient(
+      ellipse 80% 45% at 50% 15%,
+      rgba(255, 255, 255, 0.6) 0%,
+      rgba(255, 255, 255, 0.2) 40%,
+      rgba(255, 255, 255, 0) 70%
+    ),
+    linear-gradient(180deg, #d45a4e 0%, #c03a30 50%, #a02820 100%);
+  transform: scale(0.92);
 }
 
 .focused .minimize:active {
-  background: var(--aqua-minimize-hover);
-  transform: scale(0.9);
+  background:
+    radial-gradient(
+      ellipse 80% 45% at 50% 15%,
+      rgba(255, 255, 255, 0.6) 0%,
+      rgba(255, 255, 255, 0.2) 40%,
+      rgba(255, 255, 255, 0) 70%
+    ),
+    linear-gradient(180deg, #d4a838 0%, #c09020 50%, #a07810 100%);
+  transform: scale(0.92);
 }
 
 .focused .zoom:active {
-  background: var(--aqua-zoom-hover);
-  transform: scale(0.9);
+  background:
+    radial-gradient(
+      ellipse 80% 45% at 50% 15%,
+      rgba(255, 255, 255, 0.6) 0%,
+      rgba(255, 255, 255, 0.2) 40%,
+      rgba(255, 255, 255, 0) 70%
+    ),
+    linear-gradient(180deg, #4aaa40 0%, #30952c 50%, #207820 100%);
+  transform: scale(0.92);
 }
 
 /* Remove default button focus outline, use custom */

@@ -9,14 +9,15 @@ export interface TrafficLightsProps {
 
 /**
  * Close icon (X) - appears on hover
+ * Refined dimensions to match Tiger reference
  */
 function CloseIcon() {
   return (
     <svg viewBox="0 0 8 8" width="8" height="8" className={styles.icon}>
       <path
-        d="M1 1L7 7M7 1L1 7"
+        d="M2 2L6 6M6 2L2 6"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="1.25"
         strokeLinecap="round"
       />
     </svg>
@@ -25,14 +26,15 @@ function CloseIcon() {
 
 /**
  * Minimize icon (horizontal line) - appears on hover
+ * Refined dimensions to match Tiger reference
  */
 function MinimizeIcon() {
   return (
     <svg viewBox="0 0 8 8" width="8" height="8" className={styles.icon}>
       <path
-        d="M1 4H7"
+        d="M1.5 4H6.5"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="1.25"
         strokeLinecap="round"
       />
     </svg>
@@ -41,14 +43,15 @@ function MinimizeIcon() {
 
 /**
  * Zoom icon (plus) - appears on hover
+ * Refined dimensions to match Tiger reference
  */
 function ZoomIcon() {
   return (
     <svg viewBox="0 0 8 8" width="8" height="8" className={styles.icon}>
       <path
-        d="M4 1V7M1 4H7"
+        d="M4 1.5V6.5M1.5 4H6.5"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="1.25"
         strokeLinecap="round"
       />
     </svg>

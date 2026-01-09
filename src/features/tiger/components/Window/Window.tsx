@@ -253,6 +253,18 @@ export function Window({ id, title, children }: WindowProps) {
   // When shaded, collapse to just title bar height
   const displayHeight = isShaded ? SACRED.titleBarHeight : windowState.height;
 
+  // Tiger-style: only allow resize from bottom-right corner (where the resize grip is)
+  const resizeHandleStyles = {
+    bottomRight: {
+      width: '20px',
+      height: '20px',
+      right: '0px',
+      bottom: '0px',
+      cursor: 'nwse-resize',
+      zIndex: 10,
+    },
+  };
+
   return (
     <Rnd
       position={{ x: windowState.x, y: windowState.y }}
@@ -265,7 +277,8 @@ export function Window({ id, title, children }: WindowProps) {
       onDragStop={handleDragStop}
       onResizeStop={handleResizeStop}
       onMouseDown={handleMouseDown}
-      enableResizing={!isShaded}
+      enableResizing={!isShaded ? { bottomRight: true } : false}
+      resizeHandleStyles={resizeHandleStyles}
       data-testid={`window-${id}`}
     >
       <motion.div

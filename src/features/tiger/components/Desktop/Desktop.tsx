@@ -80,17 +80,32 @@ export function Desktop({ children, iconPositions, onIconsSelected }: DesktopPro
   });
 
   const handleClick = useCallback((e: React.MouseEvent) => {
-    // Only clear when clicking directly on desktop background, not on children
-    // This prevents MenuBar, Dock, and Window clicks from deactivating windows
-    if (e.target !== e.currentTarget) {
-      return;
-    }
     // Skip clearing if we just finished a marquee selection
     if (justFinishedMarquee.current) {
       justFinishedMarquee.current = false;
       return;
     }
-    clearSelection();
+
+    const target = e.target as HTMLElement;
+
+    // Check if click is on or inside elements that should NOT unfocus windows
+    const isMenuBar = target.closest('[data-testid="menu-bar"]');
+    const isWindow = target.closest('[data-testid^="window-"]');
+    const isDock = target.closest('[data-testid="dock"]');
+    const isDesktopIcon = target.closest('[data-testid="desktop-icon"]');
+    const isContextMenu = target.closest('[data-testid="context-menu"]');
+
+    // Don't unfocus if clicking on these elements
+    if (isMenuBar || isWindow || isDock || isContextMenu) {
+      return;
+    }
+
+    // Clear selection for clicks on desktop background (but not on icons)
+    if (!isDesktopIcon) {
+      clearSelection();
+    }
+
+    // Always clear active window when clicking outside windows, dock, and menu bar
     clearActiveWindow();
   }, [clearSelection, clearActiveWindow]);
 
