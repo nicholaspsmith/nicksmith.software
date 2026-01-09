@@ -6,19 +6,16 @@ import styles from './Dock.module.css';
 
 /**
  * Bounce animation for dock icons when app is launching
- * - Constant height bounce (same y each time, not decreasing)
+ * - Single bounce: up and down once
  * - Smooth sinusoidal motion
- * - Only applies to app-launching icons (not Finder, System Preferences, Trash)
  */
 const BOUNCE_HEIGHT = -20;
-const BOUNCE_CYCLE_DURATION = 0.6; // seconds per bounce cycle
+const BOUNCE_DURATION = 0.4; // seconds for single bounce
 
 const bounceAnimation = {
   y: [0, BOUNCE_HEIGHT, 0],
   transition: {
-    duration: BOUNCE_CYCLE_DURATION,
-    repeat: Infinity,
-    // Sinusoidal ease for smooth, natural bounce
+    duration: BOUNCE_DURATION,
     ease: [0.37, 0, 0.63, 1] as [number, number, number, number],
   },
 };
@@ -35,11 +32,13 @@ const PARENT_APP_CONFIG: Record<string, { label: string }> = {
 };
 
 /**
- * Default dock icons that are always present (Finder, System Preferences)
+ * Default dock icons that are always present
+ * TextEdit is always shown but only has running indicator when windows are open
  */
 const DEFAULT_DOCK_ICONS = [
-  { id: 'finder', label: 'Finder' },
-  { id: 'system-preferences', label: 'System Preferences' },
+  { id: 'finder', label: 'Finder', icon: '/icons/finder.png' },
+  { id: 'textEdit', label: 'TextEdit', icon: '/icons/textedit.png' },
+  { id: 'system-preferences', label: 'System Preferences', icon: '/icons/system-preferences.png' },
 ] as const;
 
 /**
@@ -61,39 +60,65 @@ export function Dock() {
   const windows = useWindowStore((s) => s.windows);
   const restoreWindow = useWindowStore((s) => s.restoreWindow);
   const focusWindow = useWindowStore((s) => s.focusWindow);
+  const openWindow = useWindowStore((s) => s.openWindow);
   const showAlert = useAppStore((s) => s.showAlert);
 
   // Track which icons are currently bouncing
   const [bouncingIcons, setBouncingIcons] = useState<Set<string>>(new Set());
 
-  // Trigger bounce animation for an icon (for app-launching icons only)
-  // Bounces for a random duration between 1-3 seconds
+  // Trigger bounce animation for an icon (single bounce)
   const triggerBounce = useCallback((iconId: string) => {
     setBouncingIcons((prev) => new Set(prev).add(iconId));
-    // Random duration between 1-3 seconds
-    const bounceDuration = 1000 + Math.random() * 2000;
+    // Clear after animation completes
     setTimeout(() => {
       setBouncingIcons((prev) => {
         const next = new Set(prev);
         next.delete(iconId);
         return next;
       });
-    }, bounceDuration);
+    }, BOUNCE_DURATION * 1000);
   }, []);
 
   // Get running apps (open or minimized, but not closed)
   const runningApps = windows.filter((w) => w.state !== 'closed');
 
-  // Get unique parent app IDs that are running (TextEdit shows once, not four times)
-  const runningParentAppIds = [...new Set(runningApps.map((w) => w.parentApp))];
+  // Get unique parent app IDs that are running, excluding TextEdit (it's in default icons)
+  const runningParentAppIds = [...new Set(runningApps.map((w) => w.parentApp))]
+    .filter((id) => id !== 'textEdit');
+
+  // Check if TextEdit has any running windows (for showing indicator)
+  const hasTextEditWindows = runningApps.some((w) => w.parentApp === 'textEdit');
 
   // Get only minimized windows for thumbnails
   const minimizedWindows = windows.filter((w) => w.state === 'minimized');
 
   const handleDefaultIconClick = (e: React.MouseEvent, iconId: string) => {
     e.stopPropagation();
-    // Don't bounce - these icons don't launch apps yet
-    if (iconId === 'finder') {
+
+    if (iconId === 'textEdit') {
+      // TextEdit: focus or restore windows if any exist
+      const textEditWindows = windows
+        .filter((w) => w.parentApp === 'textEdit' && w.state !== 'closed')
+        .sort((a, b) => b.zIndex - a.zIndex);
+
+      // Only bounce if TextEdit has no running windows (no activity indicator)
+      // Apps with running indicator should not bounce
+      if (!hasTextEditWindows) {
+        triggerBounce('textEdit');
+      }
+
+      if (textEditWindows.length > 0) {
+        const topWindow = textEditWindows[0];
+        if (topWindow.state === 'minimized') {
+          restoreWindow(topWindow.id);
+        } else {
+          focusWindow(topWindow.id);
+        }
+      } else {
+        // No TextEdit windows open - open a blank document
+        openWindow('untitled');
+      }
+    } else if (iconId === 'finder') {
       showAlert({
         title: 'Finder',
         message: 'Finder is coming soon!',
@@ -110,7 +135,10 @@ export function Dock() {
 
   const handleParentAppClick = (e: React.MouseEvent, parentAppId: string) => {
     e.stopPropagation();
-    triggerBounce(`app-${parentAppId}`);
+
+    // Running apps always have an activity indicator, so never bounce
+    // The indicator means the app is already running - just focus the window
+
     // Find all windows for this parent app, sorted by z-index (most recent first)
     const appWindows = windows
       .filter((w) => w.parentApp === parentAppId && w.state !== 'closed')
@@ -150,23 +178,45 @@ export function Dock() {
       onClick={(e) => e.stopPropagation()}
     >
       <div className={styles.dock}>
-        <div className={styles.shelf}>
-          {/* Default system icons - no bounce (they don't launch apps yet) */}
+        <motion.div
+          className={styles.shelf}
+          layout
+          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+        >
+          {/* Default system icons */}
           <div className={styles.appSection}>
-            {DEFAULT_DOCK_ICONS.map((icon) => (
-              <button
-                key={icon.id}
-                className={styles.dockIcon}
-                onClick={(e) => handleDefaultIconClick(e, icon.id)}
-                aria-label={icon.label}
-                data-label={icon.label}
-                data-testid={`dock-icon-${icon.id}`}
-              >
-                <div className={styles.iconImage}>
-                  <DefaultIcon iconId={icon.id} />
+            {DEFAULT_DOCK_ICONS.map((icon) => {
+              const isTextEdit = icon.id === 'textEdit';
+              const showIndicator = isTextEdit && hasTextEditWindows;
+              const isBouncing = bouncingIcons.has(icon.id);
+
+              return (
+                <div key={icon.id} className={styles.iconWrapper}>
+                  <motion.button
+                    className={styles.dockIcon}
+                    onClick={(e) => handleDefaultIconClick(e, icon.id)}
+                    animate={isBouncing ? bounceAnimation : { y: 0 }}
+                    aria-label={icon.label}
+                    data-label={icon.label}
+                    data-testid={`dock-icon-${icon.id}`}
+                  >
+                    <div className={styles.iconImage}>
+                      <img
+                        src={icon.icon}
+                        alt=""
+                        width={48}
+                        height={48}
+                        draggable={false}
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </motion.button>
+                  {showIndicator && (
+                    <div className={styles.runningIndicator} aria-hidden="true" />
+                  )}
                 </div>
-              </button>
-            ))}
+              );
+            })}
           </div>
 
           {/* Running application icons (one per parent app, e.g., one TextEdit icon) */}
@@ -254,31 +304,15 @@ export function Dock() {
               <TrashIcon />
             </div>
           </button>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
 }
 
 /**
- * Default dock icon (Finder, System Preferences)
- * Uses official Tiger PNG icons
- */
-function DefaultIcon({ iconId }: { iconId: string }) {
-  const iconMap: Record<string, string> = {
-    finder: '/icons/finder.png',
-    'system-preferences': '/icons/system-preferences.png',
-  };
-
-  const src = iconMap[iconId];
-  if (!src) return null;
-
-  return <img src={src} alt="" width={48} height={48} draggable={false} aria-hidden="true" />;
-}
-
-/**
- * App icon for running applications in dock
- * Shows parent app icon (TextEdit for documents, Terminal for terminal)
+ * App icon for running applications in dock (Terminal, etc.)
+ * TextEdit is now a permanent dock icon, so only other apps use this
  */
 function AppIcon({ parentAppId }: { parentAppId: string }) {
   if (parentAppId === 'terminal') {
@@ -288,11 +322,6 @@ function AppIcon({ parentAppId }: { parentAppId: string }) {
         <text x="12" y="30" fontSize="20" fill="#33FF33" fontFamily="monospace">&gt;_</text>
       </svg>
     );
-  }
-
-  if (parentAppId === 'textEdit') {
-    // TextEdit icon - document with pencil
-    return <img src="/icons/textedit.png" alt="" width={48} height={48} draggable={false} aria-hidden="true" />;
   }
 
   // Fallback: generic document icon

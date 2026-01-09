@@ -22,6 +22,7 @@ import { AboutMe } from '@/features/apps/AboutMe';
 import { Projects } from '@/features/apps/Projects';
 import { Resume } from '@/features/apps/Resume';
 import { Contact } from '@/features/apps/Contact';
+import { UntitledDocument } from '@/features/apps/UntitledDocument';
 
 // Lazy load Terminal to reduce initial bundle size (xterm.js is ~300KB)
 const TerminalApp = lazy(() =>
@@ -134,8 +135,10 @@ function WindowContent({ app }: { app: string }) {
           <TerminalApp />
         </Suspense>
       );
+    case 'untitled':
+      return <UntitledDocument />;
     default:
-      return <div style={{ padding: 16 }}>{app} content</div>;
+      return null;
   }
 }
 

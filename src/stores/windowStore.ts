@@ -3,12 +3,14 @@ import { create } from 'zustand';
 /**
  * App groups - maps document types to their parent application
  * About, Projects, Resume, Contact are "documents" opened in TextEdit
+ * Untitled is a blank TextEdit document
  */
 export const APP_GROUPS: Record<string, string> = {
   about: 'textEdit',
   projects: 'textEdit',
   resume: 'textEdit',
   contact: 'textEdit',
+  untitled: 'textEdit',
   // Terminal is its own app (not grouped)
 };
 

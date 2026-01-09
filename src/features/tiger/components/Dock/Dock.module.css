@@ -39,9 +39,6 @@
   /* Glass effect */
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-
-  /* Smooth width transitions when icons are added/removed */
-  transition: width 0.3s ease-out;
 }
 
 .appSection {
