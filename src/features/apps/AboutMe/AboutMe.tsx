@@ -19,32 +19,33 @@ export function AboutMe() {
         </div>
         <div className={styles.intro}>
           <h1 className={styles.name}>Nick Smith</h1>
-          <p className={styles.title}>Software Engineer</p>
+          <p className={styles.title}>Senior Software Engineer</p>
         </div>
       </div>
 
       <div className={styles.bio}>
         <p>
-          Hi! I'm a software engineer passionate about crafting delightful user
-          experiences and building robust systems. This portfolio is a tribute
-          to Mac OS X Tiger — one of my favorite operating systems that shaped
-          my love for thoughtful design.
+          Hey there! I'm a frontend-focused engineer with 12+ years of experience
+          building web platforms at companies like MongoDB and Cisco. I love turning
+          complex problems into clean, intuitive interfaces — whether that's threat
+          intelligence dashboards or large-scale CMS migrations.
         </p>
         <p>
-          I specialize in frontend development with React and TypeScript, but I
-          enjoy working across the full stack. When I'm not coding, you'll find
-          me exploring retro computing, tinkering with side projects, or
-          appreciating good UI design.
+          This portfolio is my tribute to Mac OS X Tiger, an OS that shaped my
+          appreciation for thoughtful design. I'm currently exploring AI-assisted
+          development and building Loopi, an open-source spaced repetition learning
+          app. When I'm not coding, I volunteer as an ESL instructor and practice
+          my Mandarin.
         </p>
       </div>
 
       <div className={styles.highlights}>
         <h2 className={styles.sectionTitle}>Highlights</h2>
         <ul className={styles.list}>
-          <li>5+ years of professional software development</li>
-          <li>Expert in React, TypeScript, and modern web technologies</li>
-          <li>Passionate about performance and accessibility</li>
-          <li>Strong believer in clean code and testing</li>
+          <li>12+ years building scalable web platforms</li>
+          <li>Tech Lead at MongoDB, led CMS migration for mongodb.com</li>
+          <li>Expert in React, Next.js, TypeScript, and data visualization</li>
+          <li>Hack Reactor alum, University of Arizona BSBA</li>
         </ul>
       </div>
     </div>

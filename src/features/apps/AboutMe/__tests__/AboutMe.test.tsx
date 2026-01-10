@@ -15,18 +15,18 @@ describe('AboutMe', () => {
 
   it('displays the title', () => {
     render(<AboutMe />);
-    expect(screen.getByText('Software Engineer')).toBeInTheDocument();
+    expect(screen.getByText('Senior Software Engineer')).toBeInTheDocument();
   });
 
   it('displays bio paragraphs', () => {
     render(<AboutMe />);
-    expect(screen.getByText(/passionate about crafting/i)).toBeInTheDocument();
+    expect(screen.getByText(/frontend-focused engineer/i)).toBeInTheDocument();
   });
 
   it('displays highlights section', () => {
     render(<AboutMe />);
     expect(screen.getByText('Highlights')).toBeInTheDocument();
-    expect(screen.getByText(/5\+ years/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/12\+ years/i).length).toBeGreaterThan(0);
   });
 
   it('has profile photo', () => {
