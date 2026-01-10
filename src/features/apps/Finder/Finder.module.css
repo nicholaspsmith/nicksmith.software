@@ -47,7 +47,7 @@
 /* Navigation buttons (back/forward) */
 .navButtons {
   display: flex;
-  gap: 2px;
+  gap: 0;
 }
 
 .navButton {
@@ -61,6 +61,17 @@
   background: linear-gradient(180deg, #f8f8f8 0%, #d8d8d8 100%);
   color: #333;
   cursor: var(--aqua-cursor-default);
+}
+
+.backButton {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.forwardButton {
+  margin-left: -2px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
 .navButton:disabled {
