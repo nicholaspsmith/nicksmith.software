@@ -61,7 +61,7 @@ const PROJECTS: Project[] = [
  * Projects - Portfolio projects showcase
  *
  * Displays project cards with name, description, and technologies.
- * Scrollable for many projects. Window default: 700x500px.
+ * Scrollable for many projects. Window default: 625x595px.
  */
 export function Projects() {
   return (
