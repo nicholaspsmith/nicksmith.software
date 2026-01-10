@@ -168,8 +168,9 @@ a {
 }
 
 /* Links within TextEdit windows use Tiger pointing hand cursor */
-[data-textedit-window] a {
-  cursor: url('/icons/cursors/cursor_11.png') 6 1, pointer;
+[data-textedit-window] a,
+[data-textedit-window] a * {
+  cursor: url('/icons/cursors/cursor_11.png') 5 0, pointer !important;
 }
 
 /* Elements that should NEVER show host cursor - use !important sparingly */
