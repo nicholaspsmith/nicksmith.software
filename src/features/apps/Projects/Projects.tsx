@@ -17,6 +17,7 @@ const PROJECTS: Project[] = [
       'This very website! A faithful recreation of Mac OS X Tiger as a portfolio site, built with React, TypeScript, and Zustand.',
     technologies: ['React', 'TypeScript', 'Zustand', 'CSS Modules'],
     link: 'https://github.com/nicholaspsmith/nicksmith.software',
+    logo: '/icons/finder.png',
   },
   {
     id: 'centrifugue',
