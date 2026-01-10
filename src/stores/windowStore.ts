@@ -69,6 +69,8 @@ const WINDOW_SIZE_CONFIGS: Record<string, WindowSizeConfig> = {
   'about-this-mac': { width: 320, height: 380, minWidth: 320, minHeight: 380 },
   // Projects - sized for project cards
   projects: { width: 625, height: 595, minWidth: 400, minHeight: 300 },
+  // Contact - compact contact info
+  contact: { width: 390, height: 440, minWidth: 300, minHeight: 300 },
 };
 
 /**
