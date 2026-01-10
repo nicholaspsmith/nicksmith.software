@@ -34,7 +34,7 @@ export function AboutMe() {
           This portfolio is my tribute to Mac OS X Tiger, an OS that shaped my
           appreciation for thoughtful design. I'm currently exploring AI-assisted
           development and building Loopi, an open-source spaced repetition learning
-          app. When I'm not coding, I volunteer as an ESL instructor and practice
+          app, and lance-context, a semantic code search tool for AI coding agents. When I'm not coding, I volunteer as an ESL instructor and practice
           my Mandarin.
         </p>
       </div>
