@@ -11,9 +11,10 @@ export function Resume() {
   return (
     <div className={styles.container} data-testid="resume-content">
       <header className={styles.header}>
-        <h1 className={styles.name}>Nick Smith</h1>
+        <h1 className={styles.name}>Nicholas Smith</h1>
+        <p className={styles.title}>Senior Software Engineer</p>
         <p className={styles.contact}>
-          me@nicksmith.software • Charleston, SC • github.com/nicholaspsmith
+          Charleston, SC • me@nicksmith.software • github.com/nicholaspsmith
         </p>
       </header>
 
@@ -22,27 +23,50 @@ export function Resume() {
 
         <div className={styles.job}>
           <div className={styles.jobHeader}>
-            <strong>Senior Software Engineer</strong>
-            <span className={styles.date}>2022 - Present</span>
+            <strong>Senior Software Engineer (Tech Lead)</strong>
+            <span className={styles.date}>Nov 2022 - Jul 2025</span>
           </div>
-          <div className={styles.company}>Tech Company Inc.</div>
+          <div className={styles.company}>MongoDB, Remote</div>
           <ul className={styles.achievements}>
-            <li>Led development of core platform features using React and TypeScript</li>
-            <li>Improved application performance by 40% through optimization</li>
-            <li>Mentored junior developers and established best practices</li>
+            <li>Led migration of mongodb.com from in-house CMS to Contentstack, managing 6+ engineers globally</li>
+            <li>Enabled 5x faster page publishing (150 vs 30 per batch) via Next.js/React/TypeScript architecture</li>
+            <li>Cut production deployment time 50% via CI/CD optimization and Next.js ISR implementation</li>
+            <li>Reduced CSS bundle sizes 40%+ through optimized Tailwind/Next.js integration</li>
           </ul>
         </div>
 
         <div className={styles.job}>
           <div className={styles.jobHeader}>
-            <strong>Software Engineer</strong>
-            <span className={styles.date}>2019 - 2022</span>
+            <strong>Senior Software Engineer UI</strong>
+            <span className={styles.date}>Oct 2019 - Dec 2022</span>
           </div>
-          <div className={styles.company}>Startup Co.</div>
+          <div className={styles.company}>Cisco Systems, Remote</div>
           <ul className={styles.achievements}>
-            <li>Built full-stack features from concept to deployment</li>
-            <li>Implemented CI/CD pipelines reducing deployment time by 60%</li>
-            <li>Collaborated with design team on user experience improvements</li>
+            <li>Built threat correlation dashboard aggregating data from Duo, Meraki, Umbrella, and more</li>
+            <li>Created modular threat visualization widgets using React, D3, and Recharts</li>
+            <li>Developed POC for Threat Context feature, leading to its adoption as standalone product</li>
+          </ul>
+        </div>
+
+        <div className={styles.job}>
+          <div className={styles.jobHeader}>
+            <strong>Senior Technologist</strong>
+            <span className={styles.date}>Jun 2018 - Jan 2019</span>
+          </div>
+          <div className={styles.company}>Handsome, Austin, TX</div>
+          <ul className={styles.achievements}>
+            <li>Developed mobile/web applications for startups and Fortune 50 companies across 4 continents</li>
+          </ul>
+        </div>
+
+        <div className={styles.job}>
+          <div className={styles.jobHeader}>
+            <strong>Founder / Principal Engineer</strong>
+            <span className={styles.date}>Jan 2015 - Jan 2019</span>
+          </div>
+          <div className={styles.company}>Dreamline Studios, LLC, Austin, TX</div>
+          <ul className={styles.achievements}>
+            <li>Built real-time inventory platform saving $60,000+/year, reducing count time from 8hrs to 3hrs</li>
           </ul>
         </div>
       </section>
@@ -51,16 +75,13 @@ export function Resume() {
         <h2 className={styles.sectionTitle}>Skills</h2>
         <div className={styles.skills}>
           <div className={styles.skillCategory}>
-            <strong>Languages:</strong> TypeScript, JavaScript, Python, Go
+            <strong>Frontend:</strong> React, Next.js, TypeScript, JavaScript, Vue.js, Angular, Tailwind, SCSS
           </div>
           <div className={styles.skillCategory}>
-            <strong>Frontend:</strong> React, Next.js, CSS, Tailwind
+            <strong>Backend:</strong> Node.js, Python, GraphQL, MongoDB, MySQL
           </div>
           <div className={styles.skillCategory}>
-            <strong>Backend:</strong> Node.js, PostgreSQL, Redis, GraphQL
-          </div>
-          <div className={styles.skillCategory}>
-            <strong>Tools:</strong> Git, Docker, AWS, GitHub Actions
+            <strong>Tools:</strong> AWS, Docker, Cypress, Jest, D3, Recharts, Figma, Contentstack
           </div>
         </div>
       </section>
@@ -68,9 +89,14 @@ export function Resume() {
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Education</h2>
         <div className={styles.education}>
-          <strong>B.S. Computer Science</strong>
-          <span className={styles.date}>2019</span>
-          <div className={styles.school}>University of Technology</div>
+          <strong>BSBA Management Information Systems</strong>
+          <span className={styles.date}>2013</span>
+          <div className={styles.school}>University of Arizona</div>
+        </div>
+        <div className={styles.education}>
+          <strong>Full Stack Developer Certification</strong>
+          <span className={styles.date}>2013</span>
+          <div className={styles.school}>Hack Reactor</div>
         </div>
       </section>
     </div>

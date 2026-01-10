@@ -10,7 +10,7 @@ describe('Resume', () => {
 
   it('displays the name', () => {
     render(<Resume />);
-    expect(screen.getByText('Nick Smith')).toBeInTheDocument();
+    expect(screen.getByText('Nicholas Smith')).toBeInTheDocument();
   });
 
   it('displays experience section', () => {
@@ -28,7 +28,7 @@ describe('Resume', () => {
   it('displays education section', () => {
     render(<Resume />);
     expect(screen.getByText('Education')).toBeInTheDocument();
-    expect(screen.getByText('B.S. Computer Science')).toBeInTheDocument();
+    expect(screen.getByText('BSBA Management Information Systems')).toBeInTheDocument();
   });
 
   it('is scannable with clear section headers', () => {
