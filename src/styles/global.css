@@ -167,6 +167,11 @@ a {
   cursor: var(--aqua-cursor-pointer);
 }
 
+/* Links within TextEdit windows use Tiger pointing hand cursor */
+[data-textedit-window] a {
+  cursor: url('/icons/cursors/cursor_11.png') 6 1, pointer;
+}
+
 /* Elements that should NEVER show host cursor - use !important sparingly */
 .react-draggable,
 [data-testid="desktop"],

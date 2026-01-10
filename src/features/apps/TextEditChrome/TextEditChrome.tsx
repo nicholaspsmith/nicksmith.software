@@ -13,7 +13,7 @@ interface TextEditChromeProps {
  */
 export function TextEditChrome({ children }: TextEditChromeProps) {
   return (
-    <div className={styles.container}>
+    <div className={styles.container} data-textedit-window>
       {/* Toolbar - matches Tiger TextEdit */}
       <div className={`${styles.toolbar} window-drag-handle`}>
         {/* Styles dropdown */}
