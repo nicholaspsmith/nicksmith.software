@@ -11,6 +11,7 @@
   color: #333;
   height: 100%;
   overflow-y: auto;
+  user-select: none;
 }
 
 .title {
@@ -35,6 +36,7 @@
 .cardLink {
   text-decoration: none;
   color: inherit;
+  cursor: url('/icons/cursors/resizedown.png') 8 8, pointer;
 }
 
 .card {
@@ -46,7 +48,6 @@
   border-radius: 6px;
   padding: var(--aqua-spacing-sm) var(--aqua-spacing-md);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
   transition: box-shadow 0.15s ease;
 }
 
