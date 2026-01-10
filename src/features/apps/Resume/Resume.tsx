@@ -13,7 +13,7 @@ export function Resume() {
       <header className={styles.header}>
         <h1 className={styles.name}>Nick Smith</h1>
         <p className={styles.contact}>
-          nick@example.com • San Francisco, CA • github.com/nicksmith
+          nick@example.com • San Francisco, CA • github.com/nicholaspsmith
         </p>
       </header>
 

@@ -7,6 +7,7 @@ export interface WindowChromeProps {
   titleId?: string;
   isFocused: boolean;
   isShaded?: boolean;
+  compact?: boolean;
   className?: string;
   children?: React.ReactNode;
   onClose?: () => void;
@@ -28,6 +29,7 @@ export function WindowChrome({
   titleId,
   isFocused,
   isShaded = false,
+  compact = false,
   className,
   children,
   onClose,
@@ -35,7 +37,7 @@ export function WindowChrome({
   onZoom,
   onShade,
 }: WindowChromeProps) {
-  const titleBarClass = `${styles.titleBar} ${isFocused ? styles.focused : styles.unfocused} ${className || ''}`;
+  const titleBarClass = `${styles.titleBar} ${isFocused ? styles.focused : styles.unfocused} ${compact ? styles.compact : ''} ${className || ''}`;
 
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
     // Only trigger shade if not clicking on traffic lights
@@ -54,6 +56,7 @@ export function WindowChrome({
       >
         <TrafficLights
           isFocused={isFocused}
+          compact={compact}
           onClose={onClose}
           onMinimize={onMinimize}
           onZoom={onZoom}

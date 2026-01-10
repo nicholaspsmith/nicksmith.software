@@ -242,6 +242,11 @@
   background: #fff;
   overflow: auto;
   padding: 16px;
+  position: relative; /* Required for selection rectangle positioning */
+}
+
+.contentNoPadding {
+  padding: 0;
 }
 
 .emptyState {

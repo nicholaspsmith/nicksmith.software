@@ -47,12 +47,12 @@ Type 'open projects' to view in Projects window.
 `,
   contact: () => `Contact:
   Email:    nick@example.com
-  GitHub:   github.com/nicksmith
+  GitHub:   github.com/nicholaspsmith
   LinkedIn: linkedin.com/in/nicksmith
 `,
   date: () => new Date().toString(),
-  whoami: () => 'guest',
-  pwd: () => '/Users/guest',
+  whoami: () => 'nick',
+  pwd: () => '/Users/nick',
   ls: (args: string[]) => {
     const showAll = args.includes('-a') || args.includes('-la') || args.includes('-al');
     const files = ['Documents', 'Downloads', 'Desktop', 'Projects'];
@@ -74,7 +74,7 @@ alias ll="ls -la"`;
   // === Easter Egg Commands ===
 
   sudo: () => `Password: ********
-Sorry, user guest does not have sudo privileges.
+Sorry, user nick does not have sudo privileges.
 This incident will be reported.`,
 
   vim: () => `
@@ -93,7 +93,7 @@ Hint: Try 'help' for available commands.`,
 Try 'help' for what's available!`,
 
   neofetch: () => `
-\x1b[32m                    'c.         \x1b[36mguest\x1b[0m@\x1b[36mmacbook\x1b[0m
+\x1b[32m                    'c.         \x1b[36mnick\x1b[0m@\x1b[36mmacbook\x1b[0m
 \x1b[32m                 ,xNMM.         \x1b[0m-----------------
 \x1b[32m               .OMMMMo          \x1b[33mOS:\x1b[0m Mac OS X Tiger (web)
 \x1b[32m               OMMM0,           \x1b[33mHost:\x1b[0m nicksmith.software
@@ -211,7 +211,7 @@ export function Terminal() {
 
   const writePrompt = useCallback(() => {
     if (xtermRef.current) {
-      xtermRef.current.write('\r\n\x1b[36mguest@macbook\x1b[0m:\x1b[33m~\x1b[0m$ ');
+      xtermRef.current.write('\r\n\x1b[36mnick@macbook\x1b[0m:\x1b[33m~\x1b[0m$ ');
     }
   }, []);
 
@@ -238,7 +238,9 @@ export function Terminal() {
     const handler = COMMANDS[command];
     if (handler) {
       const output = handler(args);
-      xtermRef.current?.write('\r\n' + output);
+      // Convert \n to \r\n for proper xterm.js line breaks
+      const formattedOutput = output.replace(/\n/g, '\r\n');
+      xtermRef.current?.write('\r\n' + formattedOutput);
     } else {
       xtermRef.current?.write(`\r\nCommand not found: ${cmd}. Type 'help' for available commands.`);
     }
@@ -297,7 +299,7 @@ export function Terminal() {
 
     // Welcome message
     term.write('Last login: ' + new Date().toLocaleString() + ' on ttys000\r\n');
-    term.write('\x1b[36mguest@macbook\x1b[0m:\x1b[33m~\x1b[0m$ ');
+    term.write('\x1b[36mnick@macbook\x1b[0m:\x1b[33m~\x1b[0m$ ');
 
     // Handle input
     term.onData((data) => {
@@ -322,7 +324,7 @@ export function Terminal() {
             const cmd = historyRef.current[historyIndexRef.current] || '';
             // Clear current line
             term.write('\r\x1b[K');
-            term.write('\x1b[36mguest@macbook\x1b[0m:\x1b[33m~\x1b[0m$ ');
+            term.write('\x1b[36mnick@macbook\x1b[0m:\x1b[33m~\x1b[0m$ ');
             term.write(cmd);
             commandBufferRef.current = cmd;
           }
@@ -332,13 +334,13 @@ export function Terminal() {
             historyIndexRef.current++;
             const cmd = historyRef.current[historyIndexRef.current] || '';
             term.write('\r\x1b[K');
-            term.write('\x1b[36mguest@macbook\x1b[0m:\x1b[33m~\x1b[0m$ ');
+            term.write('\x1b[36mnick@macbook\x1b[0m:\x1b[33m~\x1b[0m$ ');
             term.write(cmd);
             commandBufferRef.current = cmd;
           } else if (historyIndexRef.current === historyRef.current.length - 1) {
             historyIndexRef.current = historyRef.current.length;
             term.write('\r\x1b[K');
-            term.write('\x1b[36mguest@macbook\x1b[0m:\x1b[33m~\x1b[0m$ ');
+            term.write('\x1b[36mnick@macbook\x1b[0m:\x1b[33m~\x1b[0m$ ');
             commandBufferRef.current = '';
           }
         }

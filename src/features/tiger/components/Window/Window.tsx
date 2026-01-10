@@ -115,7 +115,7 @@ export function Window({ id, title, children }: WindowProps) {
         transition: {
           duration: 0.35,
           times: [0, 0.6, 1],
-          ease: 'linear',
+          ease: 'linear' as const,
         },
       };
     }
@@ -130,7 +130,7 @@ export function Window({ id, title, children }: WindowProps) {
         y: 0,
         transition: {
           duration: 0.35,
-          ease: 'linear',
+          ease: 'linear' as const,
         },
       };
     }
@@ -290,7 +290,7 @@ export function Window({ id, title, children }: WindowProps) {
       onDragStop={handleDragStop}
       onResizeStop={handleResizeStop}
       onMouseDown={handleMouseDown}
-      enableResizing={!isShaded}
+      enableResizing={!isShaded && windowState.app !== 'about-this-mac'}
       resizeHandleStyles={resizeHandleStyles}
       data-testid={`window-${id}`}
     >
@@ -312,6 +312,7 @@ export function Window({ id, title, children }: WindowProps) {
           titleId={titleId}
           isFocused={isFocused}
           isShaded={isShaded}
+          compact={windowState.app === 'about-this-mac'}
           className="window-drag-handle"
           onClose={handleClose}
           onMinimize={handleMinimize}

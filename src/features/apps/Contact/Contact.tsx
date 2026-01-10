@@ -43,7 +43,7 @@ export function Contact() {
         </a>
 
         <a
-          href="https://github.com/nicksmith"
+          href="https://github.com/nicholaspsmith"
           className={styles.link}
           target="_blank"
           rel="noopener noreferrer"
@@ -51,7 +51,7 @@ export function Contact() {
           <span className={styles.icon}>🐙</span>
           <span className={styles.linkText}>
             <strong>GitHub</strong>
-            <span>github.com/nicksmith</span>
+            <span>github.com/nicholaspsmith</span>
           </span>
         </a>
       </div>

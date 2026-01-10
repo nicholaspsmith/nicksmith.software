@@ -60,3 +60,18 @@
   flex: 1;
   overflow: auto;
 }
+
+/* Compact mode - 75% height for About This Mac style windows */
+.compact {
+  height: 17px; /* 22px * 0.75 ~= 17px */
+  min-height: 17px;
+  padding: 0 6px; /* Slightly reduced padding */
+}
+
+.compact .title {
+  font-size: 11px; /* Slightly smaller title */
+}
+
+.compact + .content {
+  /* No special content styles needed */
+}

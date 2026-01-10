@@ -9,6 +9,14 @@ export interface IconPosition {
   y: number;
 }
 
+/** Dynamic desktop icon (created via File > New Folder, etc.) */
+export interface DynamicDesktopIcon {
+  id: string;
+  label: string;
+  icon: string; // Icon path or type
+  type: 'folder' | 'smart-folder' | 'burn-folder';
+}
+
 export interface AlertConfig {
   title: string;
   message: string;
@@ -37,6 +45,12 @@ interface AppStore {
   // Multi-drag state (tracks which icon is being dragged for multi-select)
   draggingIconId: string | null;
 
+  // Dynamic desktop icons (created via File > New Folder, etc.)
+  dynamicIcons: DynamicDesktopIcon[];
+
+  // Macintosh HD drag state (for eject icon in Dock)
+  isDraggingMacintoshHD: boolean;
+
   // Alert dialog state
   alertOpen: boolean;
   alertConfig: AlertConfig | null;
@@ -53,10 +67,20 @@ interface AppStore {
   setIconPosition: (iconId: string, x: number, y: number) => void;
   setMultipleIconPositions: (positions: Record<string, IconPosition>) => void;
   resetIconPositions: () => void;
+  /** Recalculate positions for new viewport (updates both current and initial) */
+  recalculateIconPositions: (positions: Record<string, IconPosition>) => void;
 
   // Multi-drag actions
   startMultiDrag: (iconId: string) => void;
   endMultiDrag: () => void;
+
+  // Dynamic icon actions
+  createFolder: () => void;
+  createSmartFolder: () => void;
+  createBurnFolder: () => void;
+
+  // Macintosh HD drag actions
+  setDraggingMacintoshHD: (isDragging: boolean) => void;
 
   // Alert actions
   showAlert: (config: AlertConfig) => void;
@@ -71,6 +95,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
   initialIconPositions: {},
   iconPositionsInitialized: false,
   draggingIconId: null,
+  dynamicIcons: [],
+  isDraggingMacintoshHD: false,
   alertOpen: false,
   alertConfig: null,
 
@@ -114,12 +140,63 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set({ iconPositions: { ...initialIconPositions } });
   },
 
+  recalculateIconPositions: (positions) => {
+    // Update both current and initial positions for new viewport
+    set({
+      iconPositions: positions,
+      initialIconPositions: positions,
+    });
+  },
+
   startMultiDrag: (iconId) => {
     set({ draggingIconId: iconId });
   },
 
   endMultiDrag: () => {
     set({ draggingIconId: null });
+  },
+
+  createFolder: () => {
+    const id = `folder-${crypto.randomUUID()}`;
+    const newIcon: DynamicDesktopIcon = {
+      id,
+      label: 'untitled folder',
+      icon: '/icons/GenericFolderIcon.png',
+      type: 'folder',
+    };
+    set((state) => ({
+      dynamicIcons: [...state.dynamicIcons, newIcon],
+    }));
+  },
+
+  createSmartFolder: () => {
+    const id = `smart-folder-${crypto.randomUUID()}`;
+    const newIcon: DynamicDesktopIcon = {
+      id,
+      label: 'untitled folder',
+      icon: '/icons/SmartFolderIcon.png',
+      type: 'smart-folder',
+    };
+    set((state) => ({
+      dynamicIcons: [...state.dynamicIcons, newIcon],
+    }));
+  },
+
+  createBurnFolder: () => {
+    const id = `burn-folder-${crypto.randomUUID()}`;
+    const newIcon: DynamicDesktopIcon = {
+      id,
+      label: 'untitled folder',
+      icon: '/icons/BurningIcon.png',
+      type: 'burn-folder',
+    };
+    set((state) => ({
+      dynamicIcons: [...state.dynamicIcons, newIcon],
+    }));
+  },
+
+  setDraggingMacintoshHD: (isDragging) => {
+    set({ isDraggingMacintoshHD: isDragging });
   },
 
   showAlert: (config) => set({ alertOpen: true, alertConfig: config }),

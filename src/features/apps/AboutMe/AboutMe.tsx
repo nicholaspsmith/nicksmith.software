@@ -11,13 +11,11 @@ export function AboutMe() {
     <div className={styles.container} data-testid="about-me-content">
       <div className={styles.header}>
         <div className={styles.photoFrame}>
-          <div className={styles.photoPlaceholder} aria-label="Profile photo">
-            {/* Placeholder until real photo is added */}
-            <svg viewBox="0 0 100 100" fill="none" aria-hidden="true">
-              <circle cx="50" cy="35" r="20" fill="#a0a0a0" />
-              <ellipse cx="50" cy="85" rx="35" ry="25" fill="#a0a0a0" />
-            </svg>
-          </div>
+          <img
+            src="/profile.jpg"
+            alt="Nick Smith"
+            className={styles.photo}
+          />
         </div>
         <div className={styles.intro}>
           <h1 className={styles.name}>Nick Smith</h1>

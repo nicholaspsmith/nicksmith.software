@@ -31,7 +31,7 @@ describe('Contact', () => {
   it('displays GitHub link', () => {
     render(<Contact />);
     const githubLink = screen.getByRole('link', { name: /github/i });
-    expect(githubLink).toHaveAttribute('href', 'https://github.com/nicksmith');
+    expect(githubLink).toHaveAttribute('href', 'https://github.com/nicholaspsmith');
   });
 
   it('links open in new tab', () => {

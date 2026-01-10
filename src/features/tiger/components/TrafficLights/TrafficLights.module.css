@@ -59,9 +59,9 @@
       #f5a098 100%
     );
   box-shadow:
-    0 0 0 1px rgb(0 0 0 / 32%),
+    0 0 0px 0.8px rgb(0 0 0 / 32%),
     inset 0 0 0 rgba(255, 255, 255, 0.15),
-    inset 0 1.6px 0.1px rgba(0, 0, 0, 0.15);
+    inset 0 0.6px 1.3px rgba(0, 0, 0, 0.15);
 }
 
 .focused .minimize {
@@ -81,9 +81,9 @@
       #f5e098 100%
     );
   box-shadow:
-    0 0 0 1px rgb(0 0 0 / 32%),
+    0 0 0px 0.8px rgb(0 0 0 / 32%),
     inset 0 0 0 rgba(255, 255, 255, 0.15),
-    inset 0 1.6px 0.1px rgba(0, 0, 0, 0.15);
+    inset 0 0.6px 1.3px rgba(0, 0, 0, 0.15);
 }
 
 .focused .zoom {
@@ -103,12 +103,16 @@
       #9bd998 100%
     );
   box-shadow:
-    0 0 0 1px rgb(0 0 0 / 32%),
+    0 0 0px 0.8px rgb(0 0 0 / 32%),
     inset 0 0 0 rgba(255, 255, 255, 0.15),
-    inset 0 1.6px 0.1px rgba(0, 0, 0, 0.15);
+    inset 0 0.6px 1.3px rgba(0, 0, 0, 0.15);
 }
 
 /* Unfocused state - hemisphere/dome shading on brushed metal */
+.unfocused {
+  gap: 7px;
+}
+
 .unfocused .button {
   width: 13px;
   height: 13px;
@@ -191,4 +195,23 @@
 .button:focus-visible {
   outline: 2px solid var(--aqua-focus-ring);
   outline-offset: 2px;
+}
+
+/* Compact mode - 75% size for About This Mac style windows */
+.compact {
+  gap: 6px; /* 8px * 0.75 */
+}
+
+.compact .button {
+  width: 9px; /* 12px * 0.75 */
+  height: 9px;
+}
+
+.compact .icon {
+  transform: scale(0.75);
+}
+
+.compact.unfocused .button {
+  width: 10px; /* 13px * 0.75 ~= 10px */
+  height: 10px;
 }

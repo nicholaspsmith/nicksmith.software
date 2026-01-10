@@ -1,22 +1,19 @@
-import { useState, useCallback } from 'react';
-import styles from './UntitledDocument.module.css';
+import type { ReactNode } from 'react';
+import styles from './TextEditChrome.module.css';
+
+interface TextEditChromeProps {
+  children: ReactNode;
+}
 
 /**
- * UntitledDocument - Blank TextEdit document
+ * TextEditChrome - Tiger TextEdit toolbar and ruler wrapper
  *
- * A simple editable text area that mimics Tiger's TextEdit behavior.
- * Includes toolbar with formatting controls and ruler like the original.
- * Text is stored locally in component state (not persisted).
+ * Provides the consistent TextEdit UI (toolbar with formatting controls
+ * and ruler) while allowing different content to be displayed.
  */
-export function UntitledDocument() {
-  const [content, setContent] = useState('');
-
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setContent(e.target.value);
-  }, []);
-
+export function TextEditChrome({ children }: TextEditChromeProps) {
   return (
-    <div className={styles.container} data-testid="untitled-document">
+    <div className={styles.container}>
       {/* Toolbar - matches Tiger TextEdit */}
       <div className={`${styles.toolbar} window-drag-handle`}>
         {/* Styles dropdown */}
@@ -88,14 +85,10 @@ export function UntitledDocument() {
         </div>
       </div>
 
-      {/* Editor area */}
-      <textarea
-        className={styles.editor}
-        value={content}
-        onChange={handleChange}
-        aria-label="Document content"
-        autoFocus
-      />
+      {/* Content area */}
+      <div className={styles.content}>
+        {children}
+      </div>
     </div>
   );
 }
@@ -179,3 +172,5 @@ function CircleIcon() {
     </svg>
   );
 }
+
+export default TextEditChrome;

@@ -1,0 +1,94 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 40px 16px;
+  text-align: center;
+  font-family: 'Lucida Grande', 'Lucida Sans Unicode', sans-serif;
+  min-width: 280px;
+  /* Tiger pinstripe background - subtle horizontal lines */
+  background-color: #fff;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    rgba(0, 0, 0, 0.03) 1px,
+    rgba(0, 0, 0, 0.03) 2px
+  );
+}
+
+.appleLogo {
+  margin-bottom: 8px;
+}
+
+.title {
+  font-size: 25px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.version {
+  font-size: 11px;
+  color: #666;
+  margin: 2px 0 12px;
+}
+
+.button {
+  margin: 0;
+  padding: 0;
+  width: 125px;
+  font-size: 11px;
+  font-family: inherit;
+  background: linear-gradient(to bottom, #fff 0%, #e8e8e8 100%);
+  border: 1px solid #888;
+  border-radius: 20px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.button:hover {
+  background: linear-gradient(to bottom, #fff 0%, #ddd 100%);
+}
+
+.button:active {
+  background: linear-gradient(to bottom, #ddd 0%, #ccc 100%);
+}
+
+.systemInfo {
+  margin: 12px 0;
+  text-align: left;
+  width: 100%;
+}
+
+.infoRow {
+  display: flex;
+  gap: 12px;
+  margin: 6px 0;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.infoLabel {
+  font-weight: bold;
+  color: #333;
+  min-width: 60px;
+  text-align: right;
+}
+
+.infoValue {
+  color: #333;
+}
+
+.infoSubtext {
+  color: #666;
+  font-size: 10px;
+}
+
+.copyright {
+  font-size: 9px;
+  color: #888;
+  margin: 16px 0 4px;
+  line-height: 1.4;
+}

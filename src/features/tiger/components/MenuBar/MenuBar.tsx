@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useWindowStore } from '@/stores/windowStore';
 import { useSoundStore } from '@/stores/soundStore';
+import { useAppStore } from '@/stores/appStore';
 import styles from './MenuBar.module.css';
 
 type MenuItem = { label: string; shortcut?: string; disabled?: boolean; hasSubmenu?: boolean; checked?: boolean } | { type: 'divider' };
@@ -126,8 +127,8 @@ const TEXTEDIT_MENUS: MenuConfig[] = [
       { label: 'Open Recent', hasSubmenu: true },
       { type: 'divider' },
       { label: 'Close', shortcut: '⌘W' },
-      { label: 'Save', shortcut: '⌘S', disabled: true },
-      { label: 'Save As...', shortcut: '⇧⌘S', disabled: true },
+      { label: 'Save', shortcut: '⌘S' },
+      { label: 'Save As...', shortcut: '⇧⌘S' },
       { label: 'Save All', disabled: true },
       { label: 'Revert to Saved', disabled: true },
       { type: 'divider' },
@@ -293,14 +294,79 @@ export function MenuBar() {
     }
   }, [openMenuId]);
 
+  // Window store actions (must be before handleMenuItemClick)
+  const openWindow = useWindowStore((s) => s.openWindow);
+  const openFinderWithSearch = useWindowStore((s) => s.openFinderWithSearch);
+  const openNewFinderWindow = useWindowStore((s) => s.openNewFinderWindow);
+  const openNewTextEditDocument = useWindowStore((s) => s.openNewTextEditDocument);
+
+  // App store actions for creating folders
+  const createFolder = useAppStore((s) => s.createFolder);
+  const createSmartFolder = useAppStore((s) => s.createSmartFolder);
+  const createBurnFolder = useAppStore((s) => s.createBurnFolder);
+
   const handleMenuItemClick = useCallback((label: string) => {
     setOpenMenuId(null);
     if (label === 'About This Mac') {
-      alert('Mac OS X Tiger 10.4.11\n\nThis is a portfolio website by Nick Smith');
+      openWindow('about-this-mac');
+    } else if (label === 'New Finder Window') {
+      openNewFinderWindow('home');
+    } else if (label === 'New Folder') {
+      createFolder();
+    } else if (label === 'New Smart Folder') {
+      createSmartFolder();
+    } else if (label === 'New Burn Folder') {
+      createBurnFolder();
+    } else if (label === 'New') {
+      // TextEdit: New opens a blank untitled document
+      openNewTextEditDocument();
     } else if (label === 'Restart...') {
       window.location.reload();
+    } else if (label === 'Force Quit' || label.startsWith('Quit ')) {
+      // Close all windows of the current app with animation
+      const appToQuit = parentApp || 'finder';
+      const windowsToClose = windows.filter((w) => w.parentApp === appToQuit);
+      // Dispatch close request events for each window to trigger close animation
+      windowsToClose.forEach((w) => {
+        window.dispatchEvent(new CustomEvent('window-close-request', { detail: { windowId: w.id } }));
+      });
+    } else if (label === 'Save' || label === 'Save As...') {
+      // Save the current TextEdit document
+      if (!activeWindow || activeWindow.parentApp !== 'textEdit') return;
+
+      // Get the window's content
+      const windowEl = document.querySelector(`[data-testid="window-${activeWindow.id}"]`);
+      if (!windowEl) return;
+
+      let textContent = '';
+
+      // Check if it's an UntitledDocument (has textarea)
+      const textarea = windowEl.querySelector('textarea');
+      if (textarea) {
+        textContent = (textarea as HTMLTextAreaElement).value;
+      } else {
+        // Static document - extract innerText from the content area
+        const contentEl = windowEl.querySelector('[data-testid$="-content"]') || windowEl.querySelector('.container');
+        if (contentEl) {
+          textContent = contentEl.textContent || '';
+        }
+      }
+
+      // Create filename from window title
+      const filename = `${activeWindow.title.toLowerCase().replace(/\s+/g, '-')}.txt`;
+
+      // Create and download the file
+      const blob = new Blob([textContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
-  }, []);
+  }, [parentApp, windows, activeWindow, openWindow, openNewFinderWindow, openNewTextEditDocument, createFolder, createSmartFolder, createBurnFolder]);
 
   const handleSpotlightClick = useCallback(() => {
     setSpotlightOpen((prev) => !prev);
@@ -310,6 +376,18 @@ export function MenuBar() {
       setSpotlightQuery('');
     }
   }, [spotlightOpen]);
+
+  // Handle Enter key in Spotlight to open Finder with search
+  const handleSpotlightKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && spotlightQuery.trim()) {
+      e.preventDefault();
+      // Open Finder with the search query
+      openFinderWithSearch(spotlightQuery.trim());
+      // Clear and close Spotlight
+      setSpotlightQuery('');
+      setSpotlightOpen(false);
+    }
+  }, [spotlightQuery, openFinderWithSearch]);
 
   const handleClockClick = useCallback(() => {
     setClockDropdownOpen((prev) => !prev);
@@ -505,7 +583,7 @@ export function MenuBar() {
                 <span className={styles.dropdownItemLabel}>Show All</span>
               </button>
               <div className={styles.dropdownDivider} role="separator" />
-              <button type="button" className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`} role="menuitem" aria-disabled="true">
+              <button type="button" className={styles.dropdownItem} onClick={() => handleMenuItemClick(`Quit ${appName}`)} role="menuitem">
                 <span className={styles.dropdownItemLabel}>Quit {appName}</span>
                 <span className={styles.dropdownItemShortcut}>⌘Q</span>
               </button>
@@ -652,6 +730,7 @@ export function MenuBar() {
                   className={styles.spotlightInput}
                   value={spotlightQuery}
                   onChange={(e) => setSpotlightQuery(e.target.value)}
+                  onKeyDown={handleSpotlightKeyDown}
                   aria-label="Search"
                 />
               </div>

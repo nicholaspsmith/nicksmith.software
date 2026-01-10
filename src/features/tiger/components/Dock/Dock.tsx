@@ -63,6 +63,7 @@ export function Dock() {
   const focusWindow = useWindowStore((s) => s.focusWindow);
   const openWindow = useWindowStore((s) => s.openWindow);
   const showAlert = useAppStore((s) => s.showAlert);
+  const isDraggingMacintoshHD = useAppStore((s) => s.isDraggingMacintoshHD);
 
   // Track which icons are currently bouncing
   const [bouncingIcons, setBouncingIcons] = useState<Set<string>>(new Set());
@@ -212,10 +213,11 @@ export function Dock() {
           {/* Default system icons */}
           <div className={styles.appSection}>
             {DEFAULT_DOCK_ICONS.map((icon) => {
-              // Show running indicator for TextEdit or Finder when they have windows
+              // Finder always shows indicator (it's always running in macOS)
+              // TextEdit shows indicator only when it has windows
               const showIndicator =
-                (icon.id === 'textEdit' && hasTextEditWindows) ||
-                (icon.id === 'finder' && hasFinderWindows);
+                icon.id === 'finder' ||
+                (icon.id === 'textEdit' && hasTextEditWindows);
               const isBouncing = bouncingIcons.has(icon.id);
 
               return (
@@ -239,9 +241,18 @@ export function Dock() {
                       />
                     </div>
                   </motion.button>
-                  {showIndicator && (
-                    <div className={styles.runningIndicator} aria-hidden="true" />
-                  )}
+                  <AnimatePresence>
+                    {showIndicator && (
+                      <motion.div
+                        className={styles.runningIndicator}
+                        aria-hidden="true"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      />
+                    )}
+                  </AnimatePresence>
                 </div>
               );
             })}
@@ -320,16 +331,16 @@ export function Dock() {
           {/* Separator before trash */}
           <div className={styles.separator} aria-hidden="true" />
 
-          {/* Trash icon - no bounce (doesn't launch an app) */}
+          {/* Trash icon - shows eject when dragging Macintosh HD */}
           <button
             className={styles.dockIcon}
             onClick={(e) => handleTrashClick(e)}
-            aria-label="Trash"
-            data-label="Trash"
+            aria-label={isDraggingMacintoshHD ? 'Eject' : 'Trash'}
+            data-label={isDraggingMacintoshHD ? 'Eject' : 'Trash'}
             data-testid="dock-icon-trash"
           >
             <div className={styles.iconImage}>
-              <TrashIcon />
+              <TrashIcon showEject={isDraggingMacintoshHD} />
             </div>
           </button>
         </motion.div>
@@ -399,7 +410,9 @@ function MinimizedWindowThumbnail({ app, title }: { app: string; title: string }
 
 /**
  * Trash can icon - uses official Tiger PNG
+ * When a disk (Macintosh HD) is being dragged, shows eject icon instead
  */
-function TrashIcon() {
-  return <img src="/icons/trash-empty.png" alt="" width={48} height={48} draggable={false} aria-hidden="true" />;
+function TrashIcon({ showEject = false }: { showEject?: boolean }) {
+  const iconSrc = showEject ? '/icons/EjectMediaIcon.png' : '/icons/trash-empty.png';
+  return <img src={iconSrc} alt="" width={48} height={48} draggable={false} aria-hidden="true" />;
 }

@@ -1,10 +1,8 @@
 /**
- * UntitledDocument.module.css - Tiger TextEdit styling
+ * TextEditChrome.module.css - Tiger TextEdit chrome styling
  *
- * Matches the authentic Mac OS X Tiger TextEdit appearance with:
- * - Brushed metal toolbar with formatting controls
- * - Ruler with indent markers
- * - White text editing area
+ * Provides the toolbar and ruler styling for all TextEdit documents.
+ * Content area is flexible to accept different document types.
  */
 
 .container {
@@ -28,6 +26,7 @@
   border-bottom: 1px solid #999;
   min-height: 32px;
   flex-shrink: 0;
+  container-type: inline-size;
 }
 
 .toolbarGroup {
@@ -69,6 +68,15 @@
   border: 1px solid #888;
   border-radius: 4px;
   overflow: hidden;
+  min-width: 98px;
+  flex-shrink: 0;
+}
+
+/* Hide alignment buttons when toolbar is too narrow */
+@container (max-width: 420px) {
+  .alignmentButtons {
+    display: none;
+  }
 }
 
 .alignButton {
@@ -193,24 +201,11 @@
 }
 
 /* ========================================
- * EDITOR
+ * CONTENT AREA
  * ======================================== */
 
-.editor {
+.content {
   flex: 1;
-  width: 100%;
-  border: none;
-  outline: none;
-  resize: none;
-  padding: 12px 16px;
-  font-family: 'Helvetica Neue', 'Helvetica', Arial, sans-serif;
-  font-size: 13px;
-  line-height: 1.5;
-  color: #000;
+  overflow: auto;
   background: white;
-}
-
-/* Remove focus outline since the window itself indicates focus */
-.editor:focus {
-  outline: none;
 }

@@ -24,6 +24,8 @@ import { Resume } from '@/features/apps/Resume';
 import { Contact } from '@/features/apps/Contact';
 import { UntitledDocument } from '@/features/apps/UntitledDocument';
 import { Finder } from '@/features/apps/Finder';
+import { AboutThisMac } from '@/features/apps/AboutThisMac';
+import { TextEditChrome } from '@/features/apps/TextEditChrome';
 
 // Lazy load Terminal to reduce initial bundle size (xterm.js is ~300KB)
 const TerminalApp = lazy(() =>
@@ -97,6 +99,41 @@ function DesktopIconImage({ icon, isSelected: _isSelected }: { icon: IconConfig;
 }
 
 /**
+ * Burn Folder icon - GenericFolderIcon with BurningIcon overlay
+ */
+function BurnFolderIcon() {
+  return (
+    <div style={{ position: 'relative' }}>
+      <img src="/icons/GenericFolderIcon.png" alt="" draggable={false} />
+      <img
+        src="/icons/BurningIcon.png"
+        alt=""
+        draggable={false}
+        style={{
+          position: 'absolute',
+          bottom: 16,
+          right: 14,
+          height: '45%',
+          width: '45%',
+          transform: 'rotateX(-20deg) rotateY(20deg)',
+          opacity: 0.8,
+        }}
+      />
+    </div>
+  );
+}
+
+/**
+ * Renders the icon for a dynamic desktop icon based on its type
+ */
+function DynamicIconImage({ icon }: { icon: { type: string; icon: string } }) {
+  if (icon.type === 'burn-folder') {
+    return <BurnFolderIcon />;
+  }
+  return <img src={icon.icon} alt="" width={48} height={48} draggable={false} />;
+}
+
+/**
  * Loading fallback for lazy-loaded components
  */
 function TerminalLoading() {
@@ -120,15 +157,18 @@ function TerminalLoading() {
  * Renders the appropriate content for a window based on its app type
  */
 function WindowContent({ app }: { app: string }) {
+  // Get and clear the search query for Finder search windows
+  const finderSearchQuery = useWindowStore((s) => s.finderSearchQuery);
+
   switch (app) {
     case 'about':
-      return <AboutMe />;
+      return <TextEditChrome><AboutMe /></TextEditChrome>;
     case 'projects':
-      return <Projects />;
+      return <TextEditChrome><Projects /></TextEditChrome>;
     case 'resume':
-      return <Resume />;
+      return <TextEditChrome><Resume /></TextEditChrome>;
     case 'contact':
-      return <Contact />;
+      return <TextEditChrome><Contact /></TextEditChrome>;
     case 'terminal':
       return (
         <Suspense fallback={<TerminalLoading />}>
@@ -141,6 +181,10 @@ function WindowContent({ app }: { app: string }) {
       return <Finder location="home" />;
     case 'finder-hd':
       return <Finder location="hd" />;
+    case 'finder-search':
+      return <Finder location="home" initialSearch={finderSearchQuery || ''} />;
+    case 'about-this-mac':
+      return <AboutThisMac />;
     default:
       return null;
   }
@@ -159,11 +203,14 @@ function TigerDesktop() {
   const iconPositions = useAppStore((s) => s.iconPositions);
   const iconPositionsInitialized = useAppStore((s) => s.iconPositionsInitialized);
   const initializeIconPositions = useAppStore((s) => s.initializeIconPositions);
+  const recalculateIconPositions = useAppStore((s) => s.recalculateIconPositions);
   const setIconPosition = useAppStore((s) => s.setIconPosition);
   const setMultipleIconPositions = useAppStore((s) => s.setMultipleIconPositions);
   const alertOpen = useAppStore((s) => s.alertOpen);
   const alertConfig = useAppStore((s) => s.alertConfig);
   const hideAlert = useAppStore((s) => s.hideAlert);
+  const dynamicIcons = useAppStore((s) => s.dynamicIcons);
+  const setDraggingMacintoshHD = useAppStore((s) => s.setDraggingMacintoshHD);
   const windows = useWindowStore((s) => s.windows);
   const openWindow = useWindowStore((s) => s.openWindow);
 
@@ -173,6 +220,92 @@ function TigerDesktop() {
       initializeIconPositions(calculateInitialPositions());
     }
   }, [iconPositionsInitialized, initializeIconPositions]);
+
+  // Recalculate icon positions when window resize completes
+  useEffect(() => {
+    let resizeTimeout: ReturnType<typeof setTimeout>;
+
+    const handleResize = () => {
+      // Debounce: wait 300ms after last resize event before recalculating
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        recalculateIconPositions(calculateInitialPositions());
+      }, 300);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(resizeTimeout);
+    };
+  }, [recalculateIconPositions]);
+
+  // Ensure dynamic icons have positions stored (for marquee selection)
+  // Icons flow down columns, wrapping to a new column LEFT when within 200px of dock
+  useEffect(() => {
+    const gap = 4;
+    const columnGap = 8; // Horizontal gap between columns
+    const dockTopY = window.innerHeight - SACRED.dockHeight;
+    const dockProximityThreshold = 200;
+    const maxY = dockTopY - dockProximityThreshold;
+
+    // Calculate column X positions (rightmost is column 0)
+    const getColumnX = (columnIndex: number) =>
+      window.innerWidth - SACRED.iconGridCellWidth - SACRED.iconGridRightMargin -
+      columnIndex * (SACRED.iconGridCellWidth + columnGap);
+
+    // Count icons per column based on their X positions
+    const getIconColumn = (x: number) => {
+      const col0X = getColumnX(0);
+      // Determine column by how far left of col0 this icon is
+      const offset = col0X - x;
+      if (offset < SACRED.iconGridCellWidth / 2) return 0;
+      return Math.round(offset / (SACRED.iconGridCellWidth + columnGap));
+    };
+
+    // Count existing icons in each column (static + already-positioned dynamic)
+    const columnCounts: Record<number, number> = { 0: DESKTOP_ICONS.length };
+
+    // Count dynamic icons that already have positions
+    dynamicIcons.forEach((icon) => {
+      const pos = iconPositions[icon.id];
+      if (pos) {
+        const col = getIconColumn(pos.x);
+        columnCounts[col] = (columnCounts[col] || 0) + 1;
+      }
+    });
+
+    const newPositions: Record<string, IconPosition> = {};
+
+    dynamicIcons.forEach((icon) => {
+      // Only add position if it doesn't exist yet
+      if (!iconPositions[icon.id]) {
+        // Find the first column with room (Y won't exceed maxY)
+        let targetColumn = 0;
+        let iconsInColumn = columnCounts[targetColumn] || 0;
+        let y = SACRED.iconGridTopMargin + iconsInColumn * (SACRED.iconGridCellHeight + gap);
+
+        // If this position would be too close to dock, move to next column (left)
+        while (y > maxY) {
+          targetColumn++;
+          iconsInColumn = columnCounts[targetColumn] || 0;
+          y = SACRED.iconGridTopMargin + iconsInColumn * (SACRED.iconGridCellHeight + gap);
+        }
+
+        const x = getColumnX(targetColumn);
+        newPositions[icon.id] = { x, y };
+
+        // Update count for this column so next icon in this batch knows
+        columnCounts[targetColumn] = iconsInColumn + 1;
+      }
+    });
+
+    // Store any new positions
+    if (Object.keys(newPositions).length > 0) {
+      setMultipleIconPositions(newPositions);
+    }
+  }, [dynamicIcons, iconPositions, setMultipleIconPositions]);
 
   // Handle alert OK button
   const handleAlertOk = useCallback(() => {
@@ -237,12 +370,25 @@ function TigerDesktop() {
     };
   };
 
+  // Handle Macintosh HD drag start/end (for eject icon in Dock)
+  const handleMacHDDragStart = useCallback(() => {
+    // Only show eject icon when dragging Macintosh HD alone (not multi-select)
+    if (selectedIconIds.length <= 1) {
+      setDraggingMacintoshHD(true);
+    }
+  }, [selectedIconIds, setDraggingMacintoshHD]);
+
+  const handleMacHDDragEnd = useCallback(() => {
+    setDraggingMacintoshHD(false);
+  }, [setDraggingMacintoshHD]);
+
   return (
     <>
       <Desktop iconPositions={iconPositions} onIconsSelected={handleIconsSelected}>
         <DesktopIconGrid>
           {DESKTOP_ICONS.map((icon, index) => {
             const position = getIconPosition(icon.id, index);
+            const isMacHD = icon.id === 'macintosh-hd';
             return (
               <DesktopIcon
                 key={icon.id}
@@ -254,6 +400,30 @@ function TigerDesktop() {
                 y={position.y}
                 onClick={() => selectIcon(icon.id)}
                 onDoubleClick={() => handleDoubleClick(icon)}
+                onPositionChange={(x, y) => handlePositionChange(icon.id, x, y)}
+                selectedIconIds={selectedIconIds}
+                allIconPositions={iconPositions}
+                onMultiPositionChange={handleMultiPositionChange}
+                onDragStart={isMacHD ? handleMacHDDragStart : undefined}
+                onDragEnd={isMacHD ? handleMacHDDragEnd : undefined}
+              />
+            );
+          })}
+          {/* Dynamic icons (created via File > New Folder, etc.) */}
+          {dynamicIcons.map((icon, index) => {
+            const totalStaticIcons = DESKTOP_ICONS.length;
+            const position = getIconPosition(icon.id, totalStaticIcons + index);
+            return (
+              <DesktopIcon
+                key={icon.id}
+                id={icon.id}
+                label={icon.label}
+                icon={<DynamicIconImage icon={icon} />}
+                isSelected={selectedIconIds.includes(icon.id)}
+                x={position.x}
+                y={position.y}
+                onClick={() => selectIcon(icon.id)}
+                onDoubleClick={() => {/* Folders don't open windows */}}
                 onPositionChange={(x, y) => handlePositionChange(icon.id, x, y)}
                 selectedIconIds={selectedIconIds}
                 allIconPositions={iconPositions}

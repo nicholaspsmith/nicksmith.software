@@ -16,6 +16,7 @@ export const APP_GROUPS: Record<string, string> = {
   'finder-home': 'finder',
   'finder-hd': 'finder',
   'finder-trash': 'finder',
+  'finder-search': 'finder',
   // Terminal is its own app (not grouped)
 };
 
@@ -35,7 +36,9 @@ const WINDOW_TITLES: Record<string, string> = {
   'finder-home': 'Home',
   'finder-hd': 'Macintosh HD',
   'finder-trash': 'Trash',
+  'finder-search': 'Search Results',
   untitled: 'Untitled',
+  'about-this-mac': 'About This Mac',
 };
 
 /**
@@ -61,6 +64,9 @@ const WINDOW_SIZE_CONFIGS: Record<string, WindowSizeConfig> = {
   'finder-home': { width: 650, height: 380, minWidth: 650, minHeight: 400 },
   'finder-hd': { width: 650, height: 380, minWidth: 650, minHeight: 400 },
   'finder-trash': { width: 650, height: 380, minWidth: 650, minHeight: 400 },
+  'finder-search': { width: 650, height: 380, minWidth: 650, minHeight: 400 },
+  // About This Mac - small panel window (not resizable)
+  'about-this-mac': { width: 320, height: 380, minWidth: 320, minHeight: 380 },
 };
 
 /**
@@ -108,10 +114,19 @@ interface WindowStore {
   windows: WindowState[];
   activeWindowId: string | null;
   maxZIndex: number;
+  /** Search query for Finder search window (cleared after use) */
+  finderSearchQuery: string | null;
 
   // Actions (verb prefix)
   openWindow: (app: string) => string;
+  /** Opens a new Finder window (always creates new, never reuses existing) */
+  openNewFinderWindow: (location?: 'home' | 'hd') => string;
+  /** Opens a new Finder window with search query pre-filled */
+  openFinderWithSearch: (query: string) => string;
+  /** Opens a new TextEdit document (always creates new, never reuses existing) */
+  openNewTextEditDocument: () => string;
   closeWindow: (id: string) => void;
+  closeAllWindowsOfApp: (parentApp: string) => void;
   focusWindow: (id: string) => void;
   clearActiveWindow: () => void;
   minimizeWindow: (id: string) => void;
@@ -129,6 +144,7 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
   activeWindowId: null,
   // Start at 100 to match --aqua-z-windows and stay above desktop icons
   maxZIndex: 100,
+  finderSearchQuery: null,
 
   // Actions
   openWindow: (app) => {
@@ -175,11 +191,132 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
     return id;
   },
 
+  openNewFinderWindow: (location = 'home') => {
+    // Always create a new Finder window (never reuse existing)
+    const app = location === 'hd' ? 'finder-hd' : 'finder-home';
+    const { maxZIndex } = get();
+    const id = crypto.randomUUID();
+    const newZIndex = maxZIndex + 1;
+    const parentApp = getParentApp(app);
+    const sizeConfig = getWindowSizeConfig(app);
+
+    set((state) => ({
+      windows: [...state.windows, {
+        id,
+        app,
+        parentApp,
+        title: getWindowTitle(app),
+        x: 100 + (state.windows.length * 30), // Cascade positioning
+        y: 100 + (state.windows.length * 30),
+        width: sizeConfig.width,
+        height: sizeConfig.height,
+        minWidth: sizeConfig.minWidth,
+        minHeight: sizeConfig.minHeight,
+        zIndex: newZIndex,
+        state: 'open',
+        isZoomed: false,
+        isShaded: false,
+        previousBounds: null,
+        restoredFromMinimized: false,
+      }],
+      activeWindowId: id,
+      maxZIndex: newZIndex,
+    }));
+    return id;
+  },
+
+  openFinderWithSearch: (query) => {
+    // Store the search query for Finder to use, then create a NEW window
+    const { maxZIndex } = get();
+    const id = crypto.randomUUID();
+    const newZIndex = maxZIndex + 1;
+    const app = 'finder-search';
+    const parentApp = getParentApp(app);
+    const sizeConfig = getWindowSizeConfig(app);
+
+    set((state) => ({
+      finderSearchQuery: query,
+      windows: [...state.windows, {
+        id,
+        app,
+        parentApp,
+        title: getWindowTitle(app),
+        x: 100 + (state.windows.length * 30),
+        y: 100 + (state.windows.length * 30),
+        width: sizeConfig.width,
+        height: sizeConfig.height,
+        minWidth: sizeConfig.minWidth,
+        minHeight: sizeConfig.minHeight,
+        zIndex: newZIndex,
+        state: 'open',
+        isZoomed: false,
+        isShaded: false,
+        previousBounds: null,
+        restoredFromMinimized: false,
+      }],
+      activeWindowId: id,
+      maxZIndex: newZIndex,
+    }));
+    return id;
+  },
+
+  openNewTextEditDocument: () => {
+    // Always create a new untitled document (never reuse existing)
+    const { windows, maxZIndex } = get();
+    const id = crypto.randomUUID();
+    const newZIndex = maxZIndex + 1;
+    const app = 'untitled';
+    const parentApp = getParentApp(app);
+    const sizeConfig = getWindowSizeConfig(app);
+
+    // Count existing untitled documents for numbering
+    const untitledCount = windows.filter((w) => w.app === 'untitled').length;
+    const title = untitledCount === 0 ? 'Untitled' : `Untitled ${untitledCount + 1}`;
+
+    set((state) => ({
+      windows: [...state.windows, {
+        id,
+        app,
+        parentApp,
+        title,
+        x: 100 + (state.windows.length * 30),
+        y: 100 + (state.windows.length * 30),
+        width: sizeConfig.width,
+        height: sizeConfig.height,
+        minWidth: sizeConfig.minWidth,
+        minHeight: sizeConfig.minHeight,
+        zIndex: newZIndex,
+        state: 'open',
+        isZoomed: false,
+        isShaded: false,
+        previousBounds: null,
+        restoredFromMinimized: false,
+      }],
+      activeWindowId: id,
+      maxZIndex: newZIndex,
+    }));
+    return id;
+  },
+
   closeWindow: (id) => {
     set((state) => ({
       windows: state.windows.filter((w) => w.id !== id),
       activeWindowId: state.activeWindowId === id ? null : state.activeWindowId,
     }));
+  },
+
+  closeAllWindowsOfApp: (parentApp) => {
+    set((state) => {
+      const windowsToClose = state.windows.filter((w) => w.parentApp === parentApp);
+      const remainingWindows = state.windows.filter((w) => w.parentApp !== parentApp);
+      // Clear activeWindowId if it belonged to the closed app
+      const closedIds = windowsToClose.map((w) => w.id);
+      const newActiveId = closedIds.includes(state.activeWindowId ?? '') ? null : state.activeWindowId;
+      return {
+        windows: remainingWindows,
+        activeWindowId: newActiveId,
+      };
+    });
   },
 
   focusWindow: (id) => {

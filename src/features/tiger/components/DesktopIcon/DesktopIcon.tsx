@@ -44,6 +44,10 @@ export interface DesktopIconProps {
   allIconPositions?: IconPositionRecord;
   /** Called when multiple icons are dragged (multi-drag) */
   onMultiPositionChange?: (positions: IconPositionRecord) => void;
+  /** Called when drag starts (for special icons like Macintosh HD) */
+  onDragStart?: () => void;
+  /** Called when drag ends (for special icons like Macintosh HD) */
+  onDragEnd?: () => void;
 }
 
 /**
@@ -66,6 +70,8 @@ export function DesktopIcon({
   selectedIconIds = [],
   allIconPositions = {},
   onMultiPositionChange,
+  onDragStart,
+  onDragEnd,
 }: DesktopIconProps) {
   const controls = useAnimationControls();
   const prevPosition = useRef({ x, y });
@@ -169,7 +175,9 @@ export function DesktopIcon({
     if (isSelected && selectedIconIds.length > 1) {
       startMultiDrag(id);
     }
-  }, [id, isSelected, selectedIconIds.length, startMultiDrag]);
+    // Call external drag start callback (e.g., for Macintosh HD eject icon)
+    onDragStart?.();
+  }, [id, isSelected, selectedIconIds.length, startMultiDrag, onDragStart]);
 
   // Track drag offset in real-time for multi-drag using direct DOM manipulation
   const handleDrag = useCallback(
@@ -185,8 +193,8 @@ export function DesktopIcon({
         if (element) {
           element.style.transform = `translate(${info.offset.x}px, ${info.offset.y}px)`;
           element.style.opacity = '0.7';
-          // z-index 50: above other icons (10) but below windows (100+)
-          element.style.zIndex = '50';
+          // z-index 900: above windows (100+) but below menubar (1000)
+          element.style.zIndex = '900';
         }
       }
     },
@@ -276,8 +284,11 @@ export function DesktopIcon({
       // Clear multi-drag state
       endMultiDrag();
       isDragging.current = false;
+
+      // Call external drag end callback (e.g., for Macintosh HD eject icon)
+      onDragEnd?.();
     },
-    [x, y, onPositionChange, controls, isSelected, selectedIconIds, allIconPositions, onMultiPositionChange, endMultiDrag, id]
+    [x, y, onPositionChange, controls, isSelected, selectedIconIds, allIconPositions, onMultiPositionChange, endMultiDrag, id, onDragEnd]
   );
 
   return (
@@ -314,8 +325,8 @@ export function DesktopIcon({
       onDragEnd={handleDragEnd}
       whileDrag={{
         opacity: 0.7,
-        // z-index 50: above other icons (10) but below windows (100+)
-        zIndex: 50,
+        // z-index 900: above windows (100+) but below menubar (1000)
+        zIndex: 900,
         cursor: 'grabbing',
       }}
     >

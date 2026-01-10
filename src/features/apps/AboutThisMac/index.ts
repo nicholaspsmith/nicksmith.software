@@ -1,0 +1,1 @@
+export { AboutThisMac } from './AboutThisMac';

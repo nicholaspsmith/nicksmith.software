@@ -2,6 +2,7 @@ import styles from './TrafficLights.module.css';
 
 export interface TrafficLightsProps {
   isFocused: boolean;
+  compact?: boolean;
   onClose?: () => void;
   onMinimize?: () => void;
   onZoom?: () => void;
@@ -66,11 +67,12 @@ function ZoomIcon() {
  */
 export function TrafficLights({
   isFocused,
+  compact = false,
   onClose,
   onMinimize,
   onZoom,
 }: TrafficLightsProps) {
-  const containerClass = `${styles.container} ${isFocused ? styles.focused : styles.unfocused}`;
+  const containerClass = `${styles.container} ${isFocused ? styles.focused : styles.unfocused} ${compact ? styles.compact : ''}`;
 
   const handleClick = (
     e: React.MouseEvent,

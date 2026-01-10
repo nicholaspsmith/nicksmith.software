@@ -130,22 +130,9 @@ export function Desktop({ children, iconPositions, onIconsSelected }: DesktopPro
       return;
     }
 
-    // Check for desktop icon click
+    // Check for desktop icon click - always unfocus active window
     const desktopIconElement = target.closest('[data-testid^="desktop-icon-"]');
     if (desktopIconElement) {
-      if (activeWindow) {
-        const testId = desktopIconElement.getAttribute('data-testid') || '';
-        // Extract the icon ID from data-testid="desktop-icon-{id}"
-        const iconAppId = testId.replace('desktop-icon-', '');
-
-        // Check if this desktop icon is for the active window's app
-        if (iconAppId === activeWindow.app) {
-          // Clicking on the desktop icon of the active window - don't unfocus
-          // But still don't clear selection (handled below)
-          return;
-        }
-      }
-      // Clicking on a different desktop icon - unfocus the window
       clearActiveWindow();
       return;
     }

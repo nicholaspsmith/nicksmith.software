@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { useWindowStore } from '@/stores/windowStore';
+import { useAppStore } from '@/stores/appStore';
 import styles from './Finder.module.css';
+import { TerminalIcon } from '@/features/tiger/components/icons';
 
 /**
  * Sidebar location item
@@ -48,36 +51,149 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
 ];
 
 /**
+ * Desktop icons - matches App.tsx DESKTOP_ICONS
+ */
+const DESKTOP_CONTENTS: ContentItem[] = [
+  { id: 'macintosh-hd', name: 'Macintosh HD', icon: 'macintosh-hd', type: 'folder' },
+  { id: 'terminal', name: 'Terminal', icon: 'terminal', type: 'file' },
+  { id: 'about', name: 'About Me', icon: 'document', type: 'file' },
+  { id: 'projects', name: 'Projects', icon: 'document', type: 'file' },
+  { id: 'resume', name: 'Resume', icon: 'document', type: 'file' },
+  { id: 'contact', name: 'Contact', icon: 'document', type: 'file' },
+];
+
+/**
  * Home folder contents
  */
 const HOME_CONTENTS: ContentItem[] = [
-  { id: 'desktop', name: 'Desktop', icon: 'folder', type: 'folder' },
-  { id: 'documents', name: 'Documents', icon: 'folder', type: 'folder' },
-  { id: 'library', name: 'Library', icon: 'folder', type: 'folder' },
-  { id: 'movies', name: 'Movies', icon: 'folder', type: 'folder' },
-  { id: 'music', name: 'Music', icon: 'folder', type: 'folder' },
-  { id: 'pictures', name: 'Pictures', icon: 'folder', type: 'folder' },
-  { id: 'public', name: 'Public', icon: 'folder', type: 'folder' },
-  { id: 'sites', name: 'Sites', icon: 'folder', type: 'folder' },
+  { id: 'desktop', name: 'Desktop', icon: 'desktop-folder', type: 'folder' },
+  { id: 'documents', name: 'Documents', icon: 'documents-folder', type: 'folder' },
+  { id: 'library', name: 'Library', icon: 'library-folder', type: 'folder' },
+  { id: 'movies', name: 'Movies', icon: 'movies-folder', type: 'folder' },
+  { id: 'music', name: 'Music', icon: 'music-folder', type: 'folder' },
+  { id: 'pictures', name: 'Pictures', icon: 'pictures-folder', type: 'folder' },
+  { id: 'public', name: 'Public', icon: 'public-folder', type: 'folder' },
+  { id: 'sites', name: 'Sites', icon: 'sites-folder', type: 'folder' },
 ];
 
 /**
  * Macintosh HD contents (matches Tiger reference)
  */
 const HD_CONTENTS: ContentItem[] = [
-  { id: 'applications', name: 'Applications', icon: 'folder', type: 'folder' },
-  { id: 'developer', name: 'Developer', icon: 'folder', type: 'folder' },
-  { id: 'library', name: 'Library', icon: 'folder', type: 'folder' },
-  { id: 'system', name: 'System', icon: 'folder', type: 'folder' },
-  { id: 'users', name: 'Users', icon: 'folder', type: 'folder' },
+  { id: 'applications', name: 'Applications', icon: 'applications-folder', type: 'folder' },
+  { id: 'developer', name: 'Developer', icon: 'developer-folder', type: 'folder' },
+  { id: 'library', name: 'Library', icon: 'library-folder', type: 'folder' },
+  { id: 'system', name: 'System', icon: 'system-folder', type: 'folder' },
+  { id: 'users', name: 'Users', icon: 'users-folder', type: 'folder' },
 ];
 
 /** View mode types */
 type ViewMode = 'icon' | 'list' | 'column';
 
+/** Selection rectangle state */
+interface SelectionState {
+  isSelecting: boolean;
+  startX: number;
+  startY: number;
+  currentX: number;
+  currentY: number;
+}
+
+/** Icon grid dimensions for intersection detection */
+const ICON_CELL_WIDTH = 90;
+const ICON_CELL_HEIGHT = 90;
+
+/**
+ * Calculate rectangle bounds from two points (relative coordinates)
+ * Handles all four drag directions
+ */
+function calculateBounds(startX: number, startY: number, currentX: number, currentY: number) {
+  const left = Math.min(startX, currentX);
+  const top = Math.min(startY, currentY);
+  const width = Math.abs(currentX - startX);
+  const height = Math.abs(currentY - startY);
+  return { left, top, width, height };
+}
+
+/**
+ * Check if two rectangles intersect
+ */
+function rectanglesIntersect(
+  r1: { left: number; top: number; width: number; height: number },
+  r2: { left: number; top: number; width: number; height: number }
+): boolean {
+  return !(
+    r1.left + r1.width < r2.left ||
+    r2.left + r2.width < r1.left ||
+    r1.top + r1.height < r2.top ||
+    r2.top + r2.height < r1.top
+  );
+}
+
+/**
+ * Simple fuzzy search - matches if query characters appear in order
+ */
+function fuzzyMatch(query: string, text: string): boolean {
+  const lowerQuery = query.toLowerCase();
+  const lowerText = text.toLowerCase();
+
+  // Simple substring match for now (most intuitive)
+  if (lowerText.includes(lowerQuery)) return true;
+
+  // Also check if characters appear in order (fuzzy)
+  let queryIndex = 0;
+  for (let i = 0; i < lowerText.length && queryIndex < lowerQuery.length; i++) {
+    if (lowerText[i] === lowerQuery[queryIndex]) {
+      queryIndex++;
+    }
+  }
+  return queryIndex === lowerQuery.length;
+}
+
+/**
+ * Get all searchable items across all locations
+ */
+function getAllSearchableItems(): ContentItem[] {
+  return [
+    ...DESKTOP_CONTENTS,
+    ...HOME_CONTENTS,
+    ...HD_CONTENTS,
+  ].filter((item, index, arr) =>
+    // Remove duplicates by id
+    arr.findIndex(i => i.id === item.id) === index
+  );
+}
+
+/**
+ * Map folder IDs to sidebar item IDs for navigation
+ */
+const FOLDER_TO_SIDEBAR_MAP: Record<string, string> = {
+  'macintosh-hd': 'macintosh-hd',
+  desktop: 'desktop',
+  documents: 'documents',
+  applications: 'applications',
+  movies: 'movies',
+  music: 'music',
+  pictures: 'pictures',
+  users: 'user', // Users folder maps to user home
+};
+
+/**
+ * Files/apps that can be opened (maps to window IDs)
+ */
+const OPENABLE_ITEMS: Record<string, string> = {
+  terminal: 'terminal',
+  about: 'about',
+  projects: 'projects',
+  resume: 'resume',
+  contact: 'contact',
+};
+
 export interface FinderProps {
   /** Initial location to display */
   location?: 'home' | 'hd';
+  /** Initial search query (from Spotlight) */
+  initialSearch?: string;
 }
 
 /**
@@ -89,15 +205,50 @@ export interface FinderProps {
  * - Content area with folder contents (Icon, List, or Column view)
  * - Status bar with item count
  */
-export function Finder({ location = 'home' }: FinderProps) {
+export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
   const [selectedSidebarItem, setSelectedSidebarItem] = useState(
     location === 'hd' ? 'macintosh-hd' : 'user'
   );
-  const [selectedContentItem, setSelectedContentItem] = useState<string | null>(null);
+  const [selectedContentItems, setSelectedContentItems] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('icon');
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+
+  // Selection rectangle state
+  const [selection, setSelection] = useState<SelectionState>({
+    isSelecting: false,
+    startX: 0,
+    startY: 0,
+    currentX: 0,
+    currentY: 0,
+  });
+
+  // Track if we just finished a marquee selection
+  const justFinishedMarquee = useRef(false);
+
+  // Ref for content area to calculate icon positions
+  const contentRef = useRef<HTMLDivElement>(null);
+  const iconGridRef = useRef<HTMLDivElement>(null);
+
+  // Window store for opening apps
+  const openWindow = useWindowStore((s) => s.openWindow);
+  const clearAppSelection = useAppStore((s) => s.clearSelection);
 
   // Get view config based on selected sidebar item
   const getViewConfig = (): FinderViewConfig => {
+    // If searching, return search results
+    if (searchQuery.trim()) {
+      const allItems = getAllSearchableItems();
+      const matchingItems = allItems.filter(item =>
+        fuzzyMatch(searchQuery, item.name)
+      );
+      return {
+        title: `Search: "${searchQuery}"`,
+        sidebarItems: SIDEBAR_ITEMS,
+        contentItems: matchingItems,
+        statusText: `${matchingItems.length} item${matchingItems.length !== 1 ? 's' : ''} found`,
+      };
+    }
+
     switch (selectedSidebarItem) {
       case 'macintosh-hd':
         return {
@@ -117,8 +268,8 @@ export function Finder({ location = 'home' }: FinderProps) {
         return {
           title: 'Desktop',
           sidebarItems: SIDEBAR_ITEMS,
-          contentItems: [],
-          statusText: '0 items, 1.91 GB available',
+          contentItems: DESKTOP_CONTENTS,
+          statusText: `${DESKTOP_CONTENTS.length} items, 1.91 GB available`,
         };
       case 'applications':
       case 'documents':
@@ -146,12 +297,227 @@ export function Finder({ location = 'home' }: FinderProps) {
 
   const handleSidebarClick = (itemId: string) => {
     setSelectedSidebarItem(itemId);
-    setSelectedContentItem(null);
+    setSelectedContentItems([]);
+    setSearchQuery(''); // Clear search when navigating
   };
 
-  const handleContentClick = (itemId: string) => {
-    setSelectedContentItem(itemId);
-  };
+  // Handle double-click on content item
+  const handleContentDoubleClick = useCallback((item: ContentItem) => {
+    if (item.type === 'folder') {
+      // Navigate to folder if it's in sidebar
+      const sidebarId = FOLDER_TO_SIDEBAR_MAP[item.id];
+      if (sidebarId) {
+        setSelectedSidebarItem(sidebarId);
+        setSelectedContentItems([]);
+        setSearchQuery('');
+      } else if (item.id === 'macintosh-hd') {
+        // Special case: Macintosh HD opens Finder HD view
+        openWindow('finder-hd');
+        clearAppSelection();
+      }
+    } else {
+      // Open file/app
+      const windowId = OPENABLE_ITEMS[item.id];
+      if (windowId) {
+        openWindow(windowId);
+        clearAppSelection();
+      }
+    }
+  }, [openWindow, clearAppSelection]);
+
+  const handleContentClick = useCallback((itemId: string, e: React.MouseEvent) => {
+    // Skip if we just finished marquee
+    if (justFinishedMarquee.current) {
+      justFinishedMarquee.current = false;
+      return;
+    }
+
+    // Multi-select with Cmd (Mac) or Ctrl (Windows)
+    if (e.metaKey || e.ctrlKey) {
+      setSelectedContentItems((prev) =>
+        prev.includes(itemId)
+          ? prev.filter((id) => id !== itemId) // Toggle off
+          : [...prev, itemId] // Add to selection
+      );
+    } else if (e.shiftKey && selectedContentItems.length > 0) {
+      // Range select with Shift
+      const items = config.contentItems;
+      const lastSelectedIndex = items.findIndex((i) => i.id === selectedContentItems[selectedContentItems.length - 1]);
+      const clickedIndex = items.findIndex((i) => i.id === itemId);
+      const start = Math.min(lastSelectedIndex, clickedIndex);
+      const end = Math.max(lastSelectedIndex, clickedIndex);
+      const rangeIds = items.slice(start, end + 1).map((i) => i.id);
+      setSelectedContentItems(rangeIds);
+    } else {
+      // Single select
+      setSelectedContentItems([itemId]);
+    }
+  }, [selectedContentItems, config.contentItems]);
+
+  // Handle mouse down for marquee selection (using relative coordinates)
+  const handleContentMouseDown = useCallback((e: React.MouseEvent) => {
+    // Only start selection if left click on content area background (not on items)
+    if (e.button !== 0) return;
+
+    const target = e.target as HTMLElement;
+    const isItem = target.closest(`.${styles.contentItem}`);
+    if (isItem) return;
+
+    // Get content area bounds for relative positioning
+    if (!contentRef.current) return;
+    const rect = contentRef.current.getBoundingClientRect();
+
+    // Calculate position relative to content area
+    const relX = e.clientX - rect.left;
+    const relY = e.clientY - rect.top;
+
+    setSelection({
+      isSelecting: true,
+      startX: relX,
+      startY: relY,
+      currentX: relX,
+      currentY: relY,
+    });
+
+    // Clear selection when starting new marquee (unless Cmd/Ctrl held)
+    if (!e.metaKey && !e.ctrlKey) {
+      setSelectedContentItems([]);
+    }
+  }, []);
+
+  // Handle mouse move during selection (constrained to content area)
+  useEffect(() => {
+    if (!selection.isSelecting) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!contentRef.current) return;
+      const rect = contentRef.current.getBoundingClientRect();
+
+      // Calculate position relative to content area and constrain to bounds
+      const relX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+      const relY = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+
+      setSelection((prev) => ({
+        ...prev,
+        currentX: relX,
+        currentY: relY,
+      }));
+
+      // Real-time selection: find icons within rectangle as we drag
+      if (viewMode === 'icon' && iconGridRef.current) {
+        const gridRect = iconGridRef.current.getBoundingClientRect();
+        const contentRect = contentRef.current.getBoundingClientRect();
+
+        // Grid offset relative to content area
+        const gridOffsetX = gridRect.left - contentRect.left;
+        const gridOffsetY = gridRect.top - contentRect.top;
+
+        const selectionBounds = calculateBounds(
+          selection.startX,
+          selection.startY,
+          relX,
+          relY
+        );
+
+        // Calculate grid layout
+        const gridWidth = gridRect.width;
+        const itemsPerRow = Math.floor(gridWidth / ICON_CELL_WIDTH) || 1;
+
+        const selectedIds: string[] = [];
+        config.contentItems.forEach((item, index) => {
+          const row = Math.floor(index / itemsPerRow);
+          const col = index % itemsPerRow;
+
+          // Icon position relative to content area
+          const iconBounds = {
+            left: gridOffsetX + col * ICON_CELL_WIDTH,
+            top: gridOffsetY + row * ICON_CELL_HEIGHT,
+            width: ICON_CELL_WIDTH,
+            height: ICON_CELL_HEIGHT,
+          };
+
+          if (rectanglesIntersect(selectionBounds, iconBounds)) {
+            selectedIds.push(item.id);
+          }
+        });
+
+        setSelectedContentItems(selectedIds);
+      }
+    };
+
+    const handleMouseUp = () => {
+      justFinishedMarquee.current = true;
+      setSelection((prev) => ({
+        ...prev,
+        isSelecting: false,
+      }));
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [selection.isSelecting, selection.startX, selection.startY, viewMode, config.contentItems]);
+
+  // Clear selection when clicking on empty content area
+  const handleContentAreaClick = useCallback((e: React.MouseEvent) => {
+    // Skip if we just finished marquee
+    if (justFinishedMarquee.current) {
+      justFinishedMarquee.current = false;
+      return;
+    }
+
+    // Only clear if clicking directly on the content area (not on items)
+    if (e.target === e.currentTarget) {
+      setSelectedContentItems([]);
+    }
+  }, []);
+
+  // Handle Enter key to open all selected items
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && selectedContentItems.length > 0) {
+        e.preventDefault();
+        // Open each selected item
+        selectedContentItems.forEach((itemId) => {
+          const item = config.contentItems.find((i) => i.id === itemId);
+          if (!item) return;
+
+          if (item.type === 'folder') {
+            // Navigate to folder if in sidebar
+            const sidebarId = FOLDER_TO_SIDEBAR_MAP[item.id];
+            if (sidebarId) {
+              setSelectedSidebarItem(sidebarId);
+              setSelectedContentItems([]);
+              setSearchQuery('');
+            } else if (item.id === 'macintosh-hd') {
+              openWindow('finder-hd');
+              clearAppSelection();
+            }
+          } else {
+            // Open file/app
+            const windowId = OPENABLE_ITEMS[item.id];
+            if (windowId) {
+              openWindow(windowId);
+              clearAppSelection();
+            }
+          }
+        });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedContentItems, config.contentItems, openWindow, clearAppSelection]);
+
+  // Handle search input
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setSelectedContentItems([]); // Clear selection when searching
+  }, []);
 
   return (
     <div className={styles.finder} data-testid="finder">
@@ -211,6 +577,8 @@ export function Finder({ location = 'home' }: FinderProps) {
               placeholder=""
               className={styles.searchInput}
               aria-label="Search"
+              value={searchQuery}
+              onChange={handleSearchChange}
             />
           </div>
         </div>
@@ -235,18 +603,24 @@ export function Finder({ location = 'home' }: FinderProps) {
         </div>
 
         {/* Content area */}
-        <div className={styles.content}>
+        <div
+          ref={contentRef}
+          className={`${styles.content} ${viewMode !== 'icon' ? styles.contentNoPadding : ''}`}
+          onClick={handleContentAreaClick}
+          onMouseDown={handleContentMouseDown}
+        >
           {config.contentItems.length === 0 ? (
             <div className={styles.emptyState}>
-              {selectedSidebarItem === 'trash' ? 'Trash is empty' : 'This folder is empty'}
+              {selectedSidebarItem === 'trash' ? 'Trash is empty' : searchQuery ? 'No matches found' : 'This folder is empty'}
             </div>
           ) : viewMode === 'icon' ? (
-            <div className={styles.iconGrid}>
+            <div ref={iconGridRef} className={styles.iconGrid} onClick={handleContentAreaClick}>
               {config.contentItems.map((item) => (
                 <button
                   key={item.id}
-                  className={`${styles.contentItem} ${selectedContentItem === item.id ? styles.contentItemSelected : ''}`}
-                  onClick={() => handleContentClick(item.id)}
+                  className={`${styles.contentItem} ${selectedContentItems.includes(item.id) ? styles.contentItemSelected : ''}`}
+                  onClick={(e) => { e.stopPropagation(); handleContentClick(item.id, e); }}
+                  onDoubleClick={() => handleContentDoubleClick(item)}
                 >
                   <ContentIcon type={item.icon} />
                   <span className={styles.contentLabel}>{item.name}</span>
@@ -262,11 +636,12 @@ export function Finder({ location = 'home' }: FinderProps) {
               {config.contentItems.map((item) => (
                 <button
                   key={item.id}
-                  className={`${styles.listRow} ${selectedContentItem === item.id ? styles.listRowSelected : ''}`}
-                  onClick={() => handleContentClick(item.id)}
+                  className={`${styles.listRow} ${selectedContentItems.includes(item.id) ? styles.listRowSelected : ''}`}
+                  onClick={(e) => { e.stopPropagation(); handleContentClick(item.id, e); }}
+                  onDoubleClick={() => handleContentDoubleClick(item)}
                 >
                   <span className={styles.listDisclosure}>▶</span>
-                  <SmallFolderIcon />
+                  <SmallIcon type={item.icon} />
                   <span className={styles.listName}>{item.name}</span>
                   <span className={styles.listDate}>Jan 9, 2026, 12:00 PM</span>
                 </button>
@@ -278,10 +653,11 @@ export function Finder({ location = 'home' }: FinderProps) {
                 {config.contentItems.map((item) => (
                   <button
                     key={item.id}
-                    className={`${styles.columnItem} ${selectedContentItem === item.id ? styles.columnItemSelected : ''}`}
-                    onClick={() => handleContentClick(item.id)}
+                    className={`${styles.columnItem} ${selectedContentItems.includes(item.id) ? styles.columnItemSelected : ''}`}
+                    onClick={(e) => { e.stopPropagation(); handleContentClick(item.id, e); }}
+                    onDoubleClick={() => handleContentDoubleClick(item)}
                   >
-                    <SmallFolderIcon />
+                    <SmallIcon type={item.icon} />
                     <span className={styles.columnName}>{item.name}</span>
                     {item.type === 'folder' && <span className={styles.columnArrow}>▶</span>}
                   </button>
@@ -293,6 +669,31 @@ export function Finder({ location = 'home' }: FinderProps) {
               <div className={styles.column} />
             </div>
           )}
+
+          {/* Selection rectangle (marquee select) - absolute positioned within content */}
+          {selection.isSelecting && (() => {
+            const bounds = calculateBounds(
+              selection.startX,
+              selection.startY,
+              selection.currentX,
+              selection.currentY
+            );
+            return (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: bounds.left,
+                  top: bounds.top,
+                  width: bounds.width,
+                  height: bounds.height,
+                  backgroundColor: 'rgba(0, 112, 215, 0.2)',
+                  border: '1px solid rgba(0, 112, 215, 0.6)',
+                  pointerEvents: 'none',
+                  zIndex: 1000,
+                }}
+              />
+            );
+          })()}
         </div>
         </div>
       </div>
@@ -419,46 +820,68 @@ function SidebarIcon({ type }: { type: string }) {
   );
 }
 
-function ContentIcon({ type: _type }: { type: string }) {
-  // Larger folder icon for content area
+/**
+ * Content icon mapping - maps icon type to image path
+ * Special case: 'terminal' uses SVG component
+ */
+const CONTENT_ICON_MAP: Record<string, string> = {
+  folder: '/icons/GenericFolderIcon.png',
+  'macintosh-hd': '/icons/macintosh-hd.png',
+  document: '/icons/document.png',
+  // Folder-specific icons (authentic Tiger folder icons)
+  'applications-folder': '/icons/ApplicationsFolderIcon.png',
+  'desktop-folder': '/icons/DesktopFolderIcon.png',
+  'developer-folder': '/icons/DeveloperFolderIcon.png',
+  'documents-folder': '/icons/DocumentsFolderIcon.png',
+  'library-folder': '/icons/LibraryFolderIcon.png',
+  'movies-folder': '/icons/MovieFolderIcon.png',
+  'music-folder': '/icons/MusicFolderIcon.png',
+  'pictures-folder': '/icons/PicturesFolderIcon.png',
+  'public-folder': '/icons/PublicFolderIcon.png',
+  'sites-folder': '/icons/SitesFolderIcon.png',
+  'system-folder': '/icons/SystemFolderIcon.png',
+  'home-folder': '/icons/HomeFolderIcon.png',
+  'users-folder': '/icons/UsersFolderIcon.png',
+};
+
+function ContentIcon({ type }: { type: string }) {
+  // Terminal uses custom SVG icon
+  if (type === 'terminal') {
+    return <TerminalIcon size={64} />;
+  }
+
+  // Use mapped icon or fallback to folder
+  const iconSrc = CONTENT_ICON_MAP[type] || CONTENT_ICON_MAP.folder;
+
   return (
-    <svg viewBox="0 0 64 64" width="64" height="64" aria-hidden="true">
-      <defs>
-        <linearGradient id="folderGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#93C5FD" />
-          <stop offset="100%" stopColor="#3B82F6" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M4 16a4 4 0 014-4h16l4 4h28a4 4 0 014 4v32a4 4 0 01-4 4H8a4 4 0 01-4-4V16z"
-        fill="url(#folderGradient)"
-      />
-      <path
-        d="M4 20h56v32a4 4 0 01-4 4H8a4 4 0 01-4-4V20z"
-        fill="#60A5FA"
-      />
-    </svg>
+    <img
+      src={iconSrc}
+      alt=""
+      width="64"
+      height="64"
+      aria-hidden="true"
+      draggable={false}
+    />
   );
 }
 
-function SmallFolderIcon() {
-  // Small folder icon for list and column views
+function SmallIcon({ type }: { type: string }) {
+  // Terminal uses custom SVG icon
+  if (type === 'terminal') {
+    return <TerminalIcon size={16} />;
+  }
+
+  // Use mapped icon or fallback to folder
+  const iconSrc = CONTENT_ICON_MAP[type] || CONTENT_ICON_MAP.folder;
+
   return (
-    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
-      <defs>
-        <linearGradient id="smallFolderGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#93C5FD" />
-          <stop offset="100%" stopColor="#3B82F6" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M1 4a1 1 0 011-1h4l1 1h7a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V4z"
-        fill="url(#smallFolderGradient)"
-      />
-      <path
-        d="M1 5h14v8a1 1 0 01-1 1H2a1 1 0 01-1-1V5z"
-        fill="#60A5FA"
-      />
-    </svg>
+    <img
+      src={iconSrc}
+      alt=""
+      width="16"
+      height="16"
+      aria-hidden="true"
+      draggable={false}
+    />
   );
 }

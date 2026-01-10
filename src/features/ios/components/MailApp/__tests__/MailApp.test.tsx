@@ -33,7 +33,7 @@ describe('MailApp', () => {
     render(<MailApp onBack={() => {}} />);
 
     expect(screen.getByText('Bcc:')).toBeInTheDocument();
-    expect(screen.getByText('github.com/nicksmith')).toBeInTheDocument();
+    expect(screen.getByText('github.com/nicholaspsmith')).toBeInTheDocument();
   });
 
   it('renders subject field', () => {
@@ -78,7 +78,7 @@ describe('MailApp', () => {
     render(<MailApp onBack={() => {}} />);
 
     const githubLinks = screen.getAllByRole('link', { name: /github/i });
-    expect(githubLinks.some(link => link.getAttribute('href') === 'https://github.com/nicksmith')).toBe(true);
+    expect(githubLinks.some(link => link.getAttribute('href') === 'https://github.com/nicholaspsmith')).toBe(true);
   });
 
   it('renders signature', () => {

@@ -36,21 +36,21 @@ body {
 
 /* WebKit browsers (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
-  width: 15px;
-  height: 15px;
+  width: 30px;
+  height: 30px;
 }
 
 ::-webkit-scrollbar-track {
   /* Tiger scrollbar track with texture */
   background: url('/textures/scrollbar-texture-vertical.png') repeat-y;
-  background-size: 15px auto;
+  background-size: 30px auto;
   border-left: 1px solid #c0c0c0;
 }
 
 ::-webkit-scrollbar-track:horizontal {
   /* Horizontal uses rotated texture or gradient fallback */
   background: url('/textures/scrollbar-texture-vertical.png') repeat-x;
-  background-size: auto 15px;
+  background-size: auto 30px;
   border-left: none;
   border-top: 1px solid #c0c0c0;
 }
@@ -66,14 +66,14 @@ body {
       #2d7bc9 85%,
       #1e5a9e 100%
     );
-  border-radius: 8px;
+  border-radius: 15px;
   border: 1px solid #2a6cb0;
   /* Add glossy highlight */
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
     inset 0 -1px 0 rgba(0, 0, 0, 0.1);
   /* Margin from track edges */
-  margin: 2px;
+  margin: 3px;
 }
 
 ::-webkit-scrollbar-thumb:horizontal {
@@ -120,8 +120,8 @@ body {
 ::-webkit-scrollbar-button {
   background: linear-gradient(180deg, #f8f8f8 0%, #d8d8d8 100%);
   border: 1px solid #a0a0a0;
-  height: 15px;
-  width: 15px;
+  height: 30px;
+  width: 30px;
 }
 
 ::-webkit-scrollbar-button:hover {
