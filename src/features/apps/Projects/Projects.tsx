@@ -20,15 +20,6 @@ const PROJECTS: Project[] = [
     logo: '/icons/finder.png',
   },
   {
-    id: 'centrifugue',
-    name: 'Centrifugue',
-    description:
-      'A Firefox/Zen Browser extension that extracts audio stems from YouTube videos using Demucs, Meta\'s AI audio separation model. Supports one-click MP3 downloads with AI-powered stem separation into vocals, drums, bass, and other components.',
-    technologies: ['JavaScript', 'Python', 'Demucs', 'yt-dlp', 'FFmpeg'],
-    link: 'https://github.com/nicholaspsmith/Centrifugue',
-    logo: '/icons/centrifugue-logo.svg',
-  },
-  {
     id: 'lance-context',
     name: 'lance-context',
     description:
@@ -54,6 +45,15 @@ const PROJECTS: Project[] = [
     technologies: ['Python', 'JavaScript', 'yt-dlp', 'Chrome Extension'],
     link: 'https://github.com/nicholaspsmith/VidSnatch',
     logo: '/icons/vidsnatch-logo.svg',
+  },
+  {
+    id: 'centrifugue',
+    name: 'Centrifugue',
+    description:
+      'A Firefox/Zen Browser extension that extracts audio stems from YouTube videos using Demucs, Meta\'s AI audio separation model. Supports one-click MP3 downloads with AI-powered stem separation into vocals, drums, bass, and other components.',
+    technologies: ['JavaScript', 'Python', 'Demucs', 'yt-dlp', 'FFmpeg'],
+    link: 'https://github.com/nicholaspsmith/Centrifugue',
+    logo: '/icons/centrifugue-logo.svg',
   },
 ];
 
