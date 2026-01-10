@@ -36,7 +36,6 @@
 .cardLink {
   text-decoration: none;
   color: inherit;
-  cursor: url('/icons/cursors/resizedown.png') 8 8, pointer;
 }
 
 .card {

@@ -150,7 +150,6 @@ body {
 
 /* Interactive elements use pointer variant */
 button,
-a,
 [role="button"],
 [type="button"],
 [type="submit"],
@@ -161,6 +160,11 @@ select,
 summary,
 .clickable {
   cursor: var(--aqua-cursor-pointer);
+}
+
+/* Anchor tags use Tiger pointing hand cursor */
+a {
+  cursor: url('/icons/cursors/resizedown.png') 8 8, pointer;
 }
 
 /* Elements that should NEVER show host cursor - use !important sparingly */
