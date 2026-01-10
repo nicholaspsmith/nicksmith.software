@@ -35,7 +35,7 @@ export function Contact() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <span className={styles.icon}>💼</span>
+          <img src="/icons/linkedin.png" alt="" className={styles.iconImg} />
           <span className={styles.linkText}>
             <strong>LinkedIn</strong>
             <span>linkedin.com/in/nps90</span>
@@ -48,7 +48,7 @@ export function Contact() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <span className={styles.icon}>🐙</span>
+          <img src="/icons/github.png" alt="" className={styles.iconImg} />
           <span className={styles.linkText}>
             <strong>GitHub</strong>
             <span>github.com/nicholaspsmith</span>
