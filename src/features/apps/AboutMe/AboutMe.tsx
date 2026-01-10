@@ -27,7 +27,7 @@ export function AboutMe() {
         <p>
           Hey there! I'm a frontend-focused engineer with 12+ years of experience
           building web platforms at companies like MongoDB and Cisco. I love turning
-          complex problems into clean, intuitive interfaces — whether that's threat
+          complex problems into clean, intuitive interfaces: whether that's threat
           intelligence dashboards or large-scale CMS migrations.
         </p>
         <p>
