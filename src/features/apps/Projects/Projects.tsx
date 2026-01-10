@@ -44,7 +44,7 @@ const PROJECTS: Project[] = [
       'A macOS application for downloading videos from numerous platforms. Integrates a Chrome extension with a native menu bar app for one-click video downloads with real-time progress tracking.',
     technologies: ['Python', 'JavaScript', 'yt-dlp', 'Chrome Extension'],
     link: 'https://github.com/nicholaspsmith/VidSnatch',
-    logo: '/icons/vidsnatch-logo.svg',
+    logo: '/icons/vidsnatch-logo.png',
   },
   {
     id: 'centrifugue',
