@@ -561,11 +561,6 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
               <ColumnViewIcon />
             </button>
           </div>
-
-          {/* Action menu */}
-          <button className={styles.actionButton} aria-label="Actions">
-            <GearIcon />
-          </button>
         </div>
 
         <div className={styles.toolbarRight}>
@@ -738,23 +733,6 @@ function ColumnViewIcon() {
       <rect x="1" y="1" width="4" height="14" rx="1" fill="currentColor" />
       <rect x="6" y="1" width="4" height="14" rx="1" fill="currentColor" />
       <rect x="11" y="1" width="4" height="14" rx="1" fill="currentColor" />
-    </svg>
-  );
-}
-
-function GearIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-      <path
-        d="M8 10a2 2 0 100-4 2 2 0 000 4z"
-        fill="currentColor"
-      />
-      <path
-        d="M14 8.5v-1l-1.5-.5-.3-.7.7-1.3-.7-.7-1.3.7-.7-.3L9.5 3h-1l-.5 1.5-.7.3-1.3-.7-.7.7.7 1.3-.3.7L4 7.5v1l1.5.5.3.7-.7 1.3.7.7 1.3-.7.7.3.5 1.5h1l.5-1.5.7-.3 1.3.7.7-.7-.7-1.3.3-.7L14 8.5z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1"
-      />
     </svg>
   );
 }

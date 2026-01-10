@@ -121,25 +121,6 @@
   color: #333;
 }
 
-/* Action button (gear) */
-.actionButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 24px;
-  border: 1px solid #888;
-  border-radius: 4px;
-  background: linear-gradient(180deg, #f8f8f8 0%, #d8d8d8 100%);
-  color: #666;
-  cursor: var(--aqua-cursor-default);
-}
-
-.actionButton:hover {
-  background: linear-gradient(180deg, #fff 0%, #e0e0e0 100%);
-  color: #333;
-}
-
 /* Search field */
 .searchField {
   display: flex;
