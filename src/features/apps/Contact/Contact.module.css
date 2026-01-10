@@ -2,7 +2,7 @@
  * Contact.module.css - Tiger-styled contact info
  *
  * Clean layout with prominent links.
- * Optimized for 400x300px window default.
+ * Optimized for 390x440px window default.
  */
 
 .container {
@@ -45,6 +45,7 @@
   text-decoration: none;
   color: inherit;
   transition: box-shadow 0.15s ease;
+  cursor: url('/icons/cursors/resizedown.png') 8 8, pointer;
 }
 
 .link:hover {
