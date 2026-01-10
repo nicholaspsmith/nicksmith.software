@@ -1,3 +1,4 @@
+import { useWindowStore } from '@/stores/windowStore';
 import styles from './AboutMe.module.css';
 
 /**
@@ -7,6 +8,13 @@ import styles from './AboutMe.module.css';
  * Designed for readability and quick scanning.
  */
 export function AboutMe() {
+  const openWindow = useWindowStore((state) => state.openWindow);
+
+  const handleProjectsClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    openWindow('projects');
+  };
+
   return (
     <div className={styles.container} data-testid="about-me-content">
       <div className={styles.header}>
@@ -33,9 +41,10 @@ export function AboutMe() {
         <p>
           This portfolio is my tribute to Mac OS X Tiger, an OS that shaped my
           appreciation for thoughtful design. I'm currently exploring AI-assisted
-          development and building Loopi, an open-source spaced repetition learning
-          app, and lance-context, a semantic code search tool for AI coding agents. When I'm not coding, I volunteer as an ESL instructor and practice
-          my Mandarin.
+          development and working on <a href="#projects" onClick={handleProjectsClick}>several projects</a>, including
+          Loopi, an open-source spaced repetition learning app, and lance-context,
+          a semantic code search tool for AI coding agents. When I'm not coding,
+          I volunteer as an ESL instructor and practice my Mandarin.
         </p>
       </div>
 
