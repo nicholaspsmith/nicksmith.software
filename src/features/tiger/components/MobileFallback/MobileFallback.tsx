@@ -38,7 +38,7 @@ export function MobileFallback() {
 
         <div className={styles.links}>
           <a
-            href="mailto:nick@example.com"
+            href="mailto:me@nicksmith.software"
             className={styles.link}
             data-testid="fallback-email"
           >

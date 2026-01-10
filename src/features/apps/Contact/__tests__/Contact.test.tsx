@@ -16,7 +16,7 @@ describe('Contact', () => {
   it('displays email link', () => {
     render(<Contact />);
     const emailLink = screen.getByRole('link', { name: /email/i });
-    expect(emailLink).toHaveAttribute('href', 'mailto:nick@example.com');
+    expect(emailLink).toHaveAttribute('href', 'mailto:me@nicksmith.software');
   });
 
   it('displays LinkedIn link', () => {

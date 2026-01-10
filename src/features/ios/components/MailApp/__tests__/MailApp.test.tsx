@@ -19,7 +19,7 @@ describe('MailApp', () => {
     render(<MailApp onBack={() => {}} />);
 
     expect(screen.getByText('To:')).toBeInTheDocument();
-    expect(screen.getByText('nick@example.com')).toBeInTheDocument();
+    expect(screen.getByText('me@nicksmith.software')).toBeInTheDocument();
   });
 
   it('renders LinkedIn field', () => {
@@ -63,8 +63,8 @@ describe('MailApp', () => {
   it('renders email link with correct href', () => {
     render(<MailApp onBack={() => {}} />);
 
-    const emailLinks = screen.getAllByRole('link', { name: /email|nick@example/i });
-    expect(emailLinks.some(link => link.getAttribute('href') === 'mailto:nick@example.com')).toBe(true);
+    const emailLinks = screen.getAllByRole('link', { name: /email|me@nicksmith/i });
+    expect(emailLinks.some(link => link.getAttribute('href') === 'mailto:me@nicksmith.software')).toBe(true);
   });
 
   it('renders LinkedIn link with correct href', () => {

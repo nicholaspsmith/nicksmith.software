@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Face gradient like the emoji reference -->
+    <linearGradient id="faceGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFCA28"/>
+      <stop offset="100%" stop-color="#FFB300"/>
+    </linearGradient>
+    <!-- Hand gradient -->
+    <linearGradient id="handGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFCA28"/>
+      <stop offset="100%" stop-color="#FFA000"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect x="4" y="4" width="120" height="120" rx="20" fill="#2d2d44"/>
+
+  <!-- VHS TAPE - held by hands, positioned at mouth -->
+  <!-- Main VHS body (dark gray like reference) -->
+  <g transform="translate(82, 72) rotate(15)">
+    <!-- VHS cassette body -->
+    <rect x="-28" y="-18" width="56" height="36" rx="3" fill="#3d3d3d" stroke="#1a1a1a" stroke-width="2"/>
+
+    <!-- Ridged top section -->
+    <rect x="-26" y="-16" width="52" height="8" fill="#4a4a4a"/>
+    <line x1="-24" y1="-14" x2="-24" y2="-10" stroke="#333" stroke-width="1"/>
+    <line x1="-20" y1="-14" x2="-20" y2="-10" stroke="#333" stroke-width="1"/>
+    <line x1="-16" y1="-14" x2="-16" y2="-10" stroke="#333" stroke-width="1"/>
+    <line x1="-12" y1="-14" x2="-12" y2="-10" stroke="#333" stroke-width="1"/>
+    <line x1="-8" y1="-14" x2="-8" y2="-10" stroke="#333" stroke-width="1"/>
+    <line x1="-4" y1="-14" x2="-4" y2="-10" stroke="#333" stroke-width="1"/>
+    <line x1="0" y1="-14" x2="0" y2="-10" stroke="#333" stroke-width="1"/>
+    <line x1="4" y1="-14" x2="4" y2="-10" stroke="#333" stroke-width="1"/>
+    <line x1="8" y1="-14" x2="8" y2="-10" stroke="#333" stroke-width="1"/>
+    <line x1="12" y1="-14" x2="12" y2="-10" stroke="#333" stroke-width="1"/>
+    <line x1="16" y1="-14" x2="16" y2="-10" stroke="#333" stroke-width="1"/>
+    <line x1="20" y1="-14" x2="20" y2="-10" stroke="#333" stroke-width="1"/>
+    <line x1="24" y1="-14" x2="24" y2="-10" stroke="#333" stroke-width="1"/>
+
+    <!-- Yellow label with VHS text (like reference!) -->
+    <rect x="-24" y="-6" width="48" height="14" rx="1" fill="#FFD600" stroke="#1a1a1a" stroke-width="1"/>
+    <text x="0" y="4" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="11" font-weight="900" fill="#1a1a1a">VHS</text>
+
+    <!-- Tape window -->
+    <rect x="-22" y="10" width="44" height="6" rx="1" fill="#1a1a1a"/>
+    <rect x="-20" y="11" width="40" height="4" rx="1" fill="#2a2a2a"/>
+
+    <!-- White bottom flap -->
+    <rect x="-28" y="16" width="56" height="2" fill="#e0e0e0"/>
+
+    <!-- Bite mark taken out! -->
+    <path d="M -28 -18 Q -22 -8 -28 2 L -32 2 Q -26 -8 -32 -18 Z" fill="#2d2d44"/>
+  </g>
+
+  <!-- THE FACE - emoji style like reference -->
+  <g>
+    <!-- Main face circle -->
+    <circle cx="50" cy="58" r="44" fill="url(#faceGrad)" stroke="#E6A000" stroke-width="2"/>
+
+    <!-- Left eye - looking at VHS (like pizza emoji) -->
+    <ellipse cx="34" cy="48" rx="10" ry="12" fill="white"/>
+    <circle cx="38" cy="50" r="6" fill="#4FC3F7"/>
+    <circle cx="40" cy="48" r="2" fill="#1a1a1a"/>
+    <circle cx="41" cy="47" r="1" fill="white"/>
+
+    <!-- Right eye - also looking at VHS -->
+    <ellipse cx="62" cy="48" rx="9" ry="11" fill="white"/>
+    <circle cx="64" cy="50" r="5.5" fill="#4FC3F7"/>
+    <circle cx="66" cy="48" r="2" fill="#1a1a1a"/>
+    <circle cx="67" cy="47" r="1" fill="white"/>
+
+    <!-- Raised eyebrow (mischievous!) - left one higher -->
+    <path d="M 22 34 Q 34 24 46 32" stroke="#AA8800" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <!-- Right eyebrow - normal -->
+    <path d="M 52 36 Q 62 32 74 38" stroke="#AA8800" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+
+    <!-- Rosy cheeks -->
+    <ellipse cx="18" cy="62" rx="7" ry="5" fill="#FF8A80" opacity="0.6"/>
+    <ellipse cx="80" cy="60" rx="6" ry="4" fill="#FF8A80" opacity="0.5"/>
+
+    <!-- Big open mouth - ready to chomp! -->
+    <ellipse cx="56" cy="78" rx="22" ry="16" fill="#8B1A1A"/>
+
+    <!-- Tongue (red like references) -->
+    <ellipse cx="54" cy="86" rx="10" ry="6" fill="#E53935"/>
+
+    <!-- Upper lip line -->
+    <path d="M 34 70 Q 56 62 80 72" stroke="#CC8800" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  </g>
+
+  <!-- HANDS holding the VHS (like pizza emoji!) -->
+  <!-- Left hand -->
+  <g transform="translate(52, 68)">
+    <ellipse cx="0" cy="0" rx="8" ry="6" fill="url(#handGrad)" stroke="#E6A000" stroke-width="1"/>
+    <!-- Fingers -->
+    <ellipse cx="-4" cy="-6" rx="3" ry="5" fill="url(#handGrad)" stroke="#E6A000" stroke-width="1"/>
+    <ellipse cx="2" cy="-8" rx="3" ry="5" fill="url(#handGrad)" stroke="#E6A000" stroke-width="1"/>
+    <ellipse cx="7" cy="-6" rx="3" ry="4" fill="url(#handGrad)" stroke="#E6A000" stroke-width="1"/>
+  </g>
+
+  <!-- Right hand (underneath VHS) -->
+  <g transform="translate(90, 92)">
+    <ellipse cx="0" cy="0" rx="7" ry="5" fill="url(#handGrad)" stroke="#E6A000" stroke-width="1"/>
+    <ellipse cx="6" cy="-4" rx="2.5" ry="4" fill="url(#handGrad)" stroke="#E6A000" stroke-width="1"/>
+    <ellipse cx="10" cy="-2" rx="2.5" ry="3.5" fill="url(#handGrad)" stroke="#E6A000" stroke-width="1"/>
+  </g>
+
+  <!-- Bite crumbs -->
+  <g fill="#3d3d3d">
+    <circle cx="42" cy="66" r="2"/>
+    <rect x="36" y="72" width="3" height="2" rx="1" transform="rotate(-20 37 73)"/>
+    <circle cx="46" cy="74" r="1.5"/>
+  </g>
+
+  <!-- Face highlight -->
+  <circle cx="28" cy="38" r="6" fill="white" opacity="0.3"/>
+</svg>

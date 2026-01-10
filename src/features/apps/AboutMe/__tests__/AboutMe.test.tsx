@@ -29,8 +29,8 @@ describe('AboutMe', () => {
     expect(screen.getByText(/5\+ years/i)).toBeInTheDocument();
   });
 
-  it('has profile photo placeholder with aria-label', () => {
+  it('has profile photo', () => {
     render(<AboutMe />);
-    expect(screen.getByLabelText('Profile photo')).toBeInTheDocument();
+    expect(screen.getByAltText('Nick Smith')).toBeInTheDocument();
   });
 });

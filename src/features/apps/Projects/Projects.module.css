@@ -32,7 +32,15 @@
   gap: var(--aqua-spacing-sm);
 }
 
+.cardLink {
+  text-decoration: none;
+  color: inherit;
+}
+
 .card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--aqua-spacing-sm);
   background: linear-gradient(180deg, #ffffff 0%, #f8f8f8 100%);
   border: 1px solid #c0c0c0;
   border-radius: 6px;
@@ -44,6 +52,18 @@
 
 .card:hover {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.logo {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 8px;
+}
+
+.cardContent {
+  flex: 1;
+  min-width: 0;
 }
 
 .cardTitle {

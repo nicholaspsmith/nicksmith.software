@@ -22,7 +22,7 @@ describe('MobileFallback', () => {
   it('displays email link', () => {
     render(<MobileFallback />);
     const emailLink = screen.getByTestId('fallback-email');
-    expect(emailLink).toHaveAttribute('href', 'mailto:nick@example.com');
+    expect(emailLink).toHaveAttribute('href', 'mailto:me@nicksmith.software');
   });
 
   it('displays LinkedIn link with target="_blank"', () => {

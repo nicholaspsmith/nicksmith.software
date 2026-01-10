@@ -7,7 +7,7 @@
 export const CONTACT = {
   name: 'Nick Smith',
   title: 'Senior Frontend Engineer',
-  email: 'nick@example.com',
+  email: 'me@nicksmith.software',
   github: 'https://github.com/nicholaspsmith',
   linkedin: 'https://linkedin.com/in/nicksmith',
   website: 'https://nicksmith.software',

@@ -17,7 +17,7 @@ export function Contact() {
 
       <div className={styles.links}>
         <a
-          href="mailto:nick@example.com"
+          href="mailto:me@nicksmith.software"
           className={styles.link}
           target="_blank"
           rel="noopener noreferrer"
@@ -25,7 +25,7 @@ export function Contact() {
           <span className={styles.icon}>✉️</span>
           <span className={styles.linkText}>
             <strong>Email</strong>
-            <span>nick@example.com</span>
+            <span>me@nicksmith.software</span>
           </span>
         </a>
 

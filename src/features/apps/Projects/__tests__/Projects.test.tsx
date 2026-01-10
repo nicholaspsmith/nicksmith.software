@@ -20,8 +20,8 @@ describe('Projects', () => {
 
   it('displays project technologies', () => {
     render(<Projects />);
-    expect(screen.getByText('React')).toBeInTheDocument();
-    // TypeScript appears in multiple projects, so use getAllByText
+    // React and TypeScript appear in multiple projects, so use getAllByText
+    expect(screen.getAllByText('React').length).toBeGreaterThan(0);
     expect(screen.getAllByText('TypeScript').length).toBeGreaterThan(0);
   });
 

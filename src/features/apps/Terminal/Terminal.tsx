@@ -46,7 +46,7 @@ to Mac OS X Tiger.
 Type 'open projects' to view in Projects window.
 `,
   contact: () => `Contact:
-  Email:    nick@example.com
+  Email:    me@nicksmith.software
   GitHub:   github.com/nicholaspsmith
   LinkedIn: linkedin.com/in/nicksmith
 `,
