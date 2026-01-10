@@ -209,3 +209,8 @@
   overflow: auto;
   background: white;
 }
+
+/* Links within TextEdit content use Tiger pointing hand cursor */
+.content a {
+  cursor: url('/icons/cursors/cursor_11.png') 6 1, pointer;
+}

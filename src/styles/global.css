@@ -162,9 +162,9 @@ summary,
   cursor: var(--aqua-cursor-pointer);
 }
 
-/* Anchor tags use Tiger pointing hand cursor */
+/* Anchor tags use default pointer (Tiger style) */
 a {
-  cursor: url('/icons/cursors/resizedown.png') 8 8, pointer;
+  cursor: var(--aqua-cursor-pointer);
 }
 
 /* Elements that should NEVER show host cursor - use !important sparingly */
