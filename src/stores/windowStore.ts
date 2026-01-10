@@ -39,6 +39,7 @@ const WINDOW_TITLES: Record<string, string> = {
   'finder-search': 'Search Results',
   untitled: 'Untitled',
   'about-this-mac': 'About This Mac',
+  about: 'About Me',
 };
 
 /**
@@ -71,6 +72,8 @@ const WINDOW_SIZE_CONFIGS: Record<string, WindowSizeConfig> = {
   projects: { width: 625, height: 595, minWidth: 400, minHeight: 300 },
   // Contact - compact contact info
   contact: { width: 390, height: 440, minWidth: 300, minHeight: 300 },
+  // Resume - needs width for content
+  resume: { width: 700, height: 500, minWidth: 700, minHeight: 300 },
 };
 
 /**
