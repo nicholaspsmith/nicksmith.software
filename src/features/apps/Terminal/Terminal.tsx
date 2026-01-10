@@ -48,7 +48,7 @@ Type 'open projects' to view in Projects window.
   contact: () => `Contact:
   Email:    me@nicksmith.software
   GitHub:   github.com/nicholaspsmith
-  LinkedIn: linkedin.com/in/nicksmith
+  LinkedIn: linkedin.com/in/nps90
 `,
   date: () => new Date().toString(),
   whoami: () => 'nick',

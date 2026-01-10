@@ -9,7 +9,7 @@ export const CONTACT = {
   title: 'Senior Frontend Engineer',
   email: 'me@nicksmith.software',
   github: 'https://github.com/nicholaspsmith',
-  linkedin: 'https://linkedin.com/in/nicksmith',
+  linkedin: 'https://linkedin.com/in/nps90',
   website: 'https://nicksmith.software',
 } as const;
 

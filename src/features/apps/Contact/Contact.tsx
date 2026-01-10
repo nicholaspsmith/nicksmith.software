@@ -30,7 +30,7 @@ export function Contact() {
         </a>
 
         <a
-          href="https://linkedin.com/in/nicksmith"
+          href="https://linkedin.com/in/nps90"
           className={styles.link}
           target="_blank"
           rel="noopener noreferrer"
@@ -38,7 +38,7 @@ export function Contact() {
           <span className={styles.icon}>💼</span>
           <span className={styles.linkText}>
             <strong>LinkedIn</strong>
-            <span>linkedin.com/in/nicksmith</span>
+            <span>linkedin.com/in/nps90</span>
           </span>
         </a>
 
@@ -57,7 +57,7 @@ export function Contact() {
       </div>
 
       <p className={styles.footer}>
-        Based in San Francisco, CA. Open to remote opportunities.
+        Based in Charleston, SC. Open to remote opportunities.
       </p>
     </div>
   );

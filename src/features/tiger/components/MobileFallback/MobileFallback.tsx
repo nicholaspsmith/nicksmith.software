@@ -45,7 +45,7 @@ export function MobileFallback() {
             📧 Email Me
           </a>
           <a
-            href="https://linkedin.com/in/nicksmith"
+            href="https://linkedin.com/in/nps90"
             className={styles.link}
             target="_blank"
             rel="noopener noreferrer"

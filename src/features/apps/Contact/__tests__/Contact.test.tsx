@@ -24,7 +24,7 @@ describe('Contact', () => {
     const linkedInLink = screen.getByRole('link', { name: /linkedin/i });
     expect(linkedInLink).toHaveAttribute(
       'href',
-      'https://linkedin.com/in/nicksmith'
+      'https://linkedin.com/in/nps90'
     );
   });
 

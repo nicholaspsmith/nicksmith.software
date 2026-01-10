@@ -26,7 +26,7 @@ describe('MailApp', () => {
     render(<MailApp onBack={() => {}} />);
 
     expect(screen.getByText('Cc:')).toBeInTheDocument();
-    expect(screen.getByText('linkedin.com/in/nicksmith')).toBeInTheDocument();
+    expect(screen.getByText('linkedin.com/in/nps90')).toBeInTheDocument();
   });
 
   it('renders GitHub field', () => {
@@ -71,7 +71,7 @@ describe('MailApp', () => {
     render(<MailApp onBack={() => {}} />);
 
     const linkedInLinks = screen.getAllByRole('link', { name: /linkedin/i });
-    expect(linkedInLinks.some(link => link.getAttribute('href') === 'https://linkedin.com/in/nicksmith')).toBe(true);
+    expect(linkedInLinks.some(link => link.getAttribute('href') === 'https://linkedin.com/in/nps90')).toBe(true);
   });
 
   it('renders GitHub link with correct href', () => {

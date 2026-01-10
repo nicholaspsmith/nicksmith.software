@@ -28,7 +28,7 @@ describe('MobileFallback', () => {
   it('displays LinkedIn link with target="_blank"', () => {
     render(<MobileFallback />);
     const linkedInLink = screen.getByTestId('fallback-linkedin');
-    expect(linkedInLink).toHaveAttribute('href', 'https://linkedin.com/in/nicksmith');
+    expect(linkedInLink).toHaveAttribute('href', 'https://linkedin.com/in/nps90');
     expect(linkedInLink).toHaveAttribute('target', '_blank');
     expect(linkedInLink).toHaveAttribute('rel', 'noopener noreferrer');
   });
