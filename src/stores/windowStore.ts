@@ -139,6 +139,8 @@ export interface WindowState {
   previousBounds: WindowBounds | null;
   /** True when window was just restored from minimized - triggers reverse genie animation */
   restoredFromMinimized: boolean;
+  /** Document ID for TextEdit documents (links to documentStore content) */
+  documentId?: string;
 }
 
 interface WindowStore {
@@ -157,6 +159,8 @@ interface WindowStore {
   openFinderWithSearch: (query: string) => string;
   /** Opens a new TextEdit document (always creates new, never reuses existing) */
   openNewTextEditDocument: () => string;
+  /** Opens a saved document by documentId (focuses existing window if already open) */
+  openSavedDocument: (documentId: string, title: string) => string;
   closeWindow: (id: string) => void;
   closeAllWindowsOfApp: (parentApp: string) => void;
   focusWindow: (id: string) => void;
@@ -168,6 +172,8 @@ interface WindowStore {
   shadeWindow: (id: string) => void;
   updatePosition: (id: string, x: number, y: number) => void;
   updateSize: (id: string, width: number, height: number) => void;
+  /** Get window by documentId (for single-instance check) */
+  getWindowByDocumentId: (documentId: string) => WindowState | undefined;
 }
 
 export const useWindowStore = create<WindowStore>((set, get) => ({
@@ -182,8 +188,15 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
   openWindow: (app) => {
     const { windows, maxZIndex } = get();
 
-    // Check if window for this app already exists
-    const existingWindow = windows.find((w) => w.app === app);
+    // For TextEdit documents, check by documentId (single-instance)
+    const parentApp = getParentApp(app);
+    const isTextEditDocument = parentApp === 'textEdit' && app !== 'untitled';
+    const documentId = isTextEditDocument ? app : undefined;
+
+    // Check if window for this app already exists (or documentId for TextEdit docs)
+    const existingWindow = isTextEditDocument
+      ? windows.find((w) => w.documentId === documentId)
+      : windows.find((w) => w.app === app);
     if (existingWindow) {
       // Focus existing window instead of creating new one
       get().focusWindow(existingWindow.id);
@@ -196,7 +209,6 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
 
     const id = crypto.randomUUID();
     const newZIndex = maxZIndex + 1;
-    const parentApp = getParentApp(app);
     const sizeConfig = getWindowSizeConfig(app);
 
     // Calculate position: centered for specific windows, cascade for others
@@ -228,6 +240,7 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
         isShaded: false,
         previousBounds: null,
         restoredFromMinimized: false,
+        documentId,
       }],
       activeWindowId: id,
       maxZIndex: newZIndex,
@@ -308,6 +321,7 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
     // Always create a new untitled document (never reuse existing)
     const { windows, maxZIndex } = get();
     const id = crypto.randomUUID();
+    const documentId = crypto.randomUUID(); // Unique ID for document content
     const newZIndex = maxZIndex + 1;
     const app = 'untitled';
     const parentApp = getParentApp(app);
@@ -335,6 +349,52 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
         isShaded: false,
         previousBounds: null,
         restoredFromMinimized: false,
+        documentId,
+      }],
+      activeWindowId: id,
+      maxZIndex: newZIndex,
+    }));
+    return id;
+  },
+
+  openSavedDocument: (documentId, title) => {
+    const { windows, maxZIndex } = get();
+
+    // Check if window with this documentId already exists (single-instance)
+    const existingWindow = windows.find((w) => w.documentId === documentId);
+    if (existingWindow) {
+      get().focusWindow(existingWindow.id);
+      if (existingWindow.state === 'minimized') {
+        get().restoreWindow(existingWindow.id);
+      }
+      return existingWindow.id;
+    }
+
+    const id = crypto.randomUUID();
+    const newZIndex = maxZIndex + 1;
+    const app = 'untitled'; // Saved documents use untitled app type
+    const parentApp = getParentApp(app);
+    const sizeConfig = getWindowSizeConfig(app);
+
+    set((state) => ({
+      windows: [...state.windows, {
+        id,
+        app,
+        parentApp,
+        title,
+        x: 100 + (state.windows.length * 30),
+        y: 100 + (state.windows.length * 30),
+        width: sizeConfig.width,
+        height: sizeConfig.height,
+        minWidth: sizeConfig.minWidth,
+        minHeight: sizeConfig.minHeight,
+        zIndex: newZIndex,
+        state: 'open',
+        isZoomed: false,
+        isShaded: false,
+        previousBounds: null,
+        restoredFromMinimized: false,
+        documentId,
       }],
       activeWindowId: id,
       maxZIndex: newZIndex,
@@ -473,5 +533,10 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
         w.id === id ? { ...w, isShaded: !w.isShaded } : w
       ),
     }));
+  },
+
+  getWindowByDocumentId: (documentId) => {
+    const { windows } = get();
+    return windows.find((w) => w.documentId === documentId);
   },
 }));

@@ -18,14 +18,11 @@ import { TerminalIcon } from '@/features/tiger/components/icons';
 import { HomeScreen, IOS_BREAKPOINT } from '@/features/ios';
 import { RebootTransition } from '@/components/RebootTransition';
 import { SACRED } from '@/features/tiger/constants/sacred';
-import { AboutMe } from '@/features/apps/AboutMe';
-import { Projects } from '@/features/apps/Projects';
-import { Resume } from '@/features/apps/Resume';
-import { Contact } from '@/features/apps/Contact';
-import { UntitledDocument } from '@/features/apps/UntitledDocument';
 import { Finder } from '@/features/apps/Finder';
 import { AboutThisMac } from '@/features/apps/AboutThisMac';
 import { TextEditChrome } from '@/features/apps/TextEditChrome';
+import { EditableDocument } from '@/features/apps/EditableDocument';
+import { useDocumentStore } from '@/stores/documentStore';
 
 // Lazy load Terminal to reduce initial bundle size (xterm.js is ~300KB)
 const TerminalApp = lazy(() =>
@@ -130,6 +127,9 @@ function DynamicIconImage({ icon }: { icon: { type: string; icon: string } }) {
   if (icon.type === 'burn-folder') {
     return <BurnFolderIcon />;
   }
+  if (icon.type === 'document') {
+    return <img src="/icons/document.png" alt="" width={48} height={48} draggable={false} />;
+  }
   return <img src={icon.icon} alt="" width={48} height={48} draggable={false} />;
 }
 
@@ -156,19 +156,23 @@ function TerminalLoading() {
 /**
  * Renders the appropriate content for a window based on its app type
  */
-function WindowContent({ app }: { app: string }) {
+function WindowContent({ app, documentId }: { app: string; documentId?: string }) {
   // Get and clear the search query for Finder search windows
   const finderSearchQuery = useWindowStore((s) => s.finderSearchQuery);
 
+  // All TextEdit documents (built-in and saved) use EditableDocument
+  // Built-in docs: documentId = 'about', 'projects', 'resume', 'contact'
+  // Untitled/saved docs: documentId = UUID
   switch (app) {
     case 'about':
-      return <TextEditChrome><AboutMe /></TextEditChrome>;
     case 'projects':
-      return <TextEditChrome><Projects /></TextEditChrome>;
     case 'resume':
-      return <TextEditChrome><Resume /></TextEditChrome>;
     case 'contact':
-      return <TextEditChrome><Contact /></TextEditChrome>;
+      return (
+        <TextEditChrome>
+          <EditableDocument documentId={documentId || app} />
+        </TextEditChrome>
+      );
     case 'terminal':
       return (
         <Suspense fallback={<TerminalLoading />}>
@@ -176,7 +180,12 @@ function WindowContent({ app }: { app: string }) {
         </Suspense>
       );
     case 'untitled':
-      return <UntitledDocument />;
+      // Untitled documents use documentId (UUID) for content storage
+      return (
+        <TextEditChrome>
+          <EditableDocument documentId={documentId || ''} />
+        </TextEditChrome>
+      );
     case 'finder-home':
       return <Finder location="home" />;
     case 'finder-hd':
@@ -213,6 +222,7 @@ function TigerDesktop() {
   const setDraggingMacintoshHD = useAppStore((s) => s.setDraggingMacintoshHD);
   const windows = useWindowStore((s) => s.windows);
   const openWindow = useWindowStore((s) => s.openWindow);
+  const openSavedDocument = useWindowStore((s) => s.openSavedDocument);
 
   // Initialize icon positions on mount
   useEffect(() => {
@@ -220,6 +230,11 @@ function TigerDesktop() {
       initializeIconPositions(calculateInitialPositions());
     }
   }, [iconPositionsInitialized, initializeIconPositions]);
+
+  // Initialize documentStore on mount (hydrate from localStorage)
+  useEffect(() => {
+    useDocumentStore.getState().loadFromStorage();
+  }, []);
 
   // Recalculate icon positions when window resize completes
   useEffect(() => {
@@ -423,7 +438,14 @@ function TigerDesktop() {
                 x={position.x}
                 y={position.y}
                 onClick={() => selectIcon(icon.id)}
-                onDoubleClick={() => {/* Folders don't open windows */}}
+                onDoubleClick={() => {
+                  // Document icons open their saved document
+                  if (icon.type === 'document' && icon.documentId) {
+                    openSavedDocument(icon.documentId, icon.label);
+                    useAppStore.getState().clearSelection();
+                  }
+                  // Folders don't open windows
+                }}
                 onPositionChange={(x, y) => handlePositionChange(icon.id, x, y)}
                 selectedIconIds={selectedIconIds}
                 allIconPositions={iconPositions}
@@ -436,7 +458,7 @@ function TigerDesktop() {
           .filter((w) => w.state !== 'closed')
           .map((w) => (
             <Window key={w.id} id={w.id} title={w.title}>
-              <WindowContent app={w.app} />
+              <WindowContent app={w.app} documentId={w.documentId} />
             </Window>
           ))}
       </Desktop>

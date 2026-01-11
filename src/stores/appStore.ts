@@ -14,7 +14,9 @@ export interface DynamicDesktopIcon {
   id: string;
   label: string;
   icon: string; // Icon path or type
-  type: 'folder' | 'smart-folder' | 'burn-folder';
+  type: 'folder' | 'smart-folder' | 'burn-folder' | 'document';
+  /** Document ID for document icons (links to documentStore) */
+  documentId?: string;
 }
 
 export interface AlertConfig {
@@ -78,6 +80,10 @@ interface AppStore {
   createFolder: () => void;
   createSmartFolder: () => void;
   createBurnFolder: () => void;
+  /** Create a desktop icon for a saved document */
+  createDocumentIcon: (documentId: string, label: string) => void;
+  /** Delete a document icon by documentId */
+  deleteDocumentIcon: (documentId: string) => void;
 
   // Macintosh HD drag actions
   setDraggingMacintoshHD: (isDragging: boolean) => void;
@@ -195,6 +201,37 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set((state) => ({
       dynamicIcons: [...state.dynamicIcons, newIcon],
     }));
+  },
+
+  createDocumentIcon: (documentId, label) => {
+    // Check if icon already exists for this documentId
+    const { dynamicIcons } = get();
+    if (dynamicIcons.some((icon) => icon.documentId === documentId)) {
+      return; // Already exists
+    }
+
+    const id = `document-${documentId}`;
+    const newIcon: DynamicDesktopIcon = {
+      id,
+      label,
+      icon: '/icons/TextEditIcon.png',
+      type: 'document',
+      documentId,
+    };
+    set((state) => ({
+      dynamicIcons: [...state.dynamicIcons, newIcon],
+    }));
+
+    // Store title for document for hydration on reload
+    localStorage.setItem(`textedit:title:${documentId}`, label);
+  },
+
+  deleteDocumentIcon: (documentId) => {
+    set((state) => ({
+      dynamicIcons: state.dynamicIcons.filter((icon) => icon.documentId !== documentId),
+    }));
+    // Clean up title from localStorage
+    localStorage.removeItem(`textedit:title:${documentId}`);
   },
 
   setDraggingMacintoshHD: (isDragging) => {

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useWindowStore } from '@/stores/windowStore';
 import { useSoundStore } from '@/stores/soundStore';
 import { useAppStore } from '@/stores/appStore';
+import { useDocumentStore, isUUID } from '@/stores/documentStore';
 import styles from './MenuBar.module.css';
 
 type MenuItem = { label: string; shortcut?: string; disabled?: boolean; hasSubmenu?: boolean; checked?: boolean } | { type: 'divider' };
@@ -143,6 +144,7 @@ const TEXTEDIT_MENUS: MenuConfig[] = [
       { label: 'Save As...', shortcut: '⇧⌘S' },
       { label: 'Save All', disabled: true },
       { label: 'Revert to Saved', disabled: true },
+      { label: 'Show Original', shortcut: '⌘R' },
       { type: 'divider' },
       { label: 'Show Properties', shortcut: '⌥⌘P' },
       { type: 'divider' },
@@ -342,32 +344,41 @@ export function MenuBar() {
       windowsToClose.forEach((w) => {
         window.dispatchEvent(new CustomEvent('window-close-request', { detail: { windowId: w.id } }));
       });
-    } else if (label === 'Save' || label === 'Save As...') {
-      // Save the current TextEdit document
+    } else if (label === 'Close' || label === 'Close Window') {
+      // Close the active window
+      if (activeWindow) {
+        window.dispatchEvent(new CustomEvent('window-close-request', { detail: { windowId: activeWindow.id } }));
+      }
+    } else if (label === 'Minimize') {
+      // Minimize the active window
+      if (activeWindow) {
+        window.dispatchEvent(new CustomEvent('window-minimize-request', { detail: { windowId: activeWindow.id } }));
+      }
+    } else if (label === 'Save') {
+      // Save the current TextEdit document to localStorage
+      if (!activeWindow || activeWindow.parentApp !== 'textEdit' || !activeWindow.documentId) return;
+
+      const docStore = useDocumentStore.getState();
+      docStore.saveDocument(activeWindow.documentId);
+
+      // If this is an Untitled doc (UUID), create desktop icon
+      if (isUUID(activeWindow.documentId)) {
+        useAppStore.getState().createDocumentIcon(activeWindow.documentId, activeWindow.title);
+      }
+    } else if (label === 'Save As...') {
+      // Save As downloads a file (keeping original behavior)
       if (!activeWindow || activeWindow.parentApp !== 'textEdit') return;
 
-      // Get the window's content
       const windowEl = document.querySelector(`[data-testid="window-${activeWindow.id}"]`);
       if (!windowEl) return;
 
       let textContent = '';
-
-      // Check if it's an UntitledDocument (has textarea)
       const textarea = windowEl.querySelector('textarea');
       if (textarea) {
         textContent = (textarea as HTMLTextAreaElement).value;
-      } else {
-        // Static document - extract innerText from the content area
-        const contentEl = windowEl.querySelector('[data-testid$="-content"]') || windowEl.querySelector('.container');
-        if (contentEl) {
-          textContent = contentEl.textContent || '';
-        }
       }
 
-      // Create filename from window title
       const filename = `${activeWindow.title.toLowerCase().replace(/\s+/g, '-')}.txt`;
-
-      // Create and download the file
       const blob = new Blob([textContent], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -377,6 +388,12 @@ export function MenuBar() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+    } else if (label === 'Show Original') {
+      // Reset document to default content (only for built-in docs, not UUIDs)
+      if (!activeWindow || activeWindow.parentApp !== 'textEdit' || !activeWindow.documentId) return;
+      // Skip for UUID documents - they have no "original" to show
+      if (isUUID(activeWindow.documentId)) return;
+      useDocumentStore.getState().resetToDefault(activeWindow.documentId);
     }
   }, [parentApp, windows, activeWindow, openWindow, openNewFinderWindow, openNewTextEditDocument, createFolder, createSmartFolder, createBurnFolder]);
 
