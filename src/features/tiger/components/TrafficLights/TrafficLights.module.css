@@ -109,13 +109,7 @@
 }
 
 /* Unfocused state - hemisphere/dome shading on brushed metal */
-.unfocused {
-  gap: 7px;
-}
-
 .unfocused .button {
-  width: 13px;
-  height: 13px;
   /* Radial gradient for rounded hemisphere appearance */
   background:
     /* Specular highlight at top - like light hitting a dome */
@@ -148,6 +142,78 @@
 /* Hide icons when unfocused */
 .unfocused .icon {
   opacity: 0;
+}
+
+/* Show active styles on hover even when unfocused */
+.unfocused:hover .close,
+.unfocused .close:hover {
+  border: none;
+  background:
+    radial-gradient(
+      ellipse 80% 45% at 50% 15%,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.4) 40%,
+      rgba(255, 255, 255, 0) 70%
+    ),
+    linear-gradient(
+      180deg,
+      #ff6f61 0%,
+      #e8453a 50%,
+      #f5a098 100%
+    );
+  box-shadow:
+    0 0 0px 0.8px rgb(0 0 0 / 32%),
+    inset 0 0 0 rgba(255, 255, 255, 0.15),
+    inset 0 0.6px 1.3px rgba(0, 0, 0, 0.15);
+}
+
+.unfocused:hover .minimize,
+.unfocused .minimize:hover {
+  border: none;
+  background:
+    radial-gradient(
+      ellipse 80% 45% at 50% 15%,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.4) 40%,
+      rgba(255, 255, 255, 0) 70%
+    ),
+    linear-gradient(
+      180deg,
+      #f5c342 0%,
+      #e2a82a 50%,
+      #f5e098 100%
+    );
+  box-shadow:
+    0 0 0px 0.8px rgb(0 0 0 / 32%),
+    inset 0 0 0 rgba(255, 255, 255, 0.15),
+    inset 0 0.6px 1.3px rgba(0, 0, 0, 0.15);
+}
+
+.unfocused:hover .zoom,
+.unfocused .zoom:hover {
+  border: none;
+  background:
+    radial-gradient(
+      ellipse 80% 45% at 50% 15%,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.4) 40%,
+      rgba(255, 255, 255, 0) 70%
+    ),
+    linear-gradient(
+      180deg,
+      #5fc94f 0%,
+      #3db33a 50%,
+      #9bd998 100%
+    );
+  box-shadow:
+    0 0 0px 0.8px rgb(0 0 0 / 32%),
+    inset 0 0 0 rgba(255, 255, 255, 0.15),
+    inset 0 0.6px 1.3px rgba(0, 0, 0, 0.15);
+}
+
+/* Show icons on hover when unfocused (group hover - Tiger behavior) */
+.unfocused:hover .icon {
+  opacity: 1;
 }
 
 /* Active/pressed state - slightly darker with reduced highlight */
@@ -209,9 +275,4 @@
 
 .compact .icon {
   transform: scale(0.75);
-}
-
-.compact.unfocused .button {
-  width: 10px; /* 13px * 0.75 ~= 10px */
-  height: 10px;
 }
