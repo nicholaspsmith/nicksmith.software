@@ -165,7 +165,15 @@ export function Window({ id, title, children }: WindowProps) {
     [id, updatePosition, updateSize]
   );
 
-  const handleMouseDown = useCallback(() => {
+  const handleMouseDown = useCallback((e: MouseEvent) => {
+    // Don't focus window when interacting with resize handles
+    // This allows resizing inactive windows without changing focus
+    // Resize handles have cursor styles containing 'resize' and very high z-index
+    const target = e.target as HTMLElement;
+    const style = window.getComputedStyle(target);
+    if (style.cursor.includes('resize') && style.zIndex === '9999') {
+      return;
+    }
     focusWindow(id);
   }, [id, focusWindow]);
 
