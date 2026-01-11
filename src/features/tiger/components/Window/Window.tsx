@@ -214,9 +214,11 @@ export function Window({ id, title, children }: WindowProps) {
       clearRestoredFlag(id);
     } else if (animationState === 'closing') {
       closeWindow(id);
+    } else if (animationState === 'minimizing') {
+      // Reset to 'open' so the early return check can fire
+      // (windowState.state === 'minimized' && animationState !== 'minimizing')
+      setAnimationState('open');
     }
-    // Note: 'minimizing' doesn't need handling here - store is updated immediately
-    // in handleMinimize so dock can grow right away
   }, [animationState, id, closeWindow, clearRestoredFlag]);
 
   // Listen for keyboard shortcut events to trigger animations
