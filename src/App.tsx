@@ -23,6 +23,11 @@ import { AboutThisMac } from '@/features/apps/AboutThisMac';
 import { TextEditChrome } from '@/features/apps/TextEditChrome';
 import { EditableDocument } from '@/features/apps/EditableDocument';
 import { useDocumentStore } from '@/stores/documentStore';
+// Original styled document components (shown when not editing)
+import { AboutMe } from '@/features/apps/AboutMe';
+import { Projects } from '@/features/apps/Projects';
+import { Resume } from '@/features/apps/Resume';
+import { Contact } from '@/features/apps/Contact';
 
 // Lazy load Terminal to reduce initial bundle size (xterm.js is ~300KB)
 const TerminalApp = lazy(() =>
@@ -154,25 +159,49 @@ function TerminalLoading() {
 }
 
 /**
- * Renders the appropriate content for a window based on its app type
+ * Styled document component mapping
  */
-function WindowContent({ app, documentId }: { app: string; documentId?: string }) {
+const STYLED_COMPONENTS: Record<string, React.ComponentType> = {
+  about: AboutMe,
+  projects: Projects,
+  resume: Resume,
+  contact: Contact,
+};
+
+/**
+ * Renders the appropriate content for a window based on its app type
+ * For built-in documents: shows styled component by default, EditableDocument when editing
+ */
+function WindowContent({ app, documentId, isEditing }: { app: string; documentId?: string; isEditing?: boolean }) {
   // Get and clear the search query for Finder search windows
   const finderSearchQuery = useWindowStore((s) => s.finderSearchQuery);
+  // Check if this document has saved edits
+  const documents = useDocumentStore((s) => s.documents);
+  const docId = documentId || app;
+  const hasSavedEdits = docId in documents;
 
-  // All TextEdit documents (built-in and saved) use EditableDocument
-  // Built-in docs: documentId = 'about', 'projects', 'resume', 'contact'
-  // Untitled/saved docs: documentId = UUID
+  // Built-in documents: show styled by default, editable when editing or has saved edits
   switch (app) {
     case 'about':
     case 'projects':
     case 'resume':
-    case 'contact':
+    case 'contact': {
+      const shouldShowEditor = isEditing || hasSavedEdits;
+      if (shouldShowEditor) {
+        return (
+          <TextEditChrome>
+            <EditableDocument documentId={docId} />
+          </TextEditChrome>
+        );
+      }
+      // Show original styled component
+      const StyledComponent = STYLED_COMPONENTS[app];
       return (
         <TextEditChrome>
-          <EditableDocument documentId={documentId || app} />
+          <StyledComponent />
         </TextEditChrome>
       );
+    }
     case 'terminal':
       return (
         <Suspense fallback={<TerminalLoading />}>
@@ -180,7 +209,7 @@ function WindowContent({ app, documentId }: { app: string; documentId?: string }
         </Suspense>
       );
     case 'untitled':
-      // Untitled documents use documentId (UUID) for content storage
+      // Untitled documents always use EditableDocument (no styled version)
       return (
         <TextEditChrome>
           <EditableDocument documentId={documentId || ''} />
@@ -458,7 +487,7 @@ function TigerDesktop() {
           .filter((w) => w.state !== 'closed')
           .map((w) => (
             <Window key={w.id} id={w.id} title={w.title}>
-              <WindowContent app={w.app} documentId={w.documentId} />
+              <WindowContent app={w.app} documentId={w.documentId} isEditing={w.isEditing} />
             </Window>
           ))}
       </Desktop>

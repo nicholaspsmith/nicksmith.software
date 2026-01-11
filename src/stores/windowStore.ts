@@ -141,6 +141,8 @@ export interface WindowState {
   restoredFromMinimized: boolean;
   /** Document ID for TextEdit documents (links to documentStore content) */
   documentId?: string;
+  /** True when user is editing document content (switches from styled to textarea view) */
+  isEditing?: boolean;
 }
 
 interface WindowStore {
@@ -174,6 +176,8 @@ interface WindowStore {
   updateSize: (id: string, width: number, height: number) => void;
   /** Get window by documentId (for single-instance check) */
   getWindowByDocumentId: (documentId: string) => WindowState | undefined;
+  /** Set edit mode for a window (switches from styled to textarea view) */
+  setEditMode: (id: string, isEditing: boolean) => void;
 }
 
 export const useWindowStore = create<WindowStore>((set, get) => ({
@@ -538,5 +542,13 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
   getWindowByDocumentId: (documentId) => {
     const { windows } = get();
     return windows.find((w) => w.documentId === documentId);
+  },
+
+  setEditMode: (id, isEditing) => {
+    set((state) => ({
+      windows: state.windows.map((w) =>
+        w.id === id ? { ...w, isEditing } : w
+      ),
+    }));
   },
 }));

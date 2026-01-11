@@ -144,6 +144,7 @@ const TEXTEDIT_MENUS: MenuConfig[] = [
       { label: 'Save As...', shortcut: '⇧⌘S' },
       { label: 'Save All', disabled: true },
       { label: 'Revert to Saved', disabled: true },
+      { label: 'Edit Document', shortcut: '⌘E' },
       { label: 'Show Original', shortcut: '⌘R' },
       { type: 'divider' },
       { label: 'Show Properties', shortcut: '⌥⌘P' },
@@ -313,6 +314,7 @@ export function MenuBar() {
   const openFinderWithSearch = useWindowStore((s) => s.openFinderWithSearch);
   const openNewFinderWindow = useWindowStore((s) => s.openNewFinderWindow);
   const openNewTextEditDocument = useWindowStore((s) => s.openNewTextEditDocument);
+  const setEditMode = useWindowStore((s) => s.setEditMode);
 
   // App store actions for creating folders
   const createFolder = useAppStore((s) => s.createFolder);
@@ -388,14 +390,21 @@ export function MenuBar() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+    } else if (label === 'Edit Document') {
+      // Enter edit mode for built-in documents
+      if (!activeWindow || activeWindow.parentApp !== 'textEdit') return;
+      // Skip for UUID documents - they're always in edit mode
+      if (activeWindow.documentId && isUUID(activeWindow.documentId)) return;
+      setEditMode(activeWindow.id, true);
     } else if (label === 'Show Original') {
-      // Reset document to default content (only for built-in docs, not UUIDs)
+      // Reset document to default content and exit edit mode (only for built-in docs, not UUIDs)
       if (!activeWindow || activeWindow.parentApp !== 'textEdit' || !activeWindow.documentId) return;
       // Skip for UUID documents - they have no "original" to show
       if (isUUID(activeWindow.documentId)) return;
       useDocumentStore.getState().resetToDefault(activeWindow.documentId);
+      setEditMode(activeWindow.id, false);
     }
-  }, [parentApp, windows, activeWindow, openWindow, openNewFinderWindow, openNewTextEditDocument, createFolder, createSmartFolder, createBurnFolder]);
+  }, [parentApp, windows, activeWindow, openWindow, openNewFinderWindow, openNewTextEditDocument, createFolder, createSmartFolder, createBurnFolder, setEditMode]);
 
   const handleSpotlightClick = useCallback(() => {
     setSpotlightOpen((prev) => !prev);
