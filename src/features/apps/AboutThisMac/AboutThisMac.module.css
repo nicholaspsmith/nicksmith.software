@@ -6,14 +6,17 @@
   text-align: center;
   font-family: 'Lucida Grande', 'Lucida Sans Unicode', sans-serif;
   min-width: 280px;
-  /* Tiger pinstripe background - subtle horizontal lines */
-  background-color: #fff;
+  /* Fill entire window area */
+  height: 100%;
+  box-sizing: border-box;
+  /* Tiger pinstripe background - authentic warm grey stripes */
+  background-color: #ececec;
   background-image: repeating-linear-gradient(
     0deg,
-    transparent,
-    transparent 1px,
-    rgba(0, 0, 0, 0.06) 1px,
-    rgba(0, 0, 0, 0.06) 2px
+    #f6f6f6 0px,
+    #f6f6f6 1px,
+    #e8e8e8 1px,
+    #e8e8e8 2px
   );
 }
 

@@ -1,0 +1,78 @@
+/**
+ * AquaScrollbar Styles
+ * Mac OS X Tiger-style custom scrollbar
+ */
+
+.wrapper {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.content {
+  flex: 1;
+  overflow-y: scroll;
+  overflow-x: hidden;
+
+  /* Hide native scrollbar across browsers */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.content::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Opera */
+}
+
+/* Scrollbar track - white background */
+.track {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 15px;
+  background: #fff;
+  border-left: 1px solid #a0a0a0;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  z-index: 10;
+}
+
+.visible {
+  opacity: 1;
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Aqua blue pill thumb with texture */
+.thumb {
+  position: absolute;
+  left: 2px;
+  width: 11px;
+  min-height: 30px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: filter 0.1s ease;
+
+  /* Aqua scrollbar texture */
+  background: url('/textures/scrollbar-texture-vertical.png') repeat-y center;
+  background-size: 11px auto;
+  border: 1px solid #2a6cb0;
+
+  /* Glossy highlight */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.thumb:hover {
+  filter: brightness(1.1);
+}
+
+.thumb.dragging {
+  filter: brightness(0.95);
+}

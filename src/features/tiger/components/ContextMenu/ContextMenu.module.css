@@ -14,14 +14,14 @@
   min-width: 180px;
   padding: 4px 0;
 
-  /* Tiger pinstripe background - subtle horizontal lines */
-  background-color: #fff;
+  /* Tiger pinstripe background - authentic warm grey stripes */
+  background-color: #ececec;
   background-image: repeating-linear-gradient(
     0deg,
-    transparent,
-    transparent 1px,
-    rgba(0, 0, 0, 0.06) 1px,
-    rgba(0, 0, 0, 0.06) 2px
+    #f6f6f6 0px,
+    #f6f6f6 1px,
+    #e8e8e8 1px,
+    #e8e8e8 2px
   );
 
   /* Border and shadow - context menus have rounded corners */

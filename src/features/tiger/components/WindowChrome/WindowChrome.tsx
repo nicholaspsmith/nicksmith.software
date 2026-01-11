@@ -8,6 +8,8 @@ export interface WindowChromeProps {
   isFocused: boolean;
   isShaded?: boolean;
   compact?: boolean;
+  /** Panel mode: minimize/zoom disabled, close is grey with X on hover */
+  isPanel?: boolean;
   className?: string;
   children?: React.ReactNode;
   onClose?: () => void;
@@ -30,6 +32,7 @@ export function WindowChrome({
   isFocused,
   isShaded = false,
   compact = false,
+  isPanel = false,
   className,
   children,
   onClose,
@@ -57,6 +60,7 @@ export function WindowChrome({
         <TrafficLights
           isFocused={isFocused}
           compact={compact}
+          isPanel={isPanel}
           onClose={onClose}
           onMinimize={onMinimize}
           onZoom={onZoom}

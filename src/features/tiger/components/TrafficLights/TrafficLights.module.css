@@ -269,10 +269,112 @@
 }
 
 .compact .button {
-  width: 9px; /* 12px * 0.75 */
-  height: 9px;
+  width: 11px; /* 9px + 2px for About This Mac */
+  height: 11px;
 }
 
 .compact .icon {
   transform: scale(0.75);
+}
+
+/* ========================================
+ * Panel mode - for About This Mac style windows
+ * Minimize/zoom are disabled with lighter grey
+ * Close is grey but shows X on hover
+ * ======================================== */
+
+/* Panel disabled buttons (minimize/zoom) - 15% lighter grey, no interaction */
+.panelDisabled {
+  /* Lighter grey - 15% lighter than unfocused */
+  background:
+    radial-gradient(
+      ellipse 90% 60% at 50% 25%,
+      rgba(255, 255, 255, 0.5) 0%,
+      rgba(255, 255, 255, 0.55) 20%,
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.5) 0%,
+      rgba(175, 175, 175, 1) 50%,
+      rgba(255, 255, 255, 0.75) 100%
+    ) !important;
+  border: 1px solid rgba(0, 0, 0, 0.3) !important;
+  box-shadow:
+    0 0.1px 0px 0 rgba(0, 0, 0, 0.4),
+    0 0 0 0.4px rgba(0, 0, 0, 0.08),
+    inset 0 0 0 rgba(255, 255, 255, 0.15),
+    inset 0 0 0.1px rgba(0, 0, 0, 0.1) !important;
+  cursor: default !important;
+  pointer-events: none;
+}
+
+/* Panel close button - grey style like unfocused */
+.panelClose {
+  background:
+    radial-gradient(
+      ellipse 90% 60% at 50% 25%,
+      rgba(255, 255, 255, 0.35) 0%,
+      rgba(255, 255, 255, 0.45) 20%,
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(250, 250, 250, 0.35) 0%,
+      rgba(140, 140, 140, 1) 50%,
+      rgba(255, 255, 255, 0.65) 100%
+    ) !important;
+  border: 1px solid rgba(0, 0, 0, 0.4) !important;
+  box-shadow:
+    0 0.1px 0px 0 rgba(0, 0, 0, 0.6),
+    0 0 0 0.4px rgba(0, 0, 0, 0.1),
+    inset 0 0 0 rgba(255, 255, 255, 0.15),
+    inset 0 0 0.1px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Panel close icon - always hidden by default */
+.panelClose .icon {
+  opacity: 0;
+  /* Grey color for X icon */
+  color: rgba(40, 40, 40, 0.8);
+}
+
+/* Panel close - show X icon on hover but keep grey background */
+.panel .panelClose:hover {
+  background:
+    radial-gradient(
+      ellipse 90% 60% at 50% 25%,
+      rgba(255, 255, 255, 0.4) 0%,
+      rgba(255, 255, 255, 0.5) 20%,
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(250, 250, 250, 0.4) 0%,
+      rgba(120, 120, 120, 1) 50%,
+      rgba(255, 255, 255, 0.6) 100%
+    ) !important;
+  border: 1px solid rgba(0, 0, 0, 0.45) !important;
+}
+
+.panel .panelClose:hover .icon {
+  opacity: 1;
+}
+
+/* Prevent panel disabled buttons from changing on container hover */
+.panel:hover .panelDisabled {
+  background:
+    radial-gradient(
+      ellipse 90% 60% at 50% 25%,
+      rgba(255, 255, 255, 0.5) 0%,
+      rgba(255, 255, 255, 0.55) 20%,
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.5) 0%,
+      rgba(175, 175, 175, 1) 50%,
+      rgba(255, 255, 255, 0.75) 100%
+    ) !important;
+  border: 1px solid rgba(0, 0, 0, 0.3) !important;
 }

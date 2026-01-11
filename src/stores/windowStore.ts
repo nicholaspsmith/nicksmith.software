@@ -17,6 +17,8 @@ export const APP_GROUPS: Record<string, string> = {
   'finder-hd': 'finder',
   'finder-trash': 'finder',
   'finder-search': 'finder',
+  // About This Mac is a Finder/system dialog
+  'about-this-mac': 'finder',
   // Terminal is its own app (not grouped)
 };
 
@@ -82,6 +84,27 @@ const WINDOW_SIZE_CONFIGS: Record<string, WindowSizeConfig> = {
  */
 function getWindowSizeConfig(app: string): WindowSizeConfig {
   return WINDOW_SIZE_CONFIGS[app] || { width: 400, height: 300, minWidth: 200, minHeight: 100 };
+}
+
+/**
+ * Apps that should open centered on screen
+ */
+const CENTERED_WINDOWS = new Set(['about-this-mac']);
+
+/**
+ * Calculate centered position for a window
+ */
+function getCenteredPosition(width: number, height: number): { x: number; y: number } {
+  // Account for menu bar (22px) and dock area (~70px)
+  const menuBarHeight = 22;
+  const dockHeight = 70;
+  const availableWidth = window.innerWidth;
+  const availableHeight = window.innerHeight - menuBarHeight - dockHeight;
+
+  return {
+    x: Math.max(0, (availableWidth - width) / 2),
+    y: Math.max(menuBarHeight, menuBarHeight + (availableHeight - height) / 2),
+  };
 }
 
 export interface WindowBounds {
@@ -173,14 +196,26 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
     const newZIndex = maxZIndex + 1;
     const parentApp = getParentApp(app);
     const sizeConfig = getWindowSizeConfig(app);
+
+    // Calculate position: centered for specific windows, cascade for others
+    let position: { x: number; y: number };
+    if (CENTERED_WINDOWS.has(app)) {
+      position = getCenteredPosition(sizeConfig.width, sizeConfig.height);
+    } else {
+      position = {
+        x: 100 + (windows.length * 30),
+        y: 100 + (windows.length * 30),
+      };
+    }
+
     set((state) => ({
       windows: [...state.windows, {
         id,
         app,
         parentApp,
         title: getWindowTitle(app),
-        x: 100 + (state.windows.length * 30), // Cascade positioning
-        y: 100 + (state.windows.length * 30),
+        x: position.x,
+        y: position.y,
         width: sizeConfig.width,
         height: sizeConfig.height,
         minWidth: sizeConfig.minWidth,

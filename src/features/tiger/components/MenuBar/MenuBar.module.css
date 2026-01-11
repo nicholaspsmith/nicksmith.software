@@ -95,14 +95,14 @@
   top: calc(100% + 2px);
   left: 0;
   min-width: 200px;
-  /* Tiger pinstripe background - subtle horizontal lines */
-  background-color: #fff;
+  /* Tiger pinstripe background - authentic warm grey stripes */
+  background-color: #ececec;
   background-image: repeating-linear-gradient(
     0deg,
-    transparent,
-    transparent 1px,
-    rgba(0, 0, 0, 0.06) 1px,
-    rgba(0, 0, 0, 0.06) 2px
+    #f6f6f6 0px,
+    #f6f6f6 1px,
+    #e8e8e8 1px,
+    #e8e8e8 2px
   );
   border: 1px solid #808080;
   border-radius: 0;
@@ -389,13 +389,14 @@
   position: absolute;
   top: calc(100% + 2px);
   right: 0;
-  background-color: #fff;
+  /* Tiger pinstripe background - authentic warm grey stripes */
+  background-color: #ececec;
   background-image: repeating-linear-gradient(
     0deg,
-    transparent,
-    transparent 1px,
-    rgba(0, 0, 0, 0.06) 1px,
-    rgba(0, 0, 0, 0.06) 2px
+    #f6f6f6 0px,
+    #f6f6f6 1px,
+    #e8e8e8 1px,
+    #e8e8e8 2px
   );
   border: 1px solid #808080;
   border-radius: 4px;

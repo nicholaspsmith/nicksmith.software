@@ -8,6 +8,18 @@ type MenuItem = { label: string; shortcut?: string; disabled?: boolean; hasSubme
 type MenuConfig = { id: string; label: string; items: MenuItem[] };
 
 /**
+ * Display names for apps in the menu bar
+ * Falls back to capitalized app ID if not specified
+ */
+const APP_DISPLAY_NAMES: Record<string, string> = {
+  'about-this-mac': 'About This Mac',
+  textEdit: 'TextEdit',
+  finder: 'Finder',
+  terminal: 'Terminal',
+  safari: 'Safari',
+};
+
+/**
  * Finder menu configuration - matches Tiger Finder exactly
  */
 const FINDER_MENUS: MenuConfig[] = [
@@ -223,7 +235,7 @@ export function MenuBar() {
   const activeWindow = windows.find((w) => w.id === activeWindowId);
   const parentApp = activeWindow?.parentApp;
   const appName = parentApp
-    ? parentApp.charAt(0).toUpperCase() + parentApp.slice(1)
+    ? APP_DISPLAY_NAMES[parentApp] || parentApp.charAt(0).toUpperCase() + parentApp.slice(1)
     : 'Finder';
 
   // Select menus based on active app
@@ -557,8 +569,8 @@ export function MenuBar() {
 
           {openMenuId === 'app' && (
             <div className={styles.dropdown} role="menu" data-testid="app-menu-dropdown">
-              <button type="button" className={styles.dropdownItem} onClick={() => handleMenuItemClick(`About ${appName}`)} role="menuitem">
-                <span className={styles.dropdownItemLabel}>About {appName}</span>
+              <button type="button" className={styles.dropdownItem} onClick={() => handleMenuItemClick(appName === 'About This Mac' ? 'About This Mac' : `About ${appName}`)} role="menuitem">
+                <span className={styles.dropdownItemLabel}>{appName === 'About This Mac' ? 'About This Mac' : `About ${appName}`}</span>
               </button>
               <div className={styles.dropdownDivider} role="separator" />
               <button type="button" className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`} role="menuitem" aria-disabled="true">

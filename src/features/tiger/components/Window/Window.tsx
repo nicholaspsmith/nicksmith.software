@@ -323,6 +323,7 @@ export function Window({ id, title, children }: WindowProps) {
           isFocused={isFocused}
           isShaded={isShaded}
           compact={windowState.app === 'about-this-mac'}
+          isPanel={windowState.app === 'about-this-mac'}
           className="window-drag-handle"
           onClose={handleClose}
           onMinimize={handleMinimize}
