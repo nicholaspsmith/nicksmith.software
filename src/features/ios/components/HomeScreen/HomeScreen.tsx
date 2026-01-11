@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { StatusBar } from '../StatusBar';
 import {
   AppIcon,
@@ -87,6 +87,17 @@ export function HomeScreen({ onAppTap }: HomeScreenProps) {
   const [currentPage, setCurrentPage] = useState(0);
 
   const handleAppTap = (appId: string) => {
+    // Handle special cases that don't have dedicated iOS views
+    if (appId === 'safari') {
+      window.open(CONTACT.website, '_blank', 'noopener,noreferrer');
+      onAppTap?.(appId);
+      return;
+    }
+    if (appId === 'terminal') {
+      // Terminal requires desktop - just trigger callback without navigation
+      onAppTap?.(appId);
+      return;
+    }
     setActiveApp(appId as AppId);
     onAppTap?.(appId);
   };
@@ -128,19 +139,7 @@ export function HomeScreen({ onAppTap }: HomeScreenProps) {
     [currentPage]
   );
 
-  // Handle Safari/Terminal special cases (no dedicated iOS views)
-  useEffect(() => {
-    if (activeApp === 'safari') {
-      // Safari opens external link to portfolio
-      window.open(CONTACT.website, '_blank', 'noopener,noreferrer');
-      setActiveApp(null);
-    } else if (activeApp === 'terminal') {
-      // Terminal requires desktop - just return to home
-      // In a full implementation, could show an alert
-      setActiveApp(null);
-    }
-  }, [activeApp]);
-
+  
   // Render the active app if one is selected
   if (activeApp === 'about') {
     return <NotesApp onBack={handleBack} />;
