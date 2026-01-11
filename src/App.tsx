@@ -265,6 +265,11 @@ function TigerDesktop() {
     useDocumentStore.getState().loadFromStorage();
   }, []);
 
+  // Open About Me window on first load (centered on screen)
+  useEffect(() => {
+    openWindow('about');
+  }, [openWindow]);
+
   // Recalculate icon positions when window resize completes
   useEffect(() => {
     let resizeTimeout: ReturnType<typeof setTimeout>;

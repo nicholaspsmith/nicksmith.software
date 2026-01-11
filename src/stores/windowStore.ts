@@ -91,7 +91,7 @@ function getWindowSizeConfig(app: string): WindowSizeConfig {
 /**
  * Apps that should open centered on screen
  */
-const CENTERED_WINDOWS = new Set(['about-this-mac']);
+const CENTERED_WINDOWS = new Set(['about-this-mac', 'about']);
 
 /**
  * Calculate centered position for a window
