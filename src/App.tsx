@@ -56,7 +56,7 @@ const DESKTOP_ICONS = [
   { id: 'terminal', label: 'Terminal', icon: 'terminal', opensWindow: true },
   { id: 'about', label: 'About Me', icon: '/icons/AlertNoteIcon.png', opensWindow: true },
   { id: 'projects', label: 'Projects', icon: '/icons/ADCReferenceLibraryIcon.png', opensWindow: true },
-  { id: 'resume', label: 'Resume', icon: '/icons/document.png', opensWindow: true },
+  { id: 'resume', label: 'Resume', icon: '/icons/pdf.png', opensWindow: true },
   { id: 'contact', label: 'Contact', icon: '/icons/AddressBook.png', opensWindow: true },
 ] as const;
 
