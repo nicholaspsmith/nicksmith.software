@@ -301,8 +301,8 @@ export function Terminal() {
     term.write('Last login: ' + new Date().toLocaleString() + ' on ttys000\r\n');
     term.write('\x1b[36mnick@macbook\x1b[0m:\x1b[33m~\x1b[0m$ ');
 
-    // Handle input
-    term.onData((data) => {
+    // Handle input - store disposer for cleanup
+    const onDataDisposer = term.onData((data) => {
       const code = data.charCodeAt(0);
 
       if (code === 13) {
@@ -366,6 +366,7 @@ export function Terminal() {
     resizeObserver.observe(terminalRef.current);
 
     return () => {
+      onDataDisposer.dispose();
       resizeObserver.disconnect();
       term.dispose();
       xtermRef.current = null;
