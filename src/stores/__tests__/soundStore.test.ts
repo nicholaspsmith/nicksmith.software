@@ -38,6 +38,7 @@ vi.stubGlobal('AudioContext', MockAudioContext);
 
 // Mock fetch for loading audio files
 const mockFetch = vi.fn().mockResolvedValue({
+  ok: true,
   arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(100)),
 });
 vi.stubGlobal('fetch', mockFetch);

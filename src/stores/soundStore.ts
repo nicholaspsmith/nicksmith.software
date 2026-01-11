@@ -24,6 +24,10 @@ async function loadAudioBuffer(
 ): Promise<AudioBuffer | null> {
   try {
     const response = await fetch(url);
+    if (!response.ok) {
+      console.warn(`Failed to load audio: ${url} (HTTP ${response.status})`);
+      return null;
+    }
     const arrayBuffer = await response.arrayBuffer();
     return await audioContext.decodeAudioData(arrayBuffer);
   } catch (error) {
