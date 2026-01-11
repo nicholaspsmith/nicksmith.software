@@ -57,10 +57,10 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
 const DESKTOP_CONTENTS: ContentItem[] = [
   { id: 'macintosh-hd', name: 'Macintosh HD', icon: 'macintosh-hd', type: 'folder' },
   { id: 'terminal', name: 'Terminal', icon: 'terminal', type: 'file' },
-  { id: 'about', name: 'About Me', icon: 'document', type: 'file' },
-  { id: 'projects', name: 'Projects', icon: 'document', type: 'file' },
-  { id: 'resume', name: 'Resume', icon: 'document', type: 'file' },
-  { id: 'contact', name: 'Contact', icon: 'document', type: 'file' },
+  { id: 'about', name: 'About Me', icon: 'about-doc', type: 'file' },
+  { id: 'projects', name: 'Projects', icon: 'projects-doc', type: 'file' },
+  { id: 'resume', name: 'Resume', icon: 'resume-doc', type: 'file' },
+  { id: 'contact', name: 'Contact', icon: 'contact-doc', type: 'file' },
 ];
 
 /**
@@ -799,6 +799,11 @@ const CONTENT_ICON_MAP: Record<string, string> = {
   folder: '/icons/GenericFolderIcon.png',
   'macintosh-hd': '/icons/macintosh-hd.png',
   document: '/icons/document.png',
+  // Document-specific icons (matching desktop icons)
+  'about-doc': '/icons/AlertNoteIcon.png',
+  'projects-doc': '/icons/ADCReferenceLibraryIcon.png',
+  'resume-doc': '/icons/pdf.png',
+  'contact-doc': '/icons/AddressBook.png',
   // Folder-specific icons (authentic Tiger folder icons)
   'applications-folder': '/icons/ApplicationsFolderIcon.png',
   'desktop-folder': '/icons/DesktopFolderIcon.png',
