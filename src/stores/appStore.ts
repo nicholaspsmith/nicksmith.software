@@ -85,6 +85,8 @@ interface AppStore {
   // Alert actions
   showAlert: (config: AlertConfig) => void;
   hideAlert: () => void;
+  confirmAlert: () => void;
+  cancelAlert: () => void;
 }
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -201,9 +203,18 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   showAlert: (config) => set({ alertOpen: true, alertConfig: config }),
   hideAlert: () => {
+    // Just close the alert - don't call any callbacks
+    // Use confirmAlert or cancelAlert for callback behavior
+    set({ alertOpen: false, alertConfig: null });
+  },
+  confirmAlert: () => {
     const { alertConfig } = get();
-    // Call onOk callback if provided (default dismiss behavior)
     alertConfig?.onOk?.();
+    set({ alertOpen: false, alertConfig: null });
+  },
+  cancelAlert: () => {
+    const { alertConfig } = get();
+    alertConfig?.onCancel?.();
     set({ alertOpen: false, alertConfig: null });
   },
 }));

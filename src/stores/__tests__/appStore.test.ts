@@ -157,7 +157,7 @@ describe('appStore', () => {
       expect(useAppStore.getState().alertConfig).toBeNull();
     });
 
-    it('should call onOk callback when hiding', () => {
+    it('should NOT call onOk callback when hiding (use confirmAlert instead)', () => {
       const onOk = vi.fn();
       useAppStore.getState().showAlert({
         title: 'Test',
@@ -165,11 +165,39 @@ describe('appStore', () => {
         onOk,
       });
       useAppStore.getState().hideAlert();
-      expect(onOk).toHaveBeenCalledTimes(1);
+      expect(onOk).not.toHaveBeenCalled();
     });
 
     it('should be safe to call when no alert is shown', () => {
       useAppStore.getState().hideAlert();
+      expect(useAppStore.getState().alertOpen).toBe(false);
+    });
+  });
+
+  describe('confirmAlert', () => {
+    it('should call onOk callback and close alert', () => {
+      const onOk = vi.fn();
+      useAppStore.getState().showAlert({
+        title: 'Test',
+        message: 'Test',
+        onOk,
+      });
+      useAppStore.getState().confirmAlert();
+      expect(onOk).toHaveBeenCalledTimes(1);
+      expect(useAppStore.getState().alertOpen).toBe(false);
+    });
+  });
+
+  describe('cancelAlert', () => {
+    it('should call onCancel callback and close alert', () => {
+      const onCancel = vi.fn();
+      useAppStore.getState().showAlert({
+        title: 'Test',
+        message: 'Test',
+        onCancel,
+      });
+      useAppStore.getState().cancelAlert();
+      expect(onCancel).toHaveBeenCalledTimes(1);
       expect(useAppStore.getState().alertOpen).toBe(false);
     });
   });
