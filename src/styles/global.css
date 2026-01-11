@@ -30,56 +30,18 @@ body {
 }
 
 /* ========================================
- * SCROLLBAR STYLING - Tiger Aqua Style
- * Blue pill thumb with glossy 3D effect
+ * SCROLLBAR STYLING - Hide Native Scrollbars
+ * Use AquaScrollbar component instead
  * ======================================== */
 
-/* WebKit browsers (Chrome, Safari, Edge) */
+/* Hide native scrollbars globally - we use custom AquaScrollbar component */
 ::-webkit-scrollbar {
-  width: 15px;
-  height: 15px;
+  display: none;
 }
 
-::-webkit-scrollbar-track {
-  /* White track background */
-  background: #fff;
-  border-left: 1px solid #a0a0a0;
-}
-
-::-webkit-scrollbar-track:horizontal {
-  border-left: none;
-  border-top: 1px solid #a0a0a0;
-}
-
-::-webkit-scrollbar-thumb {
-  /* Aqua scrollbar texture on thumb */
-  background: url('/textures/scrollbar-texture-vertical.png') repeat-y center;
-  background-size: 11px auto;
-  border-radius: 5px;
-  border: 1px solid #2a6cb0;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-  margin: 2px;
-}
-
-::-webkit-scrollbar-thumb:horizontal {
-  background: url('/textures/scrollbar-texture-vertical.png') repeat-x center;
-  background-size: auto 11px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  filter: brightness(1.1);
-}
-
-::-webkit-scrollbar-corner {
-  background: #fff;
-}
-
-/* Firefox scrollbar - limited styling */
+/* Firefox - hide scrollbar */
 * {
-  scrollbar-width: thin;
-  scrollbar-color: #3d9ae8 #fff;
+  scrollbar-width: none;
 }
 
 /* ========================================

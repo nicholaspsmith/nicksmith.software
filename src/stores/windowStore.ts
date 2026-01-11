@@ -70,6 +70,8 @@ const WINDOW_SIZE_CONFIGS: Record<string, WindowSizeConfig> = {
   'finder-search': { width: 650, height: 380, minWidth: 650, minHeight: 400 },
   // About This Mac - small panel window (not resizable)
   'about-this-mac': { width: 320, height: 380, minWidth: 320, minHeight: 380 },
+  // About Me - bio and highlights
+  about: { width: 500, height: 400, minWidth: 345, minHeight: 300 },
   // Projects - sized for project cards
   projects: { width: 625, height: 595, minWidth: 400, minHeight: 300 },
   // Contact - compact contact info

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { AquaScrollbar } from '@/features/tiger/components/AquaScrollbar';
 import styles from './TextEditChrome.module.css';
 import {
   AlignLeftIcon,
@@ -96,9 +97,9 @@ export function TextEditChrome({ children }: TextEditChromeProps) {
       </div>
 
       {/* Content area */}
-      <div className={styles.content}>
+      <AquaScrollbar className={styles.content}>
         {children}
-      </div>
+      </AquaScrollbar>
     </div>
   );
 }

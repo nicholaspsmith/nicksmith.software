@@ -1,5 +1,4 @@
 import { useWindowStore } from '@/stores/windowStore';
-import { AquaScrollbar } from '@/features/tiger/components/AquaScrollbar';
 import styles from './AboutMe.module.css';
 
 /**
@@ -17,8 +16,7 @@ export function AboutMe() {
   };
 
   return (
-    <AquaScrollbar className={styles.scrollWrapper}>
-      <div className={styles.container} data-testid="about-me-content">
+    <div className={styles.container} data-testid="about-me-content">
         <div className={styles.header}>
           <div className={styles.photoFrame}>
             <img
@@ -58,8 +56,7 @@ export function AboutMe() {
             <li>Expert in React, Next.js, TypeScript, and data visualization</li>
             <li>Hack Reactor alum, University of Arizona BSBA</li>
           </ul>
-        </div>
       </div>
-    </AquaScrollbar>
+    </div>
   );
 }

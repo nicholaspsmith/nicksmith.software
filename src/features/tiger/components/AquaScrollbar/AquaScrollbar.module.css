@@ -1,6 +1,6 @@
 /**
  * AquaScrollbar Styles
- * Mac OS X Tiger-style custom scrollbar
+ * Mac OS X Tiger-style custom scrollbar with vertical and horizontal support
  */
 
 .wrapper {
@@ -13,8 +13,7 @@
 
 .content {
   flex: 1;
-  overflow-y: scroll;
-  overflow-x: hidden;
+  overflow: scroll;
 
   /* Hide native scrollbar across browsers */
   scrollbar-width: none; /* Firefox */
@@ -25,20 +24,7 @@
   display: none; /* Chrome/Safari/Opera */
 }
 
-/* Scrollbar track - white background */
-.track {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 15px;
-  background: #fff;
-  border-left: 1px solid #a0a0a0;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-  z-index: 10;
-}
-
+/* Shared track styles */
 .visible {
   opacity: 1;
 }
@@ -48,8 +34,34 @@
   pointer-events: none;
 }
 
-/* Aqua blue pill thumb with texture */
-.thumb {
+/* Vertical scrollbar track - white background */
+.vTrack {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 15px;
+  background: #fff;
+  border-left: 1px solid #a0a0a0;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  z-index: 10;
+}
+
+/* Horizontal scrollbar track - white background */
+.hTrack {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 15px;
+  background: #fff;
+  border-top: 1px solid #a0a0a0;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  z-index: 10;
+}
+
+/* Aqua blue pill vertical thumb with texture */
+.vThumb {
   position: absolute;
   left: 2px;
   width: 11px;
@@ -58,7 +70,7 @@
   cursor: pointer;
   transition: filter 0.1s ease;
 
-  /* Aqua scrollbar texture */
+  /* Aqua scrollbar texture - vertical */
   background: url('/textures/scrollbar-texture-vertical.png') repeat-y center;
   background-size: 11px auto;
   border: 1px solid #2a6cb0;
@@ -69,10 +81,46 @@
     inset 0 -1px 0 rgba(0, 0, 0, 0.1);
 }
 
-.thumb:hover {
+/* Aqua blue pill horizontal thumb with texture */
+.hThumb {
+  position: absolute;
+  top: 2px;
+  height: 11px;
+  min-width: 30px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: filter 0.1s ease;
+
+  /* Aqua scrollbar texture - horizontal */
+  background: url('/textures/scrollbar-texture-horizontal.png') repeat-x center;
+  background-size: auto 11px;
+  border: 1px solid #2a6cb0;
+
+  /* Glossy highlight */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.vThumb:hover,
+.hThumb:hover {
   filter: brightness(1.1);
 }
 
-.thumb.dragging {
+.vThumb.dragging,
+.hThumb.dragging {
   filter: brightness(0.95);
+}
+
+/* Corner piece when both scrollbars are visible */
+.corner {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 15px;
+  height: 15px;
+  background: #e8e8e8;
+  border-left: 1px solid #a0a0a0;
+  border-top: 1px solid #a0a0a0;
+  z-index: 11;
 }

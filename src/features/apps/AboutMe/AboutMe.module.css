@@ -5,11 +5,6 @@
  * Layout optimized for 500x400px window default.
  */
 
-/* Wrapper for custom scrollbar */
-.scrollWrapper {
-  height: 100%;
-}
-
 .container {
   padding: var(--aqua-spacing-md);
   font-family: var(--aqua-font-family);

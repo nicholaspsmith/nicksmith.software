@@ -1,1 +1,1 @@
-export { AquaScrollbar } from './AquaScrollbar';
+export { AquaScrollbar, type AquaScrollbarHandle } from './AquaScrollbar';

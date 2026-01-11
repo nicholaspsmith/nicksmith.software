@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useWindowStore } from '@/stores/windowStore';
 import { useAppStore } from '@/stores/appStore';
+import { AquaScrollbar, type AquaScrollbarHandle } from '@/features/tiger/components/AquaScrollbar';
 import styles from './Finder.module.css';
 import { TerminalIcon } from '@/features/tiger/components/icons';
 
@@ -226,8 +227,13 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
   const justFinishedMarquee = useRef(false);
 
   // Ref for content area to calculate icon positions
-  const contentRef = useRef<HTMLDivElement>(null);
+  const scrollbarRef = useRef<AquaScrollbarHandle>(null);
   const iconGridRef = useRef<HTMLDivElement>(null);
+
+  // Helper to get the scrollable content element
+  const getContentElement = useCallback(() => {
+    return scrollbarRef.current?.getContentElement() ?? null;
+  }, []);
 
   // Window store for opening apps
   const openWindow = useWindowStore((s) => s.openWindow);
@@ -364,8 +370,9 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
     if (isItem) return;
 
     // Get content area bounds for relative positioning
-    if (!contentRef.current) return;
-    const rect = contentRef.current.getBoundingClientRect();
+    const contentEl = getContentElement();
+    if (!contentEl) return;
+    const rect = contentEl.getBoundingClientRect();
 
     // Calculate position relative to content area
     const relX = e.clientX - rect.left;
@@ -390,8 +397,9 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
     if (!selection.isSelecting) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!contentRef.current) return;
-      const rect = contentRef.current.getBoundingClientRect();
+      const contentEl = getContentElement();
+      if (!contentEl) return;
+      const rect = contentEl.getBoundingClientRect();
 
       // Calculate position relative to content area and constrain to bounds
       const relX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
@@ -406,7 +414,7 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
       // Real-time selection: find icons within rectangle as we drag
       if (viewMode === 'icon' && iconGridRef.current) {
         const gridRect = iconGridRef.current.getBoundingClientRect();
-        const contentRect = contentRef.current.getBoundingClientRect();
+        const contentRect = contentEl.getBoundingClientRect();
 
         // Grid offset relative to content area
         const gridOffsetX = gridRect.left - contentRect.left;
@@ -584,22 +592,24 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
         {/* Main content area */}
         <div className={styles.main}>
           {/* Sidebar */}
-          <div className={styles.sidebar}>
-          {config.sidebarItems.map((item) => (
-            <button
-              key={item.id}
-              className={`${styles.sidebarItem} ${selectedSidebarItem === item.id ? styles.sidebarItemSelected : ''}`}
-              onClick={() => handleSidebarClick(item.id)}
-            >
-              <SidebarIcon type={item.icon} />
-              <span className={styles.sidebarLabel}>{item.label}</span>
-            </button>
-          ))}
-        </div>
+          <AquaScrollbar className={styles.sidebar}>
+            <div className={styles.sidebarContent}>
+              {config.sidebarItems.map((item) => (
+                <button
+                  key={item.id}
+                  className={`${styles.sidebarItem} ${selectedSidebarItem === item.id ? styles.sidebarItemSelected : ''}`}
+                  onClick={() => handleSidebarClick(item.id)}
+                >
+                  <SidebarIcon type={item.icon} />
+                  <span className={styles.sidebarLabel}>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </AquaScrollbar>
 
         {/* Content area */}
-        <div
-          ref={contentRef}
+        <AquaScrollbar
+          ref={scrollbarRef}
           className={`${styles.content} ${viewMode !== 'icon' ? styles.contentNoPadding : ''}`}
           onClick={handleContentAreaClick}
           onMouseDown={handleContentMouseDown}
@@ -689,7 +699,7 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
               />
             );
           })()}
-        </div>
+        </AquaScrollbar>
         </div>
       </div>
 

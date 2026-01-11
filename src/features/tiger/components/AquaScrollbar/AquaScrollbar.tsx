@@ -3,6 +3,8 @@ import {
   useCallback,
   useEffect,
   useState,
+  forwardRef,
+  useImperativeHandle,
   type ReactNode,
 } from 'react';
 import styles from './AquaScrollbar.module.css';
@@ -12,54 +14,91 @@ interface AquaScrollbarProps {
   className?: string;
   /** Whether to auto-hide the scrollbar when not scrolling */
   autoHide?: boolean;
+  /** Event handlers to forward to the content element */
+  onClick?: React.MouseEventHandler<HTMLDivElement>;
+  onMouseDown?: React.MouseEventHandler<HTMLDivElement>;
+}
+
+export interface AquaScrollbarHandle {
+  /** Access the scrollable content element */
+  getContentElement: () => HTMLDivElement | null;
 }
 
 /**
  * AquaScrollbar - Custom Mac OS X Tiger-style scrollbar
  *
- * Wraps content with an Aqua-styled scrollbar featuring:
+ * Wraps content with Aqua-styled scrollbars featuring:
  * - Blue gel pill thumb with glossy highlight
  * - Striped track texture
  * - Smooth dragging and scroll sync
+ * - Both vertical and horizontal scrollbars
  */
-export function AquaScrollbar({
+export const AquaScrollbar = forwardRef<AquaScrollbarHandle, AquaScrollbarProps>(function AquaScrollbar({
   children,
   className = '',
   autoHide = false,
-}: AquaScrollbarProps) {
+  onClick,
+  onMouseDown,
+}, ref) {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const thumbRef = useRef<HTMLDivElement>(null);
-  const [thumbSize, setThumbSize] = useState(0);
-  const [thumbPosition, setThumbPosition] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
+  const vThumbRef = useRef<HTMLDivElement>(null);
+  const hThumbRef = useRef<HTMLDivElement>(null);
+
+  // Vertical scrollbar state
+  const [vThumbSize, setVThumbSize] = useState(0);
+  const [vThumbPosition, setVThumbPosition] = useState(0);
+  const [showVScrollbar, setShowVScrollbar] = useState(false);
+
+  // Horizontal scrollbar state
+  const [hThumbSize, setHThumbSize] = useState(0);
+  const [hThumbPosition, setHThumbPosition] = useState(0);
+  const [showHScrollbar, setShowHScrollbar] = useState(false);
+
+  // Shared state
+  const [isDragging, setIsDragging] = useState<'vertical' | 'horizontal' | null>(null);
   const [isScrolling, setIsScrolling] = useState(false);
-  const [showScrollbar, setShowScrollbar] = useState(true);
-  const dragStartRef = useRef({ y: 0, scrollTop: 0 });
+
+  const dragStartRef = useRef({ pos: 0, scrollPos: 0 });
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  // Calculate thumb size and position based on content
+  // Calculate thumb sizes and positions based on content
   const updateThumbMetrics = useCallback(() => {
     const content = contentRef.current;
     const container = containerRef.current;
     if (!content || !container) return;
 
-    const { scrollHeight, clientHeight, scrollTop } = content;
-    const trackHeight = container.clientHeight;
+    const { scrollHeight, scrollWidth, clientHeight, clientWidth, scrollTop, scrollLeft } = content;
 
-    // Calculate thumb size (minimum 30px for usability)
-    const ratio = clientHeight / scrollHeight;
-    const newThumbSize = Math.max(30, trackHeight * ratio);
-    setThumbSize(newThumbSize);
+    // Vertical scrollbar metrics
+    const hasVScroll = scrollHeight > clientHeight;
+    setShowVScrollbar(hasVScroll);
+    if (hasVScroll) {
+      const trackHeight = container.clientHeight - (scrollWidth > clientWidth ? 15 : 0);
+      const vRatio = clientHeight / scrollHeight;
+      const newVThumbSize = Math.max(30, trackHeight * vRatio);
+      setVThumbSize(newVThumbSize);
 
-    // Calculate thumb position
-    const scrollRange = scrollHeight - clientHeight;
-    const thumbRange = trackHeight - newThumbSize;
-    const newPosition = scrollRange > 0 ? (scrollTop / scrollRange) * thumbRange : 0;
-    setThumbPosition(newPosition);
+      const vScrollRange = scrollHeight - clientHeight;
+      const vThumbRange = trackHeight - newVThumbSize;
+      const newVPosition = vScrollRange > 0 ? (scrollTop / vScrollRange) * vThumbRange : 0;
+      setVThumbPosition(newVPosition);
+    }
 
-    // Show/hide scrollbar based on whether content is scrollable
-    setShowScrollbar(scrollHeight > clientHeight);
+    // Horizontal scrollbar metrics
+    const hasHScroll = scrollWidth > clientWidth;
+    setShowHScrollbar(hasHScroll);
+    if (hasHScroll) {
+      const trackWidth = container.clientWidth - (scrollHeight > clientHeight ? 15 : 0);
+      const hRatio = clientWidth / scrollWidth;
+      const newHThumbSize = Math.max(30, trackWidth * hRatio);
+      setHThumbSize(newHThumbSize);
+
+      const hScrollRange = scrollWidth - clientWidth;
+      const hThumbRange = trackWidth - newHThumbSize;
+      const newHPosition = hScrollRange > 0 ? (scrollLeft / hScrollRange) * hThumbRange : 0;
+      setHThumbPosition(newHPosition);
+    }
   }, []);
 
   // Handle scroll events
@@ -67,59 +106,87 @@ export function AquaScrollbar({
     updateThumbMetrics();
     setIsScrolling(true);
 
-    // Clear existing timeout
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
-    // Set timeout to detect scroll end
     scrollTimeoutRef.current = setTimeout(() => {
       setIsScrolling(false);
     }, 150);
   }, [updateThumbMetrics]);
 
-  // Handle thumb drag start
-  const handleThumbMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const content = contentRef.current;
-      if (!content) return;
+  // Handle vertical thumb drag start
+  const handleVThumbMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const content = contentRef.current;
+    if (!content) return;
 
-      setIsDragging(true);
-      dragStartRef.current = {
-        y: e.clientY,
-        scrollTop: content.scrollTop,
-      };
-    },
-    []
-  );
+    setIsDragging('vertical');
+    dragStartRef.current = {
+      pos: e.clientY,
+      scrollPos: content.scrollTop,
+    };
+  }, []);
 
-  // Handle track click (jump to position)
-  const handleTrackClick = useCallback(
+  // Handle horizontal thumb drag start
+  const handleHThumbMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const content = contentRef.current;
+    if (!content) return;
+
+    setIsDragging('horizontal');
+    dragStartRef.current = {
+      pos: e.clientX,
+      scrollPos: content.scrollLeft,
+    };
+  }, []);
+
+  // Handle vertical track click
+  const handleVTrackClick = useCallback(
     (e: React.MouseEvent) => {
       const content = contentRef.current;
       const container = containerRef.current;
-      const thumb = thumbRef.current;
-      if (!content || !container || !thumb) return;
-
-      // Don't process if clicking on thumb
-      if (e.target === thumb) return;
+      const thumb = vThumbRef.current;
+      if (!content || !container || !thumb || e.target === thumb) return;
 
       const rect = container.getBoundingClientRect();
       const clickY = e.clientY - rect.top;
-      const trackHeight = container.clientHeight;
+      const trackHeight = container.clientHeight - (showHScrollbar ? 15 : 0);
       const { scrollHeight, clientHeight } = content;
 
-      // Calculate new scroll position (center thumb at click point)
-      const thumbCenter = clickY - thumbSize / 2;
-      const thumbRange = trackHeight - thumbSize;
+      const thumbCenter = clickY - vThumbSize / 2;
+      const thumbRange = trackHeight - vThumbSize;
       const scrollRange = scrollHeight - clientHeight;
       const newScrollTop = (thumbCenter / thumbRange) * scrollRange;
 
       content.scrollTop = Math.max(0, Math.min(scrollRange, newScrollTop));
     },
-    [thumbSize]
+    [vThumbSize, showHScrollbar]
+  );
+
+  // Handle horizontal track click
+  const handleHTrackClick = useCallback(
+    (e: React.MouseEvent) => {
+      const content = contentRef.current;
+      const container = containerRef.current;
+      const thumb = hThumbRef.current;
+      if (!content || !container || !thumb || e.target === thumb) return;
+
+      const rect = container.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const trackWidth = container.clientWidth - (showVScrollbar ? 15 : 0);
+      const { scrollWidth, clientWidth } = content;
+
+      const thumbCenter = clickX - hThumbSize / 2;
+      const thumbRange = trackWidth - hThumbSize;
+      const scrollRange = scrollWidth - clientWidth;
+      const newScrollLeft = (thumbCenter / thumbRange) * scrollRange;
+
+      content.scrollLeft = Math.max(0, Math.min(scrollRange, newScrollLeft));
+    },
+    [hThumbSize, showVScrollbar]
   );
 
   // Handle mouse move during drag
@@ -131,19 +198,31 @@ export function AquaScrollbar({
       const container = containerRef.current;
       if (!content || !container) return;
 
-      const deltaY = e.clientY - dragStartRef.current.y;
-      const trackHeight = container.clientHeight;
-      const { scrollHeight, clientHeight } = content;
+      if (isDragging === 'vertical') {
+        const deltaY = e.clientY - dragStartRef.current.pos;
+        const trackHeight = container.clientHeight - (showHScrollbar ? 15 : 0);
+        const { scrollHeight, clientHeight } = content;
 
-      const thumbRange = trackHeight - thumbSize;
-      const scrollRange = scrollHeight - clientHeight;
-      const scrollDelta = (deltaY / thumbRange) * scrollRange;
+        const thumbRange = trackHeight - vThumbSize;
+        const scrollRange = scrollHeight - clientHeight;
+        const scrollDelta = (deltaY / thumbRange) * scrollRange;
 
-      content.scrollTop = dragStartRef.current.scrollTop + scrollDelta;
+        content.scrollTop = dragStartRef.current.scrollPos + scrollDelta;
+      } else {
+        const deltaX = e.clientX - dragStartRef.current.pos;
+        const trackWidth = container.clientWidth - (showVScrollbar ? 15 : 0);
+        const { scrollWidth, clientWidth } = content;
+
+        const thumbRange = trackWidth - hThumbSize;
+        const scrollRange = scrollWidth - clientWidth;
+        const scrollDelta = (deltaX / thumbRange) * scrollRange;
+
+        content.scrollLeft = dragStartRef.current.scrollPos + scrollDelta;
+      }
     };
 
     const handleMouseUp = () => {
-      setIsDragging(false);
+      setIsDragging(null);
     };
 
     document.addEventListener('mousemove', handleMouseMove);
@@ -153,7 +232,7 @@ export function AquaScrollbar({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, thumbSize]);
+  }, [isDragging, vThumbSize, hThumbSize, showVScrollbar, showHScrollbar]);
 
   // Initial calculation and resize observer
   useEffect(() => {
@@ -162,52 +241,94 @@ export function AquaScrollbar({
     const content = contentRef.current;
     if (!content) return;
 
-    // Listen for scroll events
     content.addEventListener('scroll', handleScroll);
 
-    // Observe content size changes
     const resizeObserver = new ResizeObserver(() => {
       updateThumbMetrics();
     });
     resizeObserver.observe(content);
 
+    // Also observe children for size changes
+    const mutationObserver = new MutationObserver(() => {
+      updateThumbMetrics();
+    });
+    mutationObserver.observe(content, { childList: true, subtree: true });
+
     return () => {
       content.removeEventListener('scroll', handleScroll);
       resizeObserver.disconnect();
+      mutationObserver.disconnect();
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
   }, [handleScroll, updateThumbMetrics]);
 
-  const isVisible = showScrollbar && (!autoHide || isDragging || isScrolling);
+  const isVisible = !autoHide || isDragging || isScrolling;
+
+  // Expose content element to parent via ref
+  useImperativeHandle(ref, () => ({
+    getContentElement: () => contentRef.current,
+  }), []);
 
   return (
-    <div className={`${styles.wrapper} ${className}`}>
+    <div ref={containerRef} className={`${styles.wrapper} ${className}`}>
       <div
         ref={contentRef}
         className={styles.content}
+        style={{
+          paddingRight: showVScrollbar ? 15 : 0,
+          paddingBottom: showHScrollbar ? 15 : 0,
+        }}
+        onClick={onClick}
+        onMouseDown={onMouseDown}
         data-aqua-scroll-content
       >
         {children}
       </div>
-      {showScrollbar && (
+
+      {/* Vertical scrollbar */}
+      {showVScrollbar && (
         <div
-          ref={containerRef}
-          className={`${styles.track} ${isVisible ? styles.visible : styles.hidden}`}
-          onClick={handleTrackClick}
+          className={`${styles.vTrack} ${isVisible ? styles.visible : styles.hidden}`}
+          style={{ bottom: showHScrollbar ? 15 : 0 }}
+          onClick={handleVTrackClick}
         >
           <div
-            ref={thumbRef}
-            className={`${styles.thumb} ${isDragging ? styles.dragging : ''}`}
+            ref={vThumbRef}
+            className={`${styles.vThumb} ${isDragging === 'vertical' ? styles.dragging : ''}`}
             style={{
-              height: `${thumbSize}px`,
-              transform: `translateY(${thumbPosition}px)`,
+              height: `${vThumbSize}px`,
+              transform: `translateY(${vThumbPosition}px)`,
             }}
-            onMouseDown={handleThumbMouseDown}
+            onMouseDown={handleVThumbMouseDown}
           />
         </div>
       )}
+
+      {/* Horizontal scrollbar */}
+      {showHScrollbar && (
+        <div
+          className={`${styles.hTrack} ${isVisible ? styles.visible : styles.hidden}`}
+          style={{ right: showVScrollbar ? 15 : 0 }}
+          onClick={handleHTrackClick}
+        >
+          <div
+            ref={hThumbRef}
+            className={`${styles.hThumb} ${isDragging === 'horizontal' ? styles.dragging : ''}`}
+            style={{
+              width: `${hThumbSize}px`,
+              transform: `translateX(${hThumbPosition}px)`,
+            }}
+            onMouseDown={handleHThumbMouseDown}
+          />
+        </div>
+      )}
+
+      {/* Corner piece when both scrollbars are visible */}
+      {showVScrollbar && showHScrollbar && (
+        <div className={styles.corner} />
+      )}
     </div>
   );
-}
+});

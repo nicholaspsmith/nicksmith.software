@@ -9,8 +9,6 @@
   padding: var(--aqua-spacing-md);
   font-family: var(--aqua-font-family);
   color: #333;
-  height: 100%;
-  overflow-y: auto;
   user-select: none;
 }
 

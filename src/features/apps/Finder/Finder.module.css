@@ -183,8 +183,10 @@
   min-width: 180px;
   background: linear-gradient(180deg, #e8e8e8 0%, #d0d0d0 100%);
   border-right: 1px solid #a0a0a0;
+}
+
+.sidebarContent {
   padding: 4px 0;
-  overflow-y: auto;
 }
 
 .sidebarItem {
@@ -231,14 +233,13 @@
 
 .content {
   flex: 1;
+  min-width: 0; /* Allow flex child to shrink */
   background: #fff;
-  overflow: auto;
-  padding: 16px;
   position: relative; /* Required for selection rectangle positioning */
 }
 
 .contentNoPadding {
-  padding: 0;
+  /* No-op now, kept for backwards compatibility */
 }
 
 .emptyState {
@@ -255,6 +256,7 @@
   grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
   gap: 16px;
   justify-items: center;
+  padding: 16px;
 }
 
 .contentItem {
