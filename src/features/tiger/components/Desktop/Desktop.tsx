@@ -230,7 +230,10 @@ export function Desktop({ children, iconPositions, onIconsSelected }: DesktopPro
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [selection.isSelecting, selection.startX, selection.startY, iconPositions, onIconsSelected]);
+  // Note: selection.startX/startY intentionally excluded - they're captured in closure
+  // and shouldn't trigger re-registration during active selection
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selection.isSelecting, iconPositions, onIconsSelected]);
 
   return (
     <div
