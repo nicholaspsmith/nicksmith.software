@@ -306,10 +306,16 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
   },
 
   closeWindow: (id) => {
-    set((state) => ({
-      windows: state.windows.filter((w) => w.id !== id),
-      activeWindowId: state.activeWindowId === id ? null : state.activeWindowId,
-    }));
+    set((state) => {
+      const remainingWindows = state.windows.filter((w) => w.id !== id);
+      // Normalize zIndex when all windows are closed to prevent unbounded growth
+      const newMaxZIndex = remainingWindows.length === 0 ? 100 : state.maxZIndex;
+      return {
+        windows: remainingWindows,
+        activeWindowId: state.activeWindowId === id ? null : state.activeWindowId,
+        maxZIndex: newMaxZIndex,
+      };
+    });
   },
 
   closeAllWindowsOfApp: (parentApp) => {
@@ -319,9 +325,12 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
       // Clear activeWindowId if it belonged to the closed app
       const closedIds = windowsToClose.map((w) => w.id);
       const newActiveId = closedIds.includes(state.activeWindowId ?? '') ? null : state.activeWindowId;
+      // Normalize zIndex when all windows are closed
+      const newMaxZIndex = remainingWindows.length === 0 ? 100 : state.maxZIndex;
       return {
         windows: remainingWindows,
         activeWindowId: newActiveId,
+        maxZIndex: newMaxZIndex,
       };
     });
   },
