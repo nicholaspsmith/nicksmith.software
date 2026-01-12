@@ -19,6 +19,17 @@ export interface DynamicDesktopIcon {
   documentId?: string;
 }
 
+/** Trashed icon - includes original icon data plus metadata */
+export interface TrashedIcon extends DynamicDesktopIcon {
+  /** Original position on desktop before trashing */
+  originalPosition?: IconPosition;
+  /** Timestamp when trashed */
+  trashedAt: number;
+}
+
+/** localStorage key for persisting trash */
+const TRASH_STORAGE_KEY = 'trash:icons';
+
 export interface AlertConfig {
   title: string;
   message: string;
@@ -49,6 +60,9 @@ interface AppStore {
 
   // Dynamic desktop icons (created via File > New Folder, etc.)
   dynamicIcons: DynamicDesktopIcon[];
+
+  // Trashed icons (in Trash folder)
+  trashedIcons: TrashedIcon[];
 
   // Macintosh HD drag state (for eject icon in Dock)
   isDraggingMacintoshHD: boolean;
@@ -85,6 +99,16 @@ interface AppStore {
   /** Delete a document icon by documentId */
   deleteDocumentIcon: (documentId: string) => void;
 
+  // Trash actions
+  /** Move an icon to trash (works for dynamic icons and built-in icons except Macintosh HD) */
+  moveToTrash: (iconId: string, iconData?: DynamicDesktopIcon) => void;
+  /** Permanently delete all items in trash */
+  emptyTrash: () => void;
+  /** Restore an icon from trash to desktop */
+  restoreFromTrash: (iconId: string) => void;
+  /** Load trashed icons from localStorage (called on startup) */
+  loadTrashFromStorage: () => void;
+
   // Macintosh HD drag actions
   setDraggingMacintoshHD: (isDragging: boolean) => void;
 
@@ -104,6 +128,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   iconPositionsInitialized: false,
   draggingIconId: null,
   dynamicIcons: [],
+  trashedIcons: [],
   isDraggingMacintoshHD: false,
   alertOpen: false,
   alertConfig: null,
@@ -232,6 +257,165 @@ export const useAppStore = create<AppStore>((set, get) => ({
     }));
     // Clean up title from localStorage
     localStorage.removeItem(`textedit:title:${documentId}`);
+  },
+
+  moveToTrash: (iconId, iconData) => {
+    const { dynamicIcons, iconPositions, trashedIcons } = get();
+
+    // Built-in desktop icon configurations (for trashing built-in icons)
+    const BUILT_IN_ICONS: Record<string, DynamicDesktopIcon> = {
+      about: { id: 'about', label: 'About Me', icon: '/icons/AlertNoteIcon.png', type: 'document' },
+      projects: { id: 'projects', label: 'Projects', icon: '/icons/ADCReferenceLibraryIcon.png', type: 'document' },
+      resume: { id: 'resume', label: 'Resume', icon: '/icons/pdf.png', type: 'document' },
+      contact: { id: 'contact', label: 'Contact', icon: '/icons/AddressBook.png', type: 'document' },
+      terminal: { id: 'terminal', label: 'Terminal', icon: '/icons/terminal.png', type: 'document' },
+    };
+
+    // Find the icon in dynamic icons, built-in icons, or use provided iconData
+    let iconToTrash: DynamicDesktopIcon | undefined = dynamicIcons.find((icon) => icon.id === iconId);
+
+    if (!iconToTrash && BUILT_IN_ICONS[iconId]) {
+      // Built-in icon being trashed
+      iconToTrash = BUILT_IN_ICONS[iconId];
+    }
+
+    if (!iconToTrash && iconData) {
+      // External icon data provided
+      iconToTrash = iconData;
+    }
+
+    if (!iconToTrash) {
+      console.warn(`Cannot find icon to trash: ${iconId}`);
+      return;
+    }
+
+    // Create trashed icon with metadata
+    const trashedIcon: TrashedIcon = {
+      ...iconToTrash,
+      originalPosition: iconPositions[iconId],
+      trashedAt: Date.now(),
+    };
+
+    // Remove from dynamic icons if present, add to trash
+    set((state) => ({
+      dynamicIcons: state.dynamicIcons.filter((icon) => icon.id !== iconId),
+      trashedIcons: [...state.trashedIcons, trashedIcon],
+      // Remove from icon positions
+      iconPositions: Object.fromEntries(
+        Object.entries(state.iconPositions).filter(([id]) => id !== iconId)
+      ),
+    }));
+
+    // Persist to localStorage
+    const updatedTrash = [...trashedIcons, trashedIcon];
+    try {
+      localStorage.setItem(TRASH_STORAGE_KEY, JSON.stringify(updatedTrash));
+    } catch {
+      console.warn('Failed to persist trash to localStorage');
+    }
+  },
+
+  emptyTrash: () => {
+    const { trashedIcons } = get();
+
+    // Delete document content for any document icons
+    for (const icon of trashedIcons) {
+      if (icon.type === 'document' && icon.documentId) {
+        // Clean up document from localStorage
+        localStorage.removeItem(`textedit:doc:${icon.documentId}`);
+        localStorage.removeItem(`textedit:title:${icon.documentId}`);
+
+        // Update saved-ids list
+        try {
+          const savedIdsJson = localStorage.getItem('textedit:saved-ids');
+          if (savedIdsJson) {
+            const savedIds: string[] = JSON.parse(savedIdsJson);
+            const updatedIds = savedIds.filter((id) => id !== icon.documentId);
+            localStorage.setItem('textedit:saved-ids', JSON.stringify(updatedIds));
+          }
+        } catch {
+          console.warn('Failed to update saved-ids');
+        }
+      }
+    }
+
+    // Clear trash
+    set({ trashedIcons: [] });
+    localStorage.removeItem(TRASH_STORAGE_KEY);
+  },
+
+  restoreFromTrash: (iconId) => {
+    const { trashedIcons } = get();
+    const iconToRestore = trashedIcons.find((icon) => icon.id === iconId);
+
+    if (!iconToRestore) {
+      console.warn(`Cannot find icon to restore: ${iconId}`);
+      return;
+    }
+
+    // Create dynamic icon from trashed icon (remove trash metadata)
+    const restoredIcon: DynamicDesktopIcon = {
+      id: iconToRestore.id,
+      label: iconToRestore.label,
+      icon: iconToRestore.icon,
+      type: iconToRestore.type,
+      documentId: iconToRestore.documentId,
+    };
+
+    // Remove from trash, add back to dynamic icons
+    set((state) => {
+      const updatedTrash = state.trashedIcons.filter((icon) => icon.id !== iconId);
+
+      // Restore original position if available
+      const newPositions = { ...state.iconPositions };
+      if (iconToRestore.originalPosition) {
+        newPositions[iconId] = iconToRestore.originalPosition;
+      }
+
+      return {
+        dynamicIcons: [...state.dynamicIcons, restoredIcon],
+        trashedIcons: updatedTrash,
+        iconPositions: newPositions,
+      };
+    });
+
+    // Update localStorage
+    const updatedTrash = trashedIcons.filter((icon) => icon.id !== iconId);
+    try {
+      if (updatedTrash.length > 0) {
+        localStorage.setItem(TRASH_STORAGE_KEY, JSON.stringify(updatedTrash));
+      } else {
+        localStorage.removeItem(TRASH_STORAGE_KEY);
+      }
+    } catch {
+      console.warn('Failed to update trash in localStorage');
+    }
+  },
+
+  loadTrashFromStorage: () => {
+    try {
+      const trashJson = localStorage.getItem(TRASH_STORAGE_KEY);
+      if (trashJson) {
+        const trashedIcons: TrashedIcon[] = JSON.parse(trashJson);
+        // Filter out any built-in icons that should restore on reload
+        const builtInIds = ['about', 'projects', 'resume', 'contact', 'terminal'];
+        const filteredTrash = trashedIcons.filter(
+          (icon) => !builtInIds.includes(icon.id)
+        );
+        set({ trashedIcons: filteredTrash });
+
+        // If we filtered out built-in icons, update localStorage
+        if (filteredTrash.length !== trashedIcons.length) {
+          if (filteredTrash.length > 0) {
+            localStorage.setItem(TRASH_STORAGE_KEY, JSON.stringify(filteredTrash));
+          } else {
+            localStorage.removeItem(TRASH_STORAGE_KEY);
+          }
+        }
+      }
+    } catch {
+      console.warn('Failed to load trash from localStorage');
+    }
   },
 
   setDraggingMacintoshHD: (isDragging) => {

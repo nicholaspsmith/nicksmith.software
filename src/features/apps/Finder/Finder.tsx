@@ -49,6 +49,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { id: 'movies', label: 'Movies', icon: 'movies' },
   { id: 'music', label: 'Music', icon: 'music' },
   { id: 'pictures', label: 'Pictures', icon: 'pictures' },
+  { id: 'trash', label: 'Trash', icon: 'trash' },
 ];
 
 /**
@@ -192,7 +193,7 @@ const OPENABLE_ITEMS: Record<string, string> = {
 
 export interface FinderProps {
   /** Initial location to display */
-  location?: 'home' | 'hd';
+  location?: 'home' | 'hd' | 'trash';
   /** Initial search query (from Spotlight) */
   initialSearch?: string;
 }
@@ -208,7 +209,7 @@ export interface FinderProps {
  */
 export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
   const [selectedSidebarItem, setSelectedSidebarItem] = useState(
-    location === 'hd' ? 'macintosh-hd' : 'user'
+    location === 'hd' ? 'macintosh-hd' : location === 'trash' ? 'trash' : 'user'
   );
   const [selectedContentItems, setSelectedContentItems] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('icon');
@@ -238,6 +239,9 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
   // Window store for opening apps
   const openWindow = useWindowStore((s) => s.openWindow);
   const clearAppSelection = useAppStore((s) => s.clearSelection);
+  const trashedIcons = useAppStore((s) => s.trashedIcons);
+  const emptyTrash = useAppStore((s) => s.emptyTrash);
+  const showAlert = useAppStore((s) => s.showAlert);
 
   // Get view config based on selected sidebar item
   const getViewConfig = (): FinderViewConfig => {
@@ -289,6 +293,23 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
           contentItems: [],
           statusText: '0 items',
         };
+      case 'trash': {
+        // Convert trashed icons to content items
+        const trashContents: ContentItem[] = trashedIcons.map((icon) => ({
+          id: icon.id,
+          name: icon.label,
+          icon: icon.type === 'document' ? 'document' : icon.type === 'folder' ? 'folder' : 'document',
+          type: icon.type === 'folder' || icon.type === 'smart-folder' || icon.type === 'burn-folder' ? 'folder' : 'file',
+        }));
+        return {
+          title: 'Trash',
+          sidebarItems: SIDEBAR_ITEMS,
+          contentItems: trashContents,
+          statusText: trashContents.length === 0
+            ? 'Trash is empty'
+            : `${trashContents.length} item${trashContents.length !== 1 ? 's' : ''}`,
+        };
+      }
       default:
         return {
           title: 'nick',
@@ -572,6 +593,26 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
         </div>
 
         <div className={styles.toolbarRight}>
+          {/* Empty Trash button - only show when viewing trash with items */}
+          {selectedSidebarItem === 'trash' && trashedIcons.length > 0 && (
+            <button
+              className={styles.emptyTrashButton}
+              onClick={() => {
+                showAlert({
+                  title: 'Empty Trash',
+                  message: `Are you sure you want to permanently delete ${trashedIcons.length} item${trashedIcons.length !== 1 ? 's' : ''}?`,
+                  type: 'caution',
+                  showCancel: true,
+                  okText: 'Empty Trash',
+                  cancelText: 'Cancel',
+                  onOk: () => emptyTrash(),
+                  playSound: true,
+                });
+              }}
+            >
+              Empty Trash
+            </button>
+          )}
           {/* Search field */}
           <div className={styles.searchField}>
             <SearchIcon />
@@ -768,6 +809,7 @@ const SIDEBAR_ICON_MAP: Record<string, string> = {
   movies: '/icons/sidebar/movies.png',
   music: '/icons/sidebar/music.png',
   pictures: '/icons/sidebar/pictures.png',
+  trash: '/icons/trash-empty.png',
 };
 
 function SidebarIcon({ type }: { type: string }) {

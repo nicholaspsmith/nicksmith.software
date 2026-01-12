@@ -213,6 +213,8 @@ function WindowContent({ app, documentId, isEditing }: { app: string; documentId
       return <Finder location="home" />;
     case 'finder-hd':
       return <Finder location="hd" />;
+    case 'finder-trash':
+      return <Finder location="trash" />;
     case 'finder-search':
       return <Finder location="home" initialSearch={finderSearchQuery || ''} />;
     case 'about-this-mac':
@@ -242,6 +244,7 @@ function TigerDesktop() {
   const alertConfig = useAppStore((s) => s.alertConfig);
   const hideAlert = useAppStore((s) => s.hideAlert);
   const dynamicIcons = useAppStore((s) => s.dynamicIcons);
+  const trashedIcons = useAppStore((s) => s.trashedIcons);
   const setDraggingMacintoshHD = useAppStore((s) => s.setDraggingMacintoshHD);
   const windows = useWindowStore((s) => s.windows);
   const openWindow = useWindowStore((s) => s.openWindow);
@@ -257,6 +260,11 @@ function TigerDesktop() {
   // Initialize documentStore on mount (hydrate from localStorage)
   useEffect(() => {
     useDocumentStore.getState().loadFromStorage();
+  }, []);
+
+  // Load trash from localStorage on mount
+  useEffect(() => {
+    useAppStore.getState().loadTrashFromStorage();
   }, []);
 
   // Open About Me window on first load (centered on screen)
@@ -425,11 +433,20 @@ function TigerDesktop() {
     setDraggingMacintoshHD(false);
   }, [setDraggingMacintoshHD]);
 
+  // Create set of trashed icon IDs for efficient filtering
+  const trashedIconIds = useMemo(() => new Set(trashedIcons.map((icon) => icon.id)), [trashedIcons]);
+
+  // Filter DESKTOP_ICONS to exclude trashed icons
+  const visibleDesktopIcons = useMemo(
+    () => DESKTOP_ICONS.filter((icon) => !trashedIconIds.has(icon.id)),
+    [trashedIconIds]
+  );
+
   return (
     <>
       <Desktop iconPositions={iconPositions} onIconsSelected={handleIconsSelected}>
         <DesktopIconGrid>
-          {DESKTOP_ICONS.map((icon, index) => {
+          {visibleDesktopIcons.map((icon, index) => {
             const position = getIconPosition(icon.id, index);
             const isMacHD = icon.id === 'macintosh-hd';
             return (

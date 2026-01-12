@@ -65,6 +65,7 @@ export function Dock() {
   const openWindow = useWindowStore((s) => s.openWindow);
   const showAlert = useAppStore((s) => s.showAlert);
   const isDraggingMacintoshHD = useAppStore((s) => s.isDraggingMacintoshHD);
+  const trashedIcons = useAppStore((s) => s.trashedIcons);
 
   // Track which icons are currently bouncing
   const [bouncingIcons, setBouncingIcons] = useState<Set<string>>(new Set());
@@ -367,7 +368,7 @@ export function Dock() {
             data-testid="dock-icon-trash"
           >
             <div className={styles.iconImage}>
-              <TrashIcon showEject={isDraggingMacintoshHD} />
+              <TrashIcon showEject={isDraggingMacintoshHD} hasItems={trashedIcons.length > 0} />
             </div>
           </button>
         </motion.div>
@@ -438,8 +439,14 @@ function MinimizedWindowThumbnail({ app, title }: { app: string; title: string }
 /**
  * Trash can icon - uses official Tiger PNG
  * When a disk (Macintosh HD) is being dragged, shows eject icon instead
+ * Shows full trash icon when there are items in the trash
  */
-function TrashIcon({ showEject = false }: { showEject?: boolean }) {
-  const iconSrc = showEject ? '/icons/EjectMediaIcon.png' : '/icons/trash-empty.png';
+function TrashIcon({ showEject = false, hasItems = false }: { showEject?: boolean; hasItems?: boolean }) {
+  let iconSrc = '/icons/trash-empty.png';
+  if (showEject) {
+    iconSrc = '/icons/EjectMediaIcon.png';
+  } else if (hasItems) {
+    iconSrc = '/icons/trash-full.png';
+  }
   return <img src={iconSrc} alt="" width={48} height={48} draggable={false} aria-hidden="true" />;
 }

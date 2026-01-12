@@ -81,6 +81,7 @@ export function DesktopIcon({
   // Multi-drag actions from store (only subscribe to actions, not changing state)
   const startMultiDrag = useAppStore((s) => s.startMultiDrag);
   const endMultiDrag = useAppStore((s) => s.endMultiDrag);
+  const moveToTrash = useAppStore((s) => s.moveToTrash);
 
   // Register this icon's DOM element for direct manipulation during multi-drag
   useEffect(() => {
@@ -208,6 +209,45 @@ export function DesktopIcon({
       const maxX = window.innerWidth - SACRED.iconGridCellWidth;
       const maxY = window.innerHeight - SACRED.iconGridCellHeight - dockHeight;
 
+      // Check if dropped on trash dock icon
+      const trashDockIcon = document.querySelector('[data-testid="dock-icon-trash"]');
+      let droppedOnTrash = false;
+
+      if (trashDockIcon) {
+        const trashRect = trashDockIcon.getBoundingClientRect();
+        // Calculate drop point (center of dragged icon)
+        const dropX = x + info.offset.x + SACRED.iconGridCellWidth / 2;
+        const dropY = y + info.offset.y + SACRED.iconGridCellHeight / 2;
+
+        droppedOnTrash = (
+          dropX >= trashRect.left &&
+          dropX <= trashRect.right &&
+          dropY >= trashRect.top &&
+          dropY <= trashRect.bottom
+        );
+      }
+
+      // Handle trash drop (Macintosh HD cannot be trashed)
+      if (droppedOnTrash && id !== 'macintosh-hd') {
+        // For multi-select, trash all selected icons except macintosh-hd
+        if (isSelected && selectedIconIds.length > 1) {
+          for (const iconId of selectedIconIds) {
+            if (iconId !== 'macintosh-hd') {
+              moveToTrash(iconId);
+            }
+          }
+        } else {
+          moveToTrash(id);
+        }
+
+        // Reset transforms and end drag
+        controls.set({ x: 0, y: 0 });
+        endMultiDrag();
+        isDragging.current = false;
+        onDragEnd?.();
+        return;
+      }
+
       // Check if this is a multi-drag (this icon is selected and there are other selected icons)
       const isMultiDrag = isSelected && selectedIconIds.length > 1 && onMultiPositionChange;
 
@@ -288,7 +328,7 @@ export function DesktopIcon({
       // Call external drag end callback (e.g., for Macintosh HD eject icon)
       onDragEnd?.();
     },
-    [x, y, onPositionChange, controls, isSelected, selectedIconIds, allIconPositions, onMultiPositionChange, endMultiDrag, id, onDragEnd]
+    [x, y, onPositionChange, controls, isSelected, selectedIconIds, allIconPositions, onMultiPositionChange, endMultiDrag, id, onDragEnd, moveToTrash]
   );
 
   return (

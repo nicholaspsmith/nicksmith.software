@@ -42,6 +42,29 @@
 .toolbarRight {
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+
+/* Empty Trash button - Aqua styled blue button */
+.emptyTrashButton {
+  background: linear-gradient(180deg, #6CB3F5 0%, #1E7AD6 50%, #1565C0 100%);
+  border: 1px solid #1565C0;
+  border-radius: 4px;
+  color: white;
+  font-size: 11px;
+  font-family: var(--aqua-font-family);
+  padding: 3px 12px;
+  cursor: var(--aqua-cursor-default);
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+}
+
+.emptyTrashButton:hover {
+  background: linear-gradient(180deg, #7DC4FF 0%, #2E8AE6 50%, #2575D0 100%);
+}
+
+.emptyTrashButton:active {
+  background: linear-gradient(180deg, #1565C0 0%, #1E7AD6 50%, #6CB3F5 100%);
 }
 
 /* Navigation buttons (back/forward) */
