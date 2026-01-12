@@ -320,6 +320,7 @@ export function MenuBar() {
   const createFolder = useAppStore((s) => s.createFolder);
   const createSmartFolder = useAppStore((s) => s.createSmartFolder);
   const createBurnFolder = useAppStore((s) => s.createBurnFolder);
+  const triggerRestart = useAppStore((s) => s.triggerRestart);
 
   const handleMenuItemClick = useCallback((label: string) => {
     setOpenMenuId(null);
@@ -337,7 +338,7 @@ export function MenuBar() {
       // TextEdit: New opens a blank untitled document
       openNewTextEditDocument();
     } else if (label === 'Restart...') {
-      window.location.reload();
+      triggerRestart();
     } else if (label === 'Force Quit' || label.startsWith('Quit ')) {
       // Close all windows of the current app with animation
       const appToQuit = parentApp || 'finder';
@@ -413,7 +414,7 @@ export function MenuBar() {
       useDocumentStore.getState().resetToDefault(activeWindow.documentId);
       setEditMode(activeWindow.id, false);
     }
-  }, [parentApp, windows, activeWindow, openWindow, openNewFinderWindow, openNewTextEditDocument, createFolder, createSmartFolder, createBurnFolder, setEditMode]);
+  }, [parentApp, windows, activeWindow, openWindow, openNewFinderWindow, openNewTextEditDocument, createFolder, createSmartFolder, createBurnFolder, triggerRestart, setEditMode]);
 
   const handleSpotlightClick = useCallback(() => {
     setSpotlightOpen((prev) => !prev);
