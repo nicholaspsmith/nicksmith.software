@@ -49,6 +49,8 @@ export interface WindowProps {
   id: string;
   title: string;
   children?: React.ReactNode;
+  /** Use slow fade-in animation for startup window */
+  isStartupWindow?: boolean;
 }
 
 /**
@@ -63,7 +65,7 @@ export interface WindowProps {
  * - Close: open → closing → (removed from DOM)
  * - Minimize: open → minimizing → (hidden)
  */
-export function Window({ id, title, children }: WindowProps) {
+export function Window({ id, title, children, isStartupWindow = false }: WindowProps) {
   // ============================================
   // ALL HOOKS MUST BE CALLED BEFORE ANY RETURN
   // ============================================
@@ -80,8 +82,10 @@ export function Window({ id, title, children }: WindowProps) {
   const shadeWindow = useWindowStore((s) => s.shadeWindow);
   const clearRestoredFlag = useWindowStore((s) => s.clearRestoredFlag);
 
-  // Animation state: starts as 'opening' for new windows
-  const [animationState, setAnimationState] = useState<'opening' | 'open' | 'closing' | 'minimizing' | 'restoring'>('opening');
+  // Animation state: starts as 'opening' (or 'startupOpening' for startup window)
+  const [animationState, setAnimationState] = useState<'opening' | 'startupOpening' | 'open' | 'closing' | 'minimizing' | 'restoring'>(
+    isStartupWindow ? 'startupOpening' : 'opening'
+  );
 
   // Track dock target position for minimize animation
   const [dockTarget, setDockTarget] = useState<{ x: number; y: number } | null>(null);
@@ -213,7 +217,7 @@ export function Window({ id, title, children }: WindowProps) {
   }, [id, shadeWindow]);
 
   const handleAnimationComplete = useCallback(() => {
-    if (animationState === 'opening') {
+    if (animationState === 'opening' || animationState === 'startupOpening') {
       // Transition to stable 'open' state after opening animation
       setAnimationState('open');
     } else if (animationState === 'restoring') {

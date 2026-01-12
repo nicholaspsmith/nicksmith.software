@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { useSoundStore } from "@/stores/soundStore";
 import styles from "./AlertDialog.module.css";
 
 export interface AlertDialogProps {
@@ -43,17 +42,11 @@ export function AlertDialog({
   showCancel = false,
   onOk,
   onCancel,
-  playSound = true,
+  // Sound is now handled by appStore.showAlert
+  playSound: _playSound = true,
 }: AlertDialogProps) {
-  const playSosumi = useSoundStore((s) => s.playSosumi);
+  void _playSound; // Intentionally unused - kept for API compatibility
   const okButtonRef = useRef<HTMLButtonElement>(null);
-
-  // Play sound when dialog opens
-  useEffect(() => {
-    if (isOpen && playSound) {
-      playSosumi();
-    }
-  }, [isOpen, playSound, playSosumi]);
 
   // Focus OK button when dialog opens
   useEffect(() => {

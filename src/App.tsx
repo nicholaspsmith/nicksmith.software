@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useEffect, lazy, Suspense } from 'react';
-import { MotionConfig } from 'motion/react';
+import { useCallback, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
+import { MotionConfig, AnimatePresence } from 'motion/react';
 import { useAppStore, type IconPosition } from '@/stores/appStore';
 import { useWindowStore } from '@/stores/windowStore';
 import {
@@ -18,6 +18,7 @@ import { HomeScreen, IOS_BREAKPOINT } from '@/features/ios';
 import { RebootTransition } from '@/components/RebootTransition';
 import { RestartScreen } from '@/components/RestartScreen';
 import { SACRED } from '@/features/tiger/constants/sacred';
+import { playSound } from '@/utils/sounds';
 import { Finder } from '@/features/apps/Finder';
 import { AboutThisMac } from '@/features/apps/AboutThisMac';
 import { TextEditChrome } from '@/features/apps/TextEditChrome';
@@ -167,13 +168,40 @@ const STYLED_COMPONENTS: Record<string, React.ComponentType> = {
  * Renders the appropriate content for a window based on its app type
  * For built-in documents: shows styled component by default, EditableDocument when editing
  */
-function WindowContent({ app, documentId, isEditing }: { app: string; documentId?: string; isEditing?: boolean }) {
+function WindowContent({ app, documentId, isEditing, windowId }: { app: string; documentId?: string; isEditing?: boolean; windowId: string }) {
   // Get and clear the search query for Finder search windows
   const finderSearchQuery = useWindowStore((s) => s.finderSearchQuery);
+  // Window actions for context menu
+  const closeWindow = useWindowStore((s) => s.closeWindow);
+  const openWindow = useWindowStore((s) => s.openWindow);
+  const setEditMode = useWindowStore((s) => s.setEditMode);
   // Check if this document has saved edits
   const documents = useDocumentStore((s) => s.documents);
+  const saveDocument = useDocumentStore((s) => s.saveDocument);
   const docId = documentId || app;
   const hasSavedEdits = docId in documents;
+
+  // Context menu handlers for TextEdit documents
+  const handleNew = () => {
+    openWindow('untitled');
+  };
+  const handleClose = () => {
+    closeWindow(windowId);
+  };
+  const handleSave = () => {
+    // Save current document content to localStorage
+    saveDocument(docId);
+  };
+  const handleSaveAs = () => {
+    // Save As creates a copy - for now just save current
+    handleSave();
+  };
+  const handleEditDocument = () => {
+    setEditMode(windowId, true);
+  };
+  const handleShowOriginal = () => {
+    setEditMode(windowId, false);
+  };
 
   // Built-in documents: show styled by default, editable when editing or has saved edits
   switch (app) {
@@ -184,7 +212,14 @@ function WindowContent({ app, documentId, isEditing }: { app: string; documentId
       const shouldShowEditor = isEditing || hasSavedEdits;
       if (shouldShowEditor) {
         return (
-          <TextEditChrome>
+          <TextEditChrome
+            onNew={handleNew}
+            onClose={handleClose}
+            onSave={handleSave}
+            onSaveAs={handleSaveAs}
+            onShowOriginal={handleShowOriginal}
+            isEditable={true}
+          >
             <EditableDocument documentId={docId} />
           </TextEditChrome>
         );
@@ -192,7 +227,12 @@ function WindowContent({ app, documentId, isEditing }: { app: string; documentId
       // Show original styled component
       const StyledComponent = STYLED_COMPONENTS[app];
       return (
-        <TextEditChrome>
+        <TextEditChrome
+          onNew={handleNew}
+          onClose={handleClose}
+          onEditDocument={handleEditDocument}
+          isEditable={false}
+        >
           <StyledComponent />
         </TextEditChrome>
       );
@@ -206,7 +246,13 @@ function WindowContent({ app, documentId, isEditing }: { app: string; documentId
     case 'untitled':
       // Untitled documents always use EditableDocument (no styled version)
       return (
-        <TextEditChrome>
+        <TextEditChrome
+          onNew={handleNew}
+          onClose={handleClose}
+          onSave={handleSave}
+          onSaveAs={handleSaveAs}
+          isEditable={true}
+        >
           <EditableDocument documentId={documentId || ''} />
         </TextEditChrome>
       );
@@ -242,6 +288,16 @@ function TigerDesktop() {
   const setIconPosition = useAppStore((s) => s.setIconPosition);
   const setMultipleIconPositions = useAppStore((s) => s.setMultipleIconPositions);
   const alertOpen = useAppStore((s) => s.alertOpen);
+
+  // Track initial startup for slow fade-in of About Me window
+  const isInitialStartup = useRef(true);
+  useEffect(() => {
+    // Mark startup as complete after first render
+    const timer = setTimeout(() => {
+      isInitialStartup.current = false;
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
   const alertConfig = useAppStore((s) => s.alertConfig);
   const hideAlert = useAppStore((s) => s.hideAlert);
   const dynamicIcons = useAppStore((s) => s.dynamicIcons);
@@ -503,8 +559,13 @@ function TigerDesktop() {
         {windows
           .filter((w) => w.state !== 'closed')
           .map((w) => (
-            <Window key={w.id} id={w.id} title={w.title}>
-              <WindowContent app={w.app} documentId={w.documentId} isEditing={w.isEditing} />
+            <Window
+              key={w.id}
+              id={w.id}
+              title={w.title}
+              isStartupWindow={isInitialStartup.current && w.app === 'about'}
+            >
+              <WindowContent app={w.app} documentId={w.documentId} isEditing={w.isEditing} windowId={w.id} />
             </Window>
           ))}
       </Desktop>
@@ -548,6 +609,17 @@ export function App() {
   const completeStartup = useAppStore((s) => s.completeStartup);
   const isRestarting = useAppStore((s) => s.isRestarting);
 
+  // Track if startup sound has played to avoid replay on re-renders
+  const hasPlayedStartupSound = useRef(false);
+
+  // Play startup chime when app first loads
+  useEffect(() => {
+    if (!hasPlayedStartupSound.current) {
+      hasPlayedStartupSound.current = true;
+      playSound('startup');
+    }
+  }, []);
+
   // Handle boot screen completion (initial load)
   const handleBootComplete = useCallback(() => {
     completeStartup();
@@ -576,17 +648,24 @@ export function App() {
     }
   }, [mode]);
 
-  // Show boot screen on initial load, don't render content until startup complete
-  if (!startupComplete) {
-    return <RestartScreen onComplete={handleBootComplete} duration={2000} />;
-  }
-
   return (
     <MotionConfig reducedMotion={prefersReducedMotion ? 'always' : 'never'}>
-      <RebootTransition mode={mode} skipInitial={false}>
-        {content}
-      </RebootTransition>
-      {isRestarting && <RestartScreen onComplete={handleRestartComplete} duration={2000} />}
+      {/* Always render content - restart screen overlays it */}
+      {startupComplete && (
+        <RebootTransition mode={mode} skipInitial={false}>
+          {content}
+        </RebootTransition>
+      )}
+
+      {/* Boot/restart screen with fade out animation */}
+      <AnimatePresence>
+        {!startupComplete && (
+          <RestartScreen key="boot" onComplete={handleBootComplete} duration={2000} />
+        )}
+        {isRestarting && (
+          <RestartScreen key="restart" onComplete={handleRestartComplete} duration={2000} />
+        )}
+      </AnimatePresence>
     </MotionConfig>
   );
 }

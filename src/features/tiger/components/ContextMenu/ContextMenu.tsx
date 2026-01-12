@@ -3,6 +3,23 @@ import { createPortal } from 'react-dom';
 import { MenuItem, MenuDivider } from './MenuItem';
 import styles from './ContextMenu.module.css';
 
+/** A single menu item in the context menu */
+export interface ContextMenuItemConfig {
+  type: 'item';
+  label: string;
+  disabled?: boolean;
+  hasSubmenu?: boolean;
+  onClick?: () => void;
+}
+
+/** A divider/separator in the context menu */
+export interface ContextMenuDividerConfig {
+  type: 'divider';
+}
+
+/** Union type for all context menu entries */
+export type ContextMenuEntry = ContextMenuItemConfig | ContextMenuDividerConfig;
+
 export interface ContextMenuProps {
   /** X position (clientX from mouse event) */
   x: number;
@@ -10,7 +27,9 @@ export interface ContextMenuProps {
   y: number;
   /** Handler called when menu should close */
   onClose: () => void;
-  /** Handler called when Clean Up is selected */
+  /** Menu items to display. If not provided, shows default desktop context menu */
+  items?: ContextMenuEntry[];
+  /** Handler called when Clean Up is selected (only used with default items) */
   onCleanUp?: () => void;
 }
 
@@ -26,7 +45,7 @@ export interface ContextMenuProps {
  *
  * Currently displays desktop context menu items (decorative/disabled).
  */
-export function ContextMenu({ x, y, onClose, onCleanUp }: ContextMenuProps) {
+export function ContextMenu({ x, y, onClose, items, onCleanUp }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Calculate adjusted position to keep menu within viewport
@@ -114,18 +133,42 @@ export function ContextMenu({ x, y, onClose, onCleanUp }: ContextMenuProps) {
         data-testid="context-menu"
         style={{ left: x, top: y }}
       >
-        <MenuItem label="New Folder" disabled />
-        <MenuItem label="Get Info" disabled />
-        <MenuItem label="Change Desktop Background..." disabled />
-        <MenuDivider />
-        <MenuItem
-          label="Clean Up"
-          onClick={() => {
-            onCleanUp?.();
-            onClose();
-          }}
-        />
-        <MenuItem label="Arrange By" hasSubmenu disabled />
+        {items ? (
+          // Render provided items
+          items.map((entry, index) => {
+            if (entry.type === 'divider') {
+              return <MenuDivider key={`divider-${index}`} />;
+            }
+            return (
+              <MenuItem
+                key={entry.label}
+                label={entry.label}
+                disabled={entry.disabled}
+                hasSubmenu={entry.hasSubmenu}
+                onClick={() => {
+                  entry.onClick?.();
+                  onClose();
+                }}
+              />
+            );
+          })
+        ) : (
+          // Default desktop context menu
+          <>
+            <MenuItem label="New Folder" disabled />
+            <MenuItem label="Get Info" disabled />
+            <MenuItem label="Change Desktop Background..." disabled />
+            <MenuDivider />
+            <MenuItem
+              label="Clean Up"
+              onClick={() => {
+                onCleanUp?.();
+                onClose();
+              }}
+            />
+            <MenuItem label="Arrange By" hasSubmenu disabled />
+          </>
+        )}
       </div>
     </>
   );

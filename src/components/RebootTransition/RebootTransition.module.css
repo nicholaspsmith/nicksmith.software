@@ -17,3 +17,26 @@
   width: 100%;
   height: 100%;
 }
+
+.logo {
+  /* Apple logo container - positions stem above body */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.appleStem {
+  /* Stem/leaf - positioned at top right */
+  width: 18px;
+  height: auto;
+  /* Offset to align with bite area of apple body */
+  margin-left: 12px;
+  margin-bottom: 1px;
+}
+
+.appleBody {
+  /* Apple body - main logo */
+  width: 80px;
+  height: auto;
+}

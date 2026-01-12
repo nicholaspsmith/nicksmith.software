@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { playSound } from '@/utils/sounds';
 
 export type AppMode = 'tiger' | 'ios';
 export type AlertType = 'caution' | 'stop' | 'note';
@@ -310,6 +311,9 @@ export const useAppStore = create<AppStore>((set, get) => ({
       return;
     }
 
+    // Play trash sound
+    playSound('moveToTrash');
+
     // Create trashed icon with metadata
     const trashedIcon: TrashedIcon = {
       ...iconToTrash,
@@ -338,6 +342,11 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   emptyTrash: () => {
     const { trashedIcons } = get();
+
+    // Only play sound if there are items to delete
+    if (trashedIcons.length > 0) {
+      playSound('emptyTrash');
+    }
 
     // Delete document content for any document icons
     for (const icon of trashedIcons) {
@@ -455,7 +464,13 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set({ isRestarting: true });
   },
 
-  showAlert: (config) => set({ alertOpen: true, alertConfig: config }),
+  showAlert: (config) => {
+    // Play alert sound unless explicitly disabled
+    if (config.playSound !== false) {
+      playSound('alert');
+    }
+    set({ alertOpen: true, alertConfig: config });
+  },
   hideAlert: () => {
     // Just close the alert - don't call any callbacks
     // Use confirmAlert or cancelAlert for callback behavior
