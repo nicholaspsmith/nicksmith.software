@@ -156,9 +156,9 @@ export function DesktopIcon({
   };
 
   // Calculate drag constraints to keep icon within screen boundaries
+  // Allow dragging into dock area so icons can be dropped on trash
   const dragConstraints = useMemo(() => {
     const menuBarHeight = SACRED.menuBarHeight;
-    const dockHeight = SACRED.dockHeight;
     const cellWidth = SACRED.iconGridCellWidth;
     const cellHeight = SACRED.iconGridCellHeight;
 
@@ -166,7 +166,8 @@ export function DesktopIcon({
       top: -(y - menuBarHeight),
       left: -x,
       right: window.innerWidth - x - cellWidth,
-      bottom: window.innerHeight - y - cellHeight - dockHeight,
+      // Allow dragging to bottom of screen (into dock area for trash)
+      bottom: window.innerHeight - y - cellHeight,
     };
   }, [x, y]);
 
@@ -207,6 +208,7 @@ export function DesktopIcon({
       const menuBarHeight = SACRED.menuBarHeight;
       const dockHeight = SACRED.dockHeight;
       const maxX = window.innerWidth - SACRED.iconGridCellWidth;
+      // When positioning icons, keep them above the dock
       const maxY = window.innerHeight - SACRED.iconGridCellHeight - dockHeight;
 
       // Check if dropped on trash dock icon
