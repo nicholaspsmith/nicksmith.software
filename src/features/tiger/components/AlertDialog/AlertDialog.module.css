@@ -19,8 +19,7 @@
 .dialog {
   /* Brushed metal background with pinstripe texture */
   background:
-    var(--aqua-brushed-metal),
-    linear-gradient(180deg, #f0f0f0 0%, #d8d8d8 100%);
+    var(--aqua-brushed-metal), linear-gradient(180deg, #f0f0f0 0%, #d8d8d8 100%);
   border: 1px solid var(--aqua-window-border);
   border-radius: 6px;
   box-shadow:
@@ -126,11 +125,11 @@
   /* Aqua blue gel gradient with specular highlight */
   background: linear-gradient(
     180deg,
-    #9fcfff 0%,
+    #9fcfff,
     #6bb3f5 20%,
-    #2b7de9 50%,
-    #1565c0 80%,
-    #0d47a1 100%
+    #2b7de9,
+    #3e96f9 80%,
+    #0d47a1
   );
   border-color: #0a3d7c;
   color: white;
@@ -140,11 +139,13 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
   /* Subtle pulsing glow animation */
   animation: aquaPulse 1.8s ease-in-out infinite;
+  padding: 1px;
 }
 
 /* Aqua-style subtle pulse animation for default button */
 @keyframes aquaPulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow:
       0 1px 3px rgba(0, 0, 0, 0.25),
       inset 0 1px 0 rgba(255, 255, 255, 0.4),
