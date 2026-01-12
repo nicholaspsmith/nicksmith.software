@@ -4,7 +4,7 @@
   align-items: center;
   padding: 20px 40px 16px;
   text-align: center;
-  font-family: 'Lucida Grande', 'Lucida Sans Unicode', sans-serif;
+  font-family: "Lucida Grande", "Lucida Sans Unicode", sans-serif;
   min-width: 280px;
   /* Fill entire window area */
   height: 100%;
@@ -44,7 +44,20 @@
   width: 125px;
   font-size: 11px;
   font-family: inherit;
-  background: linear-gradient(to bottom, #fff 0%, #e8e8e8 100%);
+  /* background: linear-gradient(to bottom, #fff 0%, #e8e8e8 100%); */
+  background:
+    radial-gradient(
+      ellipse 90% 60% at 50% 25%,
+      rgba(255, 255, 255, 0.35) 0%,
+      rgba(255, 255, 255, 0.45) 20%,
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(250, 250, 250, 0.35) 0%,
+      rgb(204, 204, 204) 50%,
+      rgba(255, 255, 255, 0.65) 100%
+    ) !important;
   border: 1px solid #888;
   border-radius: 20px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
@@ -68,7 +81,7 @@
 .infoRow {
   display: flex;
   gap: 12px;
-  margin: 6px 0;
+  margin: 8px 0;
   font-size: 11px;
   line-height: 1.4;
 }

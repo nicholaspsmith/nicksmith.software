@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { useSoundStore } from '@/stores/soundStore';
-import styles from './AlertDialog.module.css';
+import { useCallback, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { useSoundStore } from "@/stores/soundStore";
+import styles from "./AlertDialog.module.css";
 
 export interface AlertDialogProps {
   /** Whether the dialog is visible */
@@ -11,7 +11,7 @@ export interface AlertDialogProps {
   /** Dialog message */
   message: string;
   /** Type of alert - affects icon displayed */
-  type?: 'caution' | 'stop' | 'note';
+  type?: "caution" | "stop" | "note";
   /** Text for OK/primary button */
   okText?: string;
   /** Text for cancel button (if shown) */
@@ -37,9 +37,9 @@ export function AlertDialog({
   isOpen,
   title,
   message,
-  type = 'caution',
-  okText = 'OK',
-  cancelText = 'Cancel',
+  type = "caution",
+  okText = "OK",
+  cancelText = "Cancel",
   showCancel = false,
   onOk,
   onCancel,
@@ -69,17 +69,17 @@ export function AlertDialog({
   // Handle keyboard events
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         if (showCancel && onCancel) {
           onCancel();
         } else {
           onOk();
         }
-      } else if (e.key === 'Enter') {
+      } else if (e.key === "Enter") {
         onOk();
       }
     },
-    [onOk, onCancel, showCancel]
+    [onOk, onCancel, showCancel],
   );
 
   // Prevent clicks on overlay from propagating
@@ -92,7 +92,7 @@ export function AlertDialog({
         }
       }
     },
-    [onOk, showCancel]
+    [onOk, showCancel],
   );
 
   return (
@@ -114,7 +114,7 @@ export function AlertDialog({
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
             role="alertdialog"
             aria-modal="true"
             aria-labelledby="alert-title"
@@ -163,8 +163,8 @@ export function AlertDialog({
 /**
  * Alert icon component - renders appropriate icon based on type
  */
-function AlertIcon({ type }: { type: 'caution' | 'stop' | 'note' }) {
-  if (type === 'caution') {
+function AlertIcon({ type }: { type: "caution" | "stop" | "note" }) {
+  if (type === "caution") {
     return (
       <svg
         viewBox="0 0 48 48"
@@ -181,7 +181,13 @@ function AlertIcon({ type }: { type: 'caution' | 'stop' | 'note' }) {
           strokeWidth="1"
         />
         <defs>
-          <linearGradient id="cautionGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <linearGradient
+            id="cautionGradient"
+            x1="0%"
+            y1="0%"
+            x2="0%"
+            y2="100%"
+          >
             <stop offset="0%" stopColor="#ffed4a" />
             <stop offset="100%" stopColor="#f5c800" />
           </linearGradient>
@@ -193,7 +199,7 @@ function AlertIcon({ type }: { type: 'caution' | 'stop' | 'note' }) {
     );
   }
 
-  if (type === 'stop') {
+  if (type === "stop") {
     return (
       <svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true">
         {/* Red octagon */}
@@ -222,28 +228,7 @@ function AlertIcon({ type }: { type: 'caution' | 'stop' | 'note' }) {
   }
 
   // Note type - info icon
-  return (
-    <svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true">
-      {/* Blue circle */}
-      <circle
-        cx="24"
-        cy="24"
-        r="20"
-        fill="url(#noteGradient)"
-        stroke="#1a5fb4"
-        strokeWidth="1"
-      />
-      <defs>
-        <linearGradient id="noteGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#6cb3f5" />
-          <stop offset="100%" stopColor="#3584e4" />
-        </linearGradient>
-      </defs>
-      {/* "i" icon */}
-      <circle cx="24" cy="14" r="3" fill="white" />
-      <rect x="21" y="20" width="6" height="16" rx="2" fill="white" />
-    </svg>
-  );
+  return <img src="icons/AlertCautionIcon.png" />;
 }
 
 export default AlertDialog;

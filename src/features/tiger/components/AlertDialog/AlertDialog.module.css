@@ -125,20 +125,15 @@
   /* Aqua blue gel gradient with specular highlight */
   background: linear-gradient(
     180deg,
-    #9fcfff,
-    #6bb3f5 20%,
-    #2b7de9,
-    #3e96f9 80%,
-    #0d47a1
+    #e7f3ff,
+    #9acfff 30%,
+    #66a8ffe8,
+    #99c9ff 70%,
+    #a1c6ff
   );
-  border-color: #0a3d7c;
-  color: white;
+  color: black;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
   /* Subtle pulsing glow animation */
-  animation: aquaPulse 1.8s ease-in-out infinite;
   padding: 1px;
 }
 
@@ -162,27 +157,24 @@
 .buttonPrimary:hover {
   background: linear-gradient(
     180deg,
-    #b3daff 0%,
-    #7fc1ff 20%,
-    #3b8df5 50%,
-    #2575d0 80%,
-    #1565b1 100%
+    #e7f3ff,
+    #9acfff 30%,
+    #509bffe8,
+    #71b4ff 70%,
+    #8bb9ff
   );
 }
 
 .buttonPrimary:active {
   background: linear-gradient(
     180deg,
-    #1565c0 0%,
-    #2b7de9 30%,
-    #3b8df5 70%,
-    #6bb3f5 100%
+    #a7d0ff 0%,
+    #5090e3 30%,
+    #6aacff 70%,
+    #bcdfff 100%
   );
 }
 
 .button:focus {
   outline: none;
-  box-shadow:
-    0 0 0 3px var(--aqua-focus-ring),
-    0 1px 2px rgba(0, 0, 0, 0.1);
 }
