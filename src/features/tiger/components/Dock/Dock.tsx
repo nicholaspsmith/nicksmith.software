@@ -34,11 +34,12 @@ const PARENT_APP_CONFIG: Record<string, { label: string }> = {
 
 /**
  * Default dock icons that are always present
- * TextEdit is always shown but only has running indicator when windows are open
+ * TextEdit and Terminal are always shown but only have running indicator when windows are open
  */
 const DEFAULT_DOCK_ICONS = [
   { id: 'finder', label: 'Finder', icon: '/icons/finder.png' },
   { id: 'textEdit', label: 'TextEdit', icon: '/icons/textedit.png' },
+  { id: 'terminal', label: 'Terminal', icon: '/icons/terminal.png' },
   { id: 'system-preferences', label: 'System Preferences', icon: '/icons/system-preferences.png' },
 ] as const;
 
@@ -84,15 +85,18 @@ export function Dock() {
   // Get running apps (open or minimized, but not closed)
   const runningApps = windows.filter((w) => w.state !== 'closed');
 
-  // Get unique parent app IDs that are running, excluding TextEdit and Finder (they're in default icons)
+  // Get unique parent app IDs that are running, excluding apps in default icons
   const runningParentAppIds = [...new Set(runningApps.map((w) => w.parentApp))]
-    .filter((id) => id !== 'textEdit' && id !== 'finder');
+    .filter((id) => id !== 'textEdit' && id !== 'finder' && id !== 'terminal');
 
   // Check if TextEdit has any running windows (for showing indicator)
   const hasTextEditWindows = runningApps.some((w) => w.parentApp === 'textEdit');
 
   // Check if Finder has any running windows (for showing indicator)
   const hasFinderWindows = runningApps.some((w) => w.parentApp === 'finder');
+
+  // Check if Terminal has any running windows (for showing indicator)
+  const hasTerminalWindows = runningApps.some((w) => w.parentApp === 'terminal');
 
   // Get only minimized windows for thumbnails
   const minimizedWindows = windows.filter((w) => w.state === 'minimized');
@@ -144,6 +148,28 @@ export function Dock() {
       } else {
         // No Finder windows open - open home folder
         openWindow('finder-home');
+      }
+    } else if (iconId === 'terminal') {
+      // Terminal: focus or restore windows if any exist
+      const terminalWindows = windows
+        .filter((w) => w.parentApp === 'terminal' && w.state !== 'closed')
+        .sort((a, b) => b.zIndex - a.zIndex);
+
+      // Only bounce if Terminal has no running windows
+      if (!hasTerminalWindows) {
+        triggerBounce('terminal');
+      }
+
+      if (terminalWindows.length > 0) {
+        const topWindow = terminalWindows[0];
+        if (topWindow.state === 'minimized') {
+          restoreWindow(topWindow.id);
+        } else {
+          focusWindow(topWindow.id);
+        }
+      } else {
+        // No Terminal windows open - open a new terminal
+        openWindow('terminal');
       }
     } else if (iconId === 'system-preferences') {
       showAlert({
@@ -214,10 +240,11 @@ export function Dock() {
           <div className={styles.appSection}>
             {DEFAULT_DOCK_ICONS.map((icon) => {
               // Finder always shows indicator (it's always running in macOS)
-              // TextEdit shows indicator only when it has windows
+              // TextEdit and Terminal show indicator only when they have windows
               const showIndicator =
                 icon.id === 'finder' ||
-                (icon.id === 'textEdit' && hasTextEditWindows);
+                (icon.id === 'textEdit' && hasTextEditWindows) ||
+                (icon.id === 'terminal' && hasTerminalWindows);
               const isBouncing = bouncingIcons.has(icon.id);
 
               return (
