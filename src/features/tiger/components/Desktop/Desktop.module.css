@@ -13,6 +13,6 @@
   height: 100vh;
   background: url('/tiger-wallpaper.png') center center / cover no-repeat;
   overflow: hidden;
-  z-index: var(--aqua-z-desktop);
+  /* No z-index - allows children to escape stacking context during drag */
   cursor: var(--aqua-cursor-default);
 }
