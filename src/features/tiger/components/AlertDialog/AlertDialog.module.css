@@ -81,7 +81,7 @@
 .button {
   font-family: var(--aqua-font-family);
   font-size: var(--aqua-font-size-sm);
-  padding: 5px 20px;
+  padding: 1px 10px;
   /* Capsule/pill shape - fully rounded ends */
   border-radius: 9999px;
   border: 1px solid #888;
