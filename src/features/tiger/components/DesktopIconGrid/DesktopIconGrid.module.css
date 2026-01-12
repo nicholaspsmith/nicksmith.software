@@ -6,13 +6,15 @@
  */
 
 .grid {
-  position: fixed;
+  /* Use absolute (not fixed) to avoid creating a stacking context.
+     This allows individual dragged icons to use z-index at document level. */
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: var(--aqua-z-desktop-icons);
-  /* Pointer events pass through to desktop background */
+  /* No z-index - keeps stacking context at document level.
+     Dragged icons get z-index: 10000 to appear above everything */
   pointer-events: none;
 }
 
