@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useEffect } from 'react';
+import { useCallback, useMemo, useRef, useEffect, useState } from 'react';
 import { motion, useAnimationControls, type PanInfo } from 'motion/react';
 import { useAppStore } from '@/stores/appStore';
 import { iconVariants } from '@/animations/aqua';
@@ -76,12 +76,15 @@ export function DesktopIcon({
   const controls = useAnimationControls();
   const prevPosition = useRef({ x, y });
   const isDragging = useRef(false);
+  const [isCurrentlyDragging, setIsCurrentlyDragging] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Multi-drag actions from store (only subscribe to actions, not changing state)
   const startMultiDrag = useAppStore((s) => s.startMultiDrag);
   const endMultiDrag = useAppStore((s) => s.endMultiDrag);
   const moveToTrash = useAppStore((s) => s.moveToTrash);
+  const setHoveringOverTrash = useAppStore((s) => s.setHoveringOverTrash);
+  const setDraggingIcon = useAppStore((s) => s.setDraggingIcon);
 
   // Register this icon's DOM element for direct manipulation during multi-drag
   useEffect(() => {
@@ -173,18 +176,60 @@ export function DesktopIcon({
 
   const handleDragStart = useCallback(() => {
     isDragging.current = true;
+    setIsCurrentlyDragging(true);
+    // Set global dragging state for z-index management
+    setDraggingIcon(true);
     // If this is a multi-drag (icon is selected with others), mark as dragging
     if (isSelected && selectedIconIds.length > 1) {
       startMultiDrag(id);
     }
     // Call external drag start callback (e.g., for Macintosh HD eject icon)
     onDragStart?.();
-  }, [id, isSelected, selectedIconIds.length, startMultiDrag, onDragStart]);
+  }, [id, isSelected, selectedIconIds.length, startMultiDrag, onDragStart, setDraggingIcon]);
+
+  // Track whether we're hovering over trash (to avoid excessive state updates)
+  const wasHoveringOverTrash = useRef(false);
 
   // Track drag offset in real-time for multi-drag using direct DOM manipulation
   const handleDrag = useCallback(
     (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-      // Only apply to other selected icons during multi-drag
+      // Check if hovering over trash dock icon or Finder trash window
+      if (id !== 'macintosh-hd') {
+        const trashDockIcon = document.querySelector('[data-testid="dock-icon-trash"]');
+        const finderTrashContent = document.querySelector('[data-testid="finder-trash-content"]');
+        const dropX = x + info.offset.x + SACRED.iconGridCellWidth / 2;
+        const dropY = y + info.offset.y + SACRED.iconGridCellHeight / 2;
+
+        let isOverTrash = false;
+
+        // Check trash dock icon
+        if (trashDockIcon) {
+          const trashRect = trashDockIcon.getBoundingClientRect();
+          isOverTrash =
+            dropX >= trashRect.left &&
+            dropX <= trashRect.right &&
+            dropY >= trashRect.top &&
+            dropY <= trashRect.bottom;
+        }
+
+        // Also check Finder trash window content area
+        if (!isOverTrash && finderTrashContent) {
+          const finderTrashRect = finderTrashContent.getBoundingClientRect();
+          isOverTrash =
+            dropX >= finderTrashRect.left &&
+            dropX <= finderTrashRect.right &&
+            dropY >= finderTrashRect.top &&
+            dropY <= finderTrashRect.bottom;
+        }
+
+        // Only update state if changed (to avoid excessive re-renders)
+        if (isOverTrash !== wasHoveringOverTrash.current) {
+          wasHoveringOverTrash.current = isOverTrash;
+          setHoveringOverTrash(isOverTrash);
+        }
+      }
+
+      // Only apply multi-drag transforms to other selected icons
       if (!isSelected || selectedIconIds.length <= 1) return;
 
       // Directly update transforms on other selected icons (no React re-renders)
@@ -195,37 +240,56 @@ export function DesktopIcon({
         if (element) {
           element.style.transform = `translate(${info.offset.x}px, ${info.offset.y}px)`;
           element.style.opacity = '0.7';
-          // z-index 1500: above everything including dock and menubar
-          element.style.zIndex = '1500';
+          // z-index 10000: above everything including dock and menubar
+          element.style.zIndex = '10000';
         }
       }
     },
-    [id, isSelected, selectedIconIds]
+    [id, isSelected, selectedIconIds, x, y, setHoveringOverTrash]
   );
 
   const handleDragEnd = useCallback(
     (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      // Reset trash hover state and dragging state
+      wasHoveringOverTrash.current = false;
+      setIsCurrentlyDragging(false);
+      setHoveringOverTrash(false);
+      setDraggingIcon(false);
+
       const menuBarHeight = SACRED.menuBarHeight;
       const dockHeight = SACRED.dockHeight;
       const maxX = window.innerWidth - SACRED.iconGridCellWidth;
       // When positioning icons, keep them above the dock
       const maxY = window.innerHeight - SACRED.iconGridCellHeight - dockHeight;
 
-      // Check if dropped on trash dock icon
+      // Check if dropped on trash dock icon or Finder trash window
       const trashDockIcon = document.querySelector('[data-testid="dock-icon-trash"]');
+      const finderTrashContent = document.querySelector('[data-testid="finder-trash-content"]');
       let droppedOnTrash = false;
 
+      // Calculate drop point (center of dragged icon)
+      const dropX = x + info.offset.x + SACRED.iconGridCellWidth / 2;
+      const dropY = y + info.offset.y + SACRED.iconGridCellHeight / 2;
+
+      // Check trash dock icon
       if (trashDockIcon) {
         const trashRect = trashDockIcon.getBoundingClientRect();
-        // Calculate drop point (center of dragged icon)
-        const dropX = x + info.offset.x + SACRED.iconGridCellWidth / 2;
-        const dropY = y + info.offset.y + SACRED.iconGridCellHeight / 2;
-
         droppedOnTrash = (
           dropX >= trashRect.left &&
           dropX <= trashRect.right &&
           dropY >= trashRect.top &&
           dropY <= trashRect.bottom
+        );
+      }
+
+      // Also check Finder trash window content area
+      if (!droppedOnTrash && finderTrashContent) {
+        const finderTrashRect = finderTrashContent.getBoundingClientRect();
+        droppedOnTrash = (
+          dropX >= finderTrashRect.left &&
+          dropX <= finderTrashRect.right &&
+          dropY >= finderTrashRect.top &&
+          dropY <= finderTrashRect.bottom
         );
       }
 
@@ -330,7 +394,7 @@ export function DesktopIcon({
       // Call external drag end callback (e.g., for Macintosh HD eject icon)
       onDragEnd?.();
     },
-    [x, y, onPositionChange, controls, isSelected, selectedIconIds, allIconPositions, onMultiPositionChange, endMultiDrag, id, onDragEnd, moveToTrash]
+    [x, y, onPositionChange, controls, isSelected, selectedIconIds, allIconPositions, onMultiPositionChange, endMultiDrag, id, onDragEnd, moveToTrash, setHoveringOverTrash, setDraggingIcon]
   );
 
   return (
@@ -350,12 +414,14 @@ export function DesktopIcon({
       aria-label={label}
       aria-pressed={isSelected}
       // Absolute positioning (multi-drag transforms applied directly via DOM)
+      // z-index 10000 during drag: above everything including windows, dock (90), and menubar (1000)
       style={{
         position: 'absolute',
         left: x,
         top: y,
         width: SACRED.iconGridCellWidth,
         height: SACRED.iconGridCellHeight,
+        zIndex: isCurrentlyDragging ? 10000 : undefined,
       }}
       // Drag functionality
       drag
@@ -367,8 +433,8 @@ export function DesktopIcon({
       onDragEnd={handleDragEnd}
       whileDrag={{
         opacity: 0.7,
-        // z-index 1500: above everything including dock (90) and menubar (1000)
-        zIndex: 1500,
+        // z-index 10000: above everything including dock (90) and menubar (1000)
+        zIndex: 10000,
         cursor: 'grabbing',
       }}
     >
