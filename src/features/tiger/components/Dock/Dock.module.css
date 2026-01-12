@@ -11,7 +11,7 @@
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  /* Below windows (100+) but above desktop icons (10) */
+  /* Below dragged icons (1500) and windows (100+), above resting desktop icons */
   z-index: 90;
   padding-bottom: 4px;
 }
@@ -137,6 +137,11 @@
 }
 
 .dockIcon[data-label]:hover::before {
+  opacity: 1;
+}
+
+/* Drag-over state - force label visible when dragging icon over trash */
+.dockIconDragOver[data-label]::before {
   opacity: 1;
 }
 

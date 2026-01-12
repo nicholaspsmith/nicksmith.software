@@ -66,6 +66,7 @@ export function Dock() {
   const showAlert = useAppStore((s) => s.showAlert);
   const isDraggingMacintoshHD = useAppStore((s) => s.isDraggingMacintoshHD);
   const trashedIcons = useAppStore((s) => s.trashedIcons);
+  const isHoveringOverTrash = useAppStore((s) => s.isHoveringOverTrash);
 
   // Track which icons are currently bouncing
   const [bouncingIcons, setBouncingIcons] = useState<Set<string>>(new Set());
@@ -361,13 +362,16 @@ export function Dock() {
 
           {/* Trash icon - shows eject when dragging Macintosh HD */}
           <button
-            className={styles.dockIcon}
+            className={`${styles.dockIcon} ${isHoveringOverTrash ? styles.dockIconDragOver : ''}`}
             onClick={(e) => handleTrashClick(e)}
             aria-label={isDraggingMacintoshHD ? 'Eject' : 'Trash'}
             data-label={isDraggingMacintoshHD ? 'Eject' : 'Trash'}
             data-testid="dock-icon-trash"
           >
-            <div className={styles.iconImage}>
+            <div
+              className={styles.iconImage}
+              style={isHoveringOverTrash ? { filter: 'brightness(0.8)' } : undefined}
+            >
               <TrashIcon showEject={isDraggingMacintoshHD} hasItems={trashedIcons.length > 0} />
             </div>
           </button>
