@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { AquaScrollbar } from '@/features/tiger/components/AquaScrollbar';
+import { ContextMenu, type ContextMenuEntry } from '@/features/tiger/components/ContextMenu';
 import styles from './TextEditChrome.module.css';
 import {
   AlignLeftIcon,
@@ -14,6 +15,20 @@ import {
 
 interface TextEditChromeProps {
   children: ReactNode;
+  /** Handler for New document action */
+  onNew?: () => void;
+  /** Handler for Close window action */
+  onClose?: () => void;
+  /** Handler for Save action */
+  onSave?: () => void;
+  /** Handler for Save As action */
+  onSaveAs?: () => void;
+  /** Handler for Edit Document action (for non-editable documents) */
+  onEditDocument?: () => void;
+  /** Handler for Show Original action (for editable documents) */
+  onShowOriginal?: () => void;
+  /** Whether the document is editable (affects which menu items are shown) */
+  isEditable?: boolean;
 }
 
 /**
@@ -22,14 +37,53 @@ interface TextEditChromeProps {
  * Provides the consistent TextEdit UI (toolbar with formatting controls
  * and ruler) while allowing different content to be displayed.
  */
-export function TextEditChrome({ children }: TextEditChromeProps) {
+export function TextEditChrome({
+  children,
+  onNew,
+  onClose,
+  onSave,
+  onSaveAs,
+  onEditDocument,
+  onShowOriginal,
+  isEditable = false,
+}: TextEditChromeProps) {
+  // Context menu state
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+
+  // Build context menu items (matching TextEdit File menu)
+  const contextMenuItems: ContextMenuEntry[] = [
+    { type: 'item', label: 'New', onClick: onNew, disabled: !onNew },
+    { type: 'item', label: 'Open...', disabled: true },
+    { type: 'item', label: 'Open Recent', hasSubmenu: true, disabled: true },
+    { type: 'divider' },
+    { type: 'item', label: 'Close', onClick: onClose, disabled: !onClose },
+    { type: 'item', label: 'Save', onClick: onSave, disabled: !onSave },
+    { type: 'item', label: 'Save As...', onClick: onSaveAs, disabled: !onSaveAs },
+    { type: 'divider' },
+    { type: 'item', label: 'Show Properties', disabled: true },
+    { type: 'divider' },
+    // Show Edit Document or Show Original depending on editable state
+    isEditable
+      ? { type: 'item' as const, label: 'Show Original', onClick: onShowOriginal, disabled: !onShowOriginal }
+      : { type: 'item' as const, label: 'Edit Document', onClick: onEditDocument, disabled: !onEditDocument },
+    { type: 'divider' },
+    { type: 'item', label: 'Page Setup...', disabled: true },
+    { type: 'item', label: 'Print...', disabled: true },
+  ];
+
+  // Handle right-click to show context menu
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY });
+  };
+
   return (
-    <div className={styles.container} data-textedit-window>
+    <div className={styles.container} data-textedit-window onContextMenu={handleContextMenu}>
       {/* Toolbar - matches Tiger TextEdit */}
       <div className={`${styles.toolbar} window-drag-handle`}>
-        {/* Styles dropdown */}
+        {/* Styles dropdown (disabled - decorative only) */}
         <div className={styles.toolbarGroup}>
-          <select className={styles.dropdown} aria-label="Styles">
+          <select className={styles.dropdown} aria-label="Styles" disabled>
             <option>Styles</option>
           </select>
         </div>
@@ -50,16 +104,16 @@ export function TextEditChrome({ children }: TextEditChromeProps) {
           </button>
         </div>
 
-        {/* Spacing dropdown */}
+        {/* Spacing dropdown (disabled - decorative only) */}
         <div className={styles.toolbarGroup}>
-          <select className={styles.dropdown} aria-label="Spacing">
+          <select className={styles.dropdown} aria-label="Spacing" disabled>
             <option>Spacing</option>
           </select>
         </div>
 
-        {/* Lists dropdown */}
+        {/* Lists dropdown (disabled - decorative only) */}
         <div className={styles.toolbarGroup}>
-          <select className={styles.dropdown} aria-label="Lists">
+          <select className={styles.dropdown} aria-label="Lists" disabled>
             <option>Lists</option>
           </select>
         </div>
@@ -100,6 +154,16 @@ export function TextEditChrome({ children }: TextEditChromeProps) {
       <AquaScrollbar className={styles.content}>
         {children}
       </AquaScrollbar>
+
+      {/* Context menu */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          items={contextMenuItems}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
     </div>
   );
 }
