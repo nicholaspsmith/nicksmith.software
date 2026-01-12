@@ -1,4 +1,4 @@
-import styles from './AboutThisMac.module.css';
+import styles from "./AboutThisMac.module.css";
 
 /**
  * AboutThisMac - Tiger-era "About This Mac" panel
@@ -19,7 +19,7 @@ export function AboutThisMac() {
           alt=""
           height={64}
           aria-hidden="true"
-          style={{ width: 'auto' }}
+          style={{ width: "auto" }}
         />
       </div>
 
@@ -28,33 +28,27 @@ export function AboutThisMac() {
       <p className={styles.version}>Version 10.4</p>
 
       {/* Software Update Button */}
-      <button className={styles.button}>
-        Software Update...
-      </button>
+      <button className={styles.button}>Software Update...</button>
 
       {/* System Info */}
       <div className={styles.systemInfo}>
         <div className={styles.infoRow}>
           <span className={styles.infoLabel}>Processor</span>
-          <span className={styles.infoValue}>
-            Apple M-series (Simulated)<br />
-            <span className={styles.infoSubtext}>Running in browser</span>
-          </span>
+          <span className={styles.infoValue}>2.0 GHz PowerPC G5</span>
         </div>
         <div className={styles.infoRow}>
           <span className={styles.infoLabel}>Memory</span>
-          <span className={styles.infoValue}>Unlimited VRAM</span>
+          <span className={styles.infoValue}>512 MB DDR SDRAM</span>
         </div>
       </div>
 
       {/* More Info Button */}
-      <button className={styles.button}>
-        More Info...
-      </button>
+      <button className={styles.button}>More Info...</button>
 
       {/* Copyright */}
       <p className={styles.copyright}>
-        TM &amp; &copy; 1983-2005 Apple Computer, Inc.<br />
+        TM &amp; &copy; 1983-2005 Apple Computer, Inc.
+        <br />
         All Rights Reserved.
       </p>
     </div>
