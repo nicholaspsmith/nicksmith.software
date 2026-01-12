@@ -14,7 +14,6 @@ import { DesktopIcon } from '@/features/tiger/components/DesktopIcon';
 import { Window } from '@/features/tiger/components/Window';
 import { MobileFallback } from '@/features/tiger/components/MobileFallback';
 import { AlertDialog } from '@/features/tiger/components/AlertDialog';
-import { TerminalIcon } from '@/features/tiger/components/icons';
 import { HomeScreen, IOS_BREAKPOINT } from '@/features/ios';
 import { RebootTransition } from '@/components/RebootTransition';
 import { SACRED } from '@/features/tiger/constants/sacred';
@@ -53,11 +52,11 @@ function getViewportMode(width: number): ViewportMode {
  */
 const DESKTOP_ICONS = [
   { id: 'macintosh-hd', label: 'Macintosh HD', icon: '/icons/macintosh-hd.png', opensWindow: false },
-  { id: 'terminal', label: 'Terminal', icon: 'terminal', opensWindow: true },
   { id: 'about', label: 'About Me', icon: '/icons/AlertNoteIcon.png', opensWindow: true },
   { id: 'projects', label: 'Projects', icon: '/icons/ADCReferenceLibraryIcon.png', opensWindow: true },
   { id: 'resume', label: 'Resume', icon: '/icons/pdf.png', opensWindow: true },
   { id: 'contact', label: 'Contact', icon: '/icons/AddressBook.png', opensWindow: true },
+  { id: 'terminal', label: 'Terminal', icon: '/icons/terminal.png', opensWindow: true },
 ] as const;
 
 type IconConfig = (typeof DESKTOP_ICONS)[number];
@@ -91,12 +90,7 @@ function DesktopIconImage({ icon, isSelected: _isSelected }: { icon: IconConfig;
     return <img src="/icons/macintosh-hd.png" alt="" width={48} height={48} draggable={false} />;
   }
 
-  // Terminal uses custom SVG (no official icon available)
-  if (icon.icon === 'terminal') {
-    return <TerminalIcon />;
-  }
-
-  // PNG icons for documents and other items
+  // PNG icons for all items
   return <img src={icon.icon} alt="" width={48} height={48} draggable={false} />;
 }
 
