@@ -67,6 +67,12 @@ interface AppStore {
   // Macintosh HD drag state (for eject icon in Dock)
   isDraggingMacintoshHD: boolean;
 
+  // Trash hover state (for visual feedback when dragging over trash)
+  isHoveringOverTrash: boolean;
+
+  // Icon dragging state (for z-index management)
+  isDraggingIcon: boolean;
+
   // Alert dialog state
   alertOpen: boolean;
   alertConfig: AlertConfig | null;
@@ -112,6 +118,12 @@ interface AppStore {
   // Macintosh HD drag actions
   setDraggingMacintoshHD: (isDragging: boolean) => void;
 
+  // Trash hover actions
+  setHoveringOverTrash: (isHovering: boolean) => void;
+
+  // Icon dragging actions
+  setDraggingIcon: (isDragging: boolean) => void;
+
   // Alert actions
   showAlert: (config: AlertConfig) => void;
   hideAlert: () => void;
@@ -130,6 +142,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
   dynamicIcons: [],
   trashedIcons: [],
   isDraggingMacintoshHD: false,
+  isHoveringOverTrash: false,
+  isDraggingIcon: false,
   alertOpen: false,
   alertConfig: null,
 
@@ -420,6 +434,14 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   setDraggingMacintoshHD: (isDragging) => {
     set({ isDraggingMacintoshHD: isDragging });
+  },
+
+  setHoveringOverTrash: (isHovering) => {
+    set({ isHoveringOverTrash: isHovering });
+  },
+
+  setDraggingIcon: (isDragging) => {
+    set({ isDraggingIcon: isDragging });
   },
 
   showAlert: (config) => set({ alertOpen: true, alertConfig: config }),
