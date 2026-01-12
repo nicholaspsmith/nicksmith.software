@@ -37,6 +37,19 @@ export const windowVariants: Variants = {
   },
 
   /**
+   * Startup opening animation - slow fade in for initial window
+   * Duration: 1000ms for gentle appearance after boot
+   */
+  startupOpening: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 1,
+      ease: 'easeOut',
+    },
+  },
+
+  /**
    * Open/resting state - fully visible at normal scale
    */
   open: {
