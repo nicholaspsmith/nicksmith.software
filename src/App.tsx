@@ -543,8 +543,15 @@ export function App() {
   const prefersReducedMotion = useReducedMotion();
   // Track viewport for responsive experience
   const viewport = useViewport();
-  // Restart state
+  // Startup and restart state
+  const startupComplete = useAppStore((s) => s.startupComplete);
+  const completeStartup = useAppStore((s) => s.completeStartup);
   const isRestarting = useAppStore((s) => s.isRestarting);
+
+  // Handle boot screen completion (initial load)
+  const handleBootComplete = useCallback(() => {
+    completeStartup();
+  }, [completeStartup]);
 
   // Handle restart completion - clear localStorage and reload
   const handleRestartComplete = useCallback(() => {
@@ -569,11 +576,15 @@ export function App() {
     }
   }, [mode]);
 
+  // Show boot screen on initial load or restart screen when restarting
+  const showBootScreen = !startupComplete;
+
   return (
     <MotionConfig reducedMotion={prefersReducedMotion ? 'always' : 'never'}>
       <RebootTransition mode={mode} skipInitial={false}>
         {content}
       </RebootTransition>
+      {showBootScreen && <RestartScreen onComplete={handleBootComplete} duration={2000} />}
       {isRestarting && <RestartScreen onComplete={handleRestartComplete} duration={2000} />}
     </MotionConfig>
   );
