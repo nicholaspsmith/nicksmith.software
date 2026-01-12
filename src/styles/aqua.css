@@ -107,11 +107,13 @@
   --aqua-z-desktop: 0;
   --aqua-z-desktop-icons: 10;
   --aqua-z-windows: 100;
-  --aqua-z-menubar: 1000;
-  --aqua-z-dropdown: 1100;
-  --aqua-z-context-menu-overlay: 1200;
-  --aqua-z-context-menu: 1201;
-  --aqua-z-modal: 2000;
+  /* Menu bar and dropdowns use very high z-index to ensure they're always
+     above windows regardless of how many focus operations have occurred */
+  --aqua-z-menubar: 100000;
+  --aqua-z-dropdown: 100001;
+  --aqua-z-context-menu-overlay: 100002;
+  --aqua-z-context-menu: 100003;
+  --aqua-z-modal: 100004;
 
   /* ========================================
    * ANIMATIONS
