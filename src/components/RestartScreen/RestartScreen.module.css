@@ -32,8 +32,8 @@
   width: 18px;
   height: auto;
   /* Offset to align with bite area of apple body */
-  margin-left: 32px;
-  margin-bottom: -4px;
+  margin-left: 12px;
+  margin-bottom: 0;
 }
 
 .appleBody {
