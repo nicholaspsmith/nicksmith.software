@@ -16,6 +16,7 @@ import { MobileFallback } from '@/features/tiger/components/MobileFallback';
 import { AlertDialog } from '@/features/tiger/components/AlertDialog';
 import { HomeScreen, IOS_BREAKPOINT } from '@/features/ios';
 import { RebootTransition } from '@/components/RebootTransition';
+import { RestartScreen } from '@/components/RestartScreen';
 import { SACRED } from '@/features/tiger/constants/sacred';
 import { Finder } from '@/features/apps/Finder';
 import { AboutThisMac } from '@/features/apps/AboutThisMac';
@@ -542,6 +543,16 @@ export function App() {
   const prefersReducedMotion = useReducedMotion();
   // Track viewport for responsive experience
   const viewport = useViewport();
+  // Restart state
+  const isRestarting = useAppStore((s) => s.isRestarting);
+
+  // Handle restart completion - clear localStorage and reload
+  const handleRestartComplete = useCallback(() => {
+    // Clear all localStorage to reset to default state
+    localStorage.clear();
+    // Reload the page
+    window.location.reload();
+  }, []);
 
   // Determine current viewport mode
   const mode = useMemo(() => getViewportMode(viewport.width), [viewport.width]);
@@ -563,6 +574,7 @@ export function App() {
       <RebootTransition mode={mode} skipInitial={false}>
         {content}
       </RebootTransition>
+      {isRestarting && <RestartScreen onComplete={handleRestartComplete} duration={2000} />}
     </MotionConfig>
   );
 }
