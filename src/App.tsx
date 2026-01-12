@@ -576,15 +576,16 @@ export function App() {
     }
   }, [mode]);
 
-  // Show boot screen on initial load or restart screen when restarting
-  const showBootScreen = !startupComplete;
+  // Show boot screen on initial load, don't render content until startup complete
+  if (!startupComplete) {
+    return <RestartScreen onComplete={handleBootComplete} duration={2000} />;
+  }
 
   return (
     <MotionConfig reducedMotion={prefersReducedMotion ? 'always' : 'never'}>
       <RebootTransition mode={mode} skipInitial={false}>
         {content}
       </RebootTransition>
-      {showBootScreen && <RestartScreen onComplete={handleBootComplete} duration={2000} />}
       {isRestarting && <RestartScreen onComplete={handleRestartComplete} duration={2000} />}
     </MotionConfig>
   );
