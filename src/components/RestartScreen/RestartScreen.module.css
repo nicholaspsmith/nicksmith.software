@@ -1,0 +1,42 @@
+/* RestartScreen - Mac OS X Tiger boot/restart screen */
+
+.screen {
+  position: fixed;
+  inset: 0;
+  z-index: 999999; /* Above everything including modals */
+  /* Tiger boot screen gray */
+  background: #c0c0c0;
+  /* Center content */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.logo {
+  /* Apple logo styling */
+}
+
+.spinnerContainer {
+  /* Container for spinner */
+}
+
+.spinner {
+  /* Continuous rotation animation */
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
