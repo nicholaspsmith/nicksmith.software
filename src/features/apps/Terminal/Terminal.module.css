@@ -6,6 +6,7 @@
 .container {
   display: flex;
   flex-direction: column;
+  width: 100%;
   height: 100%;
   min-height: 250px;
   background-color: #0a0a0a;
@@ -13,42 +14,44 @@
 
 .terminal {
   flex: 1;
-  padding: 8px;
   overflow: hidden;
+  width: 100%;
+  position: relative;
 }
 
-/* Override xterm.js styles for Tiger look */
+/* Override xterm.js styles - ensure full container fill */
 .terminal :global(.xterm) {
-  padding: 4px;
+  position: absolute !important;
+  inset: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: hidden !important;
 }
 
+/* Ensure scrollable element fills container */
+.terminal :global(.xterm-scrollable-element) {
+  position: absolute !important;
+  inset: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: hidden !important;
+}
+
+/* xterm viewport fills container, handles its own scrolling */
 .terminal :global(.xterm-viewport) {
-  overflow-y: auto;
+  position: absolute !important;
+  inset: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  /* Hide native scrollbar - using xterm's custom scrollbar instead */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
 }
 
-/* Tiger Aqua scrollbar - matches site-wide styling */
 .terminal :global(.xterm-viewport::-webkit-scrollbar) {
-  width: 15px;
-}
-
-.terminal :global(.xterm-viewport::-webkit-scrollbar-track) {
-  background: #fff;
-  border-left: 1px solid #c0c0c0;
-}
-
-.terminal :global(.xterm-viewport::-webkit-scrollbar-thumb) {
-  background: url('/textures/scrollbar-texture-vertical.png') repeat-y center;
-  background-size: 11px auto;
-  border-radius: 5px;
-  border: 1px solid #2a6cb0;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-  margin: 2px;
-}
-
-.terminal :global(.xterm-viewport::-webkit-scrollbar-thumb:hover) {
-  filter: brightness(1.1);
+  display: none;
 }
 
 /* ========================================
@@ -58,20 +61,48 @@
  * The slider/thumb is a child div inside .scrollbar
  * ======================================== */
 
-/* Scrollbar container - white track */
-.terminal :global(.xterm .xterm-scrollable-element > .scrollbar),
+/* Hide horizontal scrollbar - terminal doesn't need it */
+.terminal :global(.xterm .xterm-scrollable-element > .scrollbar.horizontal) {
+  display: none !important;
+}
+
+/* Vertical scrollbar container - white track extending full height */
 .terminal :global(.xterm .xterm-scrollable-element > .scrollbar.vertical) {
   background: #fff !important;
   width: 15px !important;
   right: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  height: auto !important;
   border-left: 1px solid #a0a0a0 !important;
 }
 
-/* Make scrollbar always visible (override fade/invisible behavior) */
-.terminal :global(.xterm .xterm-scrollable-element > .scrollbar.fade),
-.terminal :global(.xterm .xterm-scrollable-element > .scrollbar.invisible) {
+/* Keep scrollbar always visible - override inline styles and all states */
+.terminal :global(.scrollbar.vertical),
+.terminal :global(.xterm .scrollbar.vertical),
+.terminal :global(.xterm-scrollable-element > .scrollbar.vertical) {
   opacity: 1 !important;
+  visibility: visible !important;
   pointer-events: auto !important;
+  transition: none !important;
+  display: block !important;
+}
+
+/* Also keep the slider visible */
+.terminal :global(.scrollbar.vertical > .slider),
+.terminal :global(.xterm .scrollbar.vertical > .slider) {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition: none !important;
+}
+
+/* Only hide when truly invisible (no scrollable content) */
+.terminal :global(.scrollbar.vertical.invisible),
+.terminal :global(.xterm .scrollbar.vertical.invisible) {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  display: none !important;
 }
 
 /* Scrollbar thumb/slider - Aqua texture */

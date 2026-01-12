@@ -365,9 +365,30 @@ export function Terminal() {
 
     resizeObserver.observe(terminalRef.current);
 
+    // Prevent xterm from hiding scrollbar on mouse leave
+    // xterm adds "invisible" class to scrollbar when mouse leaves
+    const scrollbarObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          const target = mutation.target as HTMLElement;
+          if (target.classList.contains('scrollbar') && target.classList.contains('invisible')) {
+            target.classList.remove('invisible');
+          }
+        }
+      }
+    });
+
+    // Observe the terminal container for scrollbar class changes
+    scrollbarObserver.observe(terminalRef.current, {
+      attributes: true,
+      attributeFilter: ['class'],
+      subtree: true,
+    });
+
     return () => {
       onDataDisposer.dispose();
       resizeObserver.disconnect();
+      scrollbarObserver.disconnect();
       term.dispose();
       xtermRef.current = null;
       fitAddonRef.current = null;
