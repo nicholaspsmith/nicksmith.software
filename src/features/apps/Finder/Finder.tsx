@@ -242,6 +242,7 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
   const trashedIcons = useAppStore((s) => s.trashedIcons);
   const emptyTrash = useAppStore((s) => s.emptyTrash);
   const showAlert = useAppStore((s) => s.showAlert);
+  const isHoveringOverTrash = useAppStore((s) => s.isHoveringOverTrash);
 
   // Get view config based on selected sidebar item
   const getViewConfig = (): FinderViewConfig => {
@@ -548,6 +549,13 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
     setSelectedContentItems([]); // Clear selection when searching
   }, []);
 
+  // Handle drag start for trash items (to restore to desktop)
+  const handleTrashItemDragStart = useCallback((e: React.DragEvent, itemId: string) => {
+    e.dataTransfer.setData('text/plain', itemId);
+    e.dataTransfer.setData('application/x-trash-item', itemId);
+    e.dataTransfer.effectAllowed = 'move';
+  }, []);
+
   return (
     <div className={styles.finder} data-testid="finder">
       {/* Toolbar - also acts as drag handle for window */}
@@ -593,26 +601,6 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
         </div>
 
         <div className={styles.toolbarRight}>
-          {/* Empty Trash button - only show when viewing trash with items */}
-          {selectedSidebarItem === 'trash' && trashedIcons.length > 0 && (
-            <button
-              className={styles.emptyTrashButton}
-              onClick={() => {
-                showAlert({
-                  title: 'Empty Trash',
-                  message: `Are you sure you want to permanently delete ${trashedIcons.length} item${trashedIcons.length !== 1 ? 's' : ''}?`,
-                  type: 'caution',
-                  showCancel: true,
-                  okText: 'Empty Trash',
-                  cancelText: 'Cancel',
-                  onOk: () => emptyTrash(),
-                  playSound: true,
-                });
-              }}
-            >
-              Empty Trash
-            </button>
-          )}
           {/* Search field */}
           <div className={styles.searchField}>
             <SearchIcon />
@@ -648,13 +636,39 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
             </div>
           </AquaScrollbar>
 
-        {/* Content area */}
-        <AquaScrollbar
-          ref={scrollbarRef}
-          className={`${styles.content} ${viewMode !== 'icon' ? styles.contentNoPadding : ''}`}
-          onClick={handleContentAreaClick}
-          onMouseDown={handleContentMouseDown}
-        >
+        {/* Content column (trash bar + scrollable content) */}
+        <div className={styles.contentColumn}>
+          {/* Empty Trash bar - only show when viewing trash with items */}
+          {selectedSidebarItem === 'trash' && trashedIcons.length > 0 && (
+            <div className={styles.trashBar}>
+              <button
+                className={styles.emptyTrashButton}
+                onClick={() => {
+                  showAlert({
+                    title: 'Empty Trash',
+                    message: `Are you sure you want to permanently delete ${trashedIcons.length} item${trashedIcons.length !== 1 ? 's' : ''}?`,
+                    type: 'caution',
+                    showCancel: true,
+                    okText: 'Empty Trash',
+                    cancelText: 'Cancel',
+                    onOk: () => emptyTrash(),
+                    playSound: true,
+                  });
+                }}
+              >
+                Empty Trash
+              </button>
+            </div>
+          )}
+
+          {/* Content area */}
+          <AquaScrollbar
+            ref={scrollbarRef}
+            className={`${styles.content} ${viewMode !== 'icon' ? styles.contentNoPadding : ''} ${selectedSidebarItem === 'trash' && isHoveringOverTrash ? styles.contentDragOver : ''}`}
+            onClick={handleContentAreaClick}
+            onMouseDown={handleContentMouseDown}
+            data-testid={selectedSidebarItem === 'trash' ? 'finder-trash-content' : undefined}
+          >
           {config.contentItems.length === 0 ? (
             <div className={styles.emptyState}>
               {selectedSidebarItem === 'trash' ? 'Trash is empty' : searchQuery ? 'No matches found' : 'This folder is empty'}
@@ -667,6 +681,8 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
                   className={`${styles.contentItem} ${selectedContentItems.includes(item.id) ? styles.contentItemSelected : ''}`}
                   onClick={(e) => { e.stopPropagation(); handleContentClick(item.id, e); }}
                   onDoubleClick={() => handleContentDoubleClick(item)}
+                  draggable={selectedSidebarItem === 'trash'}
+                  onDragStart={selectedSidebarItem === 'trash' ? (e) => handleTrashItemDragStart(e, item.id) : undefined}
                 >
                   <ContentIcon type={item.icon} />
                   <span className={styles.contentLabel}>{item.name}</span>
@@ -685,6 +701,8 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
                   className={`${styles.listRow} ${selectedContentItems.includes(item.id) ? styles.listRowSelected : ''}`}
                   onClick={(e) => { e.stopPropagation(); handleContentClick(item.id, e); }}
                   onDoubleClick={() => handleContentDoubleClick(item)}
+                  draggable={selectedSidebarItem === 'trash'}
+                  onDragStart={selectedSidebarItem === 'trash' ? (e) => handleTrashItemDragStart(e, item.id) : undefined}
                 >
                   <span className={styles.listDisclosure}>▶</span>
                   <SmallIcon type={item.icon} />
@@ -702,6 +720,8 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
                     className={`${styles.columnItem} ${selectedContentItems.includes(item.id) ? styles.columnItemSelected : ''}`}
                     onClick={(e) => { e.stopPropagation(); handleContentClick(item.id, e); }}
                     onDoubleClick={() => handleContentDoubleClick(item)}
+                    draggable={selectedSidebarItem === 'trash'}
+                    onDragStart={selectedSidebarItem === 'trash' ? (e) => handleTrashItemDragStart(e, item.id) : undefined}
                   >
                     <SmallIcon type={item.icon} />
                     <span className={styles.columnName}>{item.name}</span>
@@ -741,6 +761,7 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
             );
           })()}
         </AquaScrollbar>
+        </div>
         </div>
       </div>
 
