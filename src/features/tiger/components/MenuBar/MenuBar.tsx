@@ -50,7 +50,7 @@ const FINDER_MENUS: MenuConfig[] = [
       { label: 'Eject', shortcut: '⌘E', disabled: true },
       { label: 'Burn Disc...', disabled: true },
       { type: 'divider' },
-      { label: 'Find...', shortcut: '⌘F' },
+      { label: 'Find...', shortcut: '⌘F', disabled: true },
     ],
   },
   {
@@ -62,28 +62,28 @@ const FINDER_MENUS: MenuConfig[] = [
       { label: 'Cut', shortcut: '⌘X', disabled: true },
       { label: 'Copy', shortcut: '⌘C', disabled: true },
       { label: 'Paste', shortcut: '⌘V', disabled: true },
-      { label: 'Select All', shortcut: '⌘A' },
+      { label: 'Select All', shortcut: '⌘A', disabled: true },
       { type: 'divider' },
-      { label: 'Show Clipboard' },
-      { label: 'Special Characters...' },
+      { label: 'Show Clipboard', disabled: true },
+      { label: 'Special Characters...', disabled: true },
     ],
   },
   {
     id: 'view',
     label: 'View',
     items: [
-      { label: 'as Icons', shortcut: '⌘1' },
-      { label: 'as List', shortcut: '⌘2' },
-      { label: 'as Columns', shortcut: '⌘3' },
+      { label: 'as Icons', shortcut: '⌘1', disabled: true },
+      { label: 'as List', shortcut: '⌘2', disabled: true },
+      { label: 'as Columns', shortcut: '⌘3', disabled: true },
       { type: 'divider' },
-      { label: 'Clean Up' },
-      { label: 'Arrange By', hasSubmenu: true },
+      { label: 'Clean Up', disabled: true },
+      { label: 'Arrange By', hasSubmenu: true, disabled: true },
       { type: 'divider' },
-      { label: 'Hide Toolbar', shortcut: '⌥⌘T' },
-      { label: 'Customize Toolbar...' },
-      { label: 'Hide Status Bar' },
+      { label: 'Hide Toolbar', shortcut: '⌥⌘T', disabled: true },
+      { label: 'Customize Toolbar...', disabled: true },
+      { label: 'Hide Status Bar', disabled: true },
       { type: 'divider' },
-      { label: 'Show View Options', shortcut: '⌘J' },
+      { label: 'Show View Options', shortcut: '⌘J', disabled: true },
     ],
   },
   {
@@ -92,19 +92,19 @@ const FINDER_MENUS: MenuConfig[] = [
     items: [
       { label: 'Back', shortcut: '⌘[', disabled: true },
       { label: 'Forward', shortcut: '⌘]', disabled: true },
-      { label: 'Enclosing Folder', shortcut: '⌘↑' },
+      { label: 'Enclosing Folder', shortcut: '⌘↑', disabled: true },
       { type: 'divider' },
-      { label: 'Computer', shortcut: '⇧⌘C' },
-      { label: 'Home', shortcut: '⇧⌘H' },
-      { label: 'Network', shortcut: '⇧⌘K' },
-      { label: 'iDisk', hasSubmenu: true },
-      { label: 'Applications', shortcut: '⇧⌘A' },
-      { label: 'Utilities', shortcut: '⇧⌘U' },
+      { label: 'Computer', shortcut: '⇧⌘C', disabled: true },
+      { label: 'Home', shortcut: '⇧⌘H', disabled: true },
+      { label: 'Network', shortcut: '⇧⌘K', disabled: true },
+      { label: 'iDisk', hasSubmenu: true, disabled: true },
+      { label: 'Applications', shortcut: '⇧⌘A', disabled: true },
+      { label: 'Utilities', shortcut: '⇧⌘U', disabled: true },
       { type: 'divider' },
-      { label: 'Recent Folders', hasSubmenu: true },
+      { label: 'Recent Folders', hasSubmenu: true, disabled: true },
       { type: 'divider' },
-      { label: 'Go to Folder...', shortcut: '⇧⌘G' },
-      { label: 'Connect to Server...', shortcut: '⌘K' },
+      { label: 'Go to Folder...', shortcut: '⇧⌘G', disabled: true },
+      { label: 'Connect to Server...', shortcut: '⌘K', disabled: true },
     ],
   },
   {
@@ -112,17 +112,17 @@ const FINDER_MENUS: MenuConfig[] = [
     label: 'Window',
     items: [
       { label: 'Minimize', shortcut: '⌘M' },
-      { label: 'Zoom' },
-      { label: 'Cycle Through Windows', shortcut: '⌘`' },
+      { label: 'Zoom', disabled: true },
+      { label: 'Cycle Through Windows', shortcut: '⌘`', disabled: true },
       { type: 'divider' },
-      { label: 'Bring All to Front' },
+      { label: 'Bring All to Front', disabled: true },
     ],
   },
   {
     id: 'help',
     label: 'Help',
     items: [
-      { label: 'Mac Help', shortcut: '⌘?' },
+      { label: 'Mac Help', shortcut: '⌘?', disabled: true },
     ],
   },
 ];
@@ -136,8 +136,8 @@ const TEXTEDIT_MENUS: MenuConfig[] = [
     label: 'File',
     items: [
       { label: 'New', shortcut: '⌘N' },
-      { label: 'Open...', shortcut: '⌘O' },
-      { label: 'Open Recent', hasSubmenu: true },
+      { label: 'Open...', shortcut: '⌘O', disabled: true },
+      { label: 'Open Recent', hasSubmenu: true, disabled: true },
       { type: 'divider' },
       { label: 'Close', shortcut: '⌘W' },
       { label: 'Save', shortcut: '⌘S' },
@@ -147,10 +147,10 @@ const TEXTEDIT_MENUS: MenuConfig[] = [
       { label: 'Edit Document', shortcut: '⌘E' },
       { label: 'Show Original', shortcut: '⌘R' },
       { type: 'divider' },
-      { label: 'Show Properties', shortcut: '⌥⌘P' },
+      { label: 'Show Properties', shortcut: '⌥⌘P', disabled: true },
       { type: 'divider' },
-      { label: 'Page Setup...', shortcut: '⇧⌘P' },
-      { label: 'Print...', shortcut: '⌘P' },
+      { label: 'Page Setup...', shortcut: '⇧⌘P', disabled: true },
+      { label: 'Print...', shortcut: '⌘P', disabled: true },
     ],
   },
   {
@@ -160,34 +160,34 @@ const TEXTEDIT_MENUS: MenuConfig[] = [
       { label: 'Undo', shortcut: '⌘Z', disabled: true },
       { label: 'Redo', shortcut: '⇧⌘Z', disabled: true },
       { type: 'divider' },
-      { label: 'Cut', shortcut: '⌘X' },
-      { label: 'Copy', shortcut: '⌘C' },
-      { label: 'Paste', shortcut: '⌘V' },
-      { label: 'Paste and Match Style', shortcut: '⌥⇧⌘V' },
-      { label: 'Delete' },
-      { label: 'Complete', shortcut: '⌥⎋' },
-      { label: 'Select All', shortcut: '⌘A' },
+      { label: 'Cut', shortcut: '⌘X', disabled: true },
+      { label: 'Copy', shortcut: '⌘C', disabled: true },
+      { label: 'Paste', shortcut: '⌘V', disabled: true },
+      { label: 'Paste and Match Style', shortcut: '⌥⇧⌘V', disabled: true },
+      { label: 'Delete', disabled: true },
+      { label: 'Complete', shortcut: '⌥⎋', disabled: true },
+      { label: 'Select All', shortcut: '⌘A', disabled: true },
       { type: 'divider' },
-      { label: 'Insert', hasSubmenu: true },
+      { label: 'Insert', hasSubmenu: true, disabled: true },
       { type: 'divider' },
-      { label: 'Find', hasSubmenu: true },
-      { label: 'Spelling', hasSubmenu: true },
-      { label: 'Speech', hasSubmenu: true },
+      { label: 'Find', hasSubmenu: true, disabled: true },
+      { label: 'Spelling', hasSubmenu: true, disabled: true },
+      { label: 'Speech', hasSubmenu: true, disabled: true },
       { type: 'divider' },
-      { label: 'Special Characters...', shortcut: '⌥⌘T' },
+      { label: 'Special Characters...', shortcut: '⌥⌘T', disabled: true },
     ],
   },
   {
     id: 'format',
     label: 'Format',
     items: [
-      { label: 'Font', hasSubmenu: true },
-      { label: 'Text', hasSubmenu: true },
+      { label: 'Font', hasSubmenu: true, disabled: true },
+      { label: 'Text', hasSubmenu: true, disabled: true },
       { type: 'divider' },
-      { label: 'Make Plain Text', shortcut: '⇧⌘T' },
-      { label: 'Prevent Editing' },
-      { label: 'Wrap to Page', shortcut: '⇧⌘W' },
-      { label: 'Allow Hyphenation' },
+      { label: 'Make Plain Text', shortcut: '⇧⌘T', disabled: true },
+      { label: 'Prevent Editing', disabled: true },
+      { label: 'Wrap to Page', shortcut: '⇧⌘W', disabled: true },
+      { label: 'Allow Hyphenation', disabled: true },
     ],
   },
   {
@@ -195,16 +195,16 @@ const TEXTEDIT_MENUS: MenuConfig[] = [
     label: 'Window',
     items: [
       { label: 'Minimize', shortcut: '⌘M' },
-      { label: 'Zoom' },
+      { label: 'Zoom', disabled: true },
       { type: 'divider' },
-      { label: 'Bring All to Front' },
+      { label: 'Bring All to Front', disabled: true },
     ],
   },
   {
     id: 'help',
     label: 'Help',
     items: [
-      { label: 'TextEdit Help', shortcut: '⌘?' },
+      { label: 'TextEdit Help', shortcut: '⌘?', disabled: true },
     ],
   },
 ];
@@ -554,15 +554,15 @@ export function MenuBar() {
               <button type="button" className={`${styles.dropdownItem} ${styles.dropdownItemDisabled}`} role="menuitem" aria-disabled="true">
                 <span className={styles.dropdownItemLabel}>System Preferences...</span>
               </button>
-              <button type="button" className={`${styles.dropdownItem} ${styles.hasSubmenu}`} role="menuitem">
+              <button type="button" className={`${styles.dropdownItem} ${styles.hasSubmenu} ${styles.dropdownItemDisabled}`} role="menuitem" aria-disabled="true">
                 <span className={styles.dropdownItemLabel}>Dock</span>
                 <span className={styles.dropdownItemShortcut}>▶</span>
               </button>
-              <button type="button" className={`${styles.dropdownItem} ${styles.hasSubmenu}`} role="menuitem">
+              <button type="button" className={`${styles.dropdownItem} ${styles.hasSubmenu} ${styles.dropdownItemDisabled}`} role="menuitem" aria-disabled="true">
                 <span className={styles.dropdownItemLabel}>Location</span>
                 <span className={styles.dropdownItemShortcut}>▶</span>
               </button>
-              <button type="button" className={`${styles.dropdownItem} ${styles.hasSubmenu}`} role="menuitem">
+              <button type="button" className={`${styles.dropdownItem} ${styles.hasSubmenu} ${styles.dropdownItemDisabled}`} role="menuitem" aria-disabled="true">
                 <span className={styles.dropdownItemLabel}>Recent Items</span>
                 <span className={styles.dropdownItemShortcut}>▶</span>
               </button>
@@ -614,7 +614,7 @@ export function MenuBar() {
                 <span className={styles.dropdownItemShortcut}>⌘,</span>
               </button>
               <div className={styles.dropdownDivider} role="separator" />
-              <button type="button" className={`${styles.dropdownItem} ${styles.hasSubmenu}`} role="menuitem">
+              <button type="button" className={`${styles.dropdownItem} ${styles.hasSubmenu} ${styles.dropdownItemDisabled}`} role="menuitem" aria-disabled="true">
                 <span className={styles.dropdownItemLabel}>Services</span>
                 <span className={styles.dropdownItemShortcut}>▶</span>
               </button>
