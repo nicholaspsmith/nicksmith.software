@@ -251,6 +251,29 @@
 }
 
 /* ========================================
+ * CONTENT COLUMN (wraps trash bar + content)
+ * ======================================== */
+
+.contentColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Trash bar - grey bar at top of content when viewing trash */
+.trashBar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 4px 12px;
+  background: linear-gradient(180deg, #e8e8e8 0%, #d0d0d0 100%);
+  border-bottom: 1px solid #a0a0a0;
+  flex-shrink: 0;
+}
+
+/* ========================================
  * CONTENT AREA
  * ======================================== */
 
@@ -263,6 +286,13 @@
 
 .contentNoPadding {
   /* No-op now, kept for backwards compatibility */
+}
+
+/* Visual feedback when dragging an icon over the trash content area */
+.contentDragOver {
+  background: rgba(0, 112, 215, 0.1);
+  outline: 2px solid rgba(0, 112, 215, 0.4);
+  outline-offset: -2px;
 }
 
 .emptyState {
