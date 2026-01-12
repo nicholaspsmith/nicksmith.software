@@ -361,11 +361,20 @@ export function MenuBar() {
       if (!activeWindow || activeWindow.parentApp !== 'textEdit' || !activeWindow.documentId) return;
 
       const docStore = useDocumentStore.getState();
+      const isNewUntitledDoc = isUUID(activeWindow.documentId) &&
+        !docStore.savedDocumentIds.includes(activeWindow.documentId);
+
       docStore.saveDocument(activeWindow.documentId);
 
-      // If this is an Untitled doc (UUID), create desktop icon
-      if (isUUID(activeWindow.documentId)) {
-        useAppStore.getState().createDocumentIcon(activeWindow.documentId, activeWindow.title);
+      // If this is a NEW Untitled doc (UUID) being saved for the first time
+      if (isNewUntitledDoc) {
+        // Generate a unique title that doesn't conflict with existing saved docs
+        const uniqueTitle = docStore.getUniqueUntitledName();
+        docStore.saveDocumentTitle(activeWindow.documentId, uniqueTitle);
+        // Update the window title
+        useWindowStore.getState().setWindowTitle(activeWindow.id, uniqueTitle);
+        // Create desktop icon with the unique title
+        useAppStore.getState().createDocumentIcon(activeWindow.documentId, uniqueTitle);
       }
     } else if (label === 'Save As...') {
       // Save As downloads a file (keeping original behavior)

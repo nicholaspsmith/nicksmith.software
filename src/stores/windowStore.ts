@@ -178,6 +178,8 @@ interface WindowStore {
   getWindowByDocumentId: (documentId: string) => WindowState | undefined;
   /** Set edit mode for a window (switches from styled to textarea view) */
   setEditMode: (id: string, isEditing: boolean) => void;
+  /** Update a window's title */
+  setWindowTitle: (id: string, title: string) => void;
 }
 
 export const useWindowStore = create<WindowStore>((set, get) => ({
@@ -548,6 +550,14 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
     set((state) => ({
       windows: state.windows.map((w) =>
         w.id === id ? { ...w, isEditing } : w
+      ),
+    }));
+  },
+
+  setWindowTitle: (id, title) => {
+    set((state) => ({
+      windows: state.windows.map((w) =>
+        w.id === id ? { ...w, title } : w
       ),
     }));
   },

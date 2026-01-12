@@ -62,6 +62,9 @@ export function isUUID(id: string): boolean {
   return UUID_PATTERN.test(id);
 }
 
+/** localStorage key prefix for document titles */
+const TITLE_PREFIX = 'textedit:title:';
+
 interface DocumentStore {
   /** In-memory document content (docId -> content) */
   documents: Record<string, string>;
@@ -82,6 +85,12 @@ interface DocumentStore {
   loadFromStorage: () => void;
   /** Check if a document is currently open in a window; returns windowId or null */
   isDocumentOpen: (docId: string) => string | null;
+  /** Generate a unique "Untitled" name that doesn't conflict with existing saved docs */
+  getUniqueUntitledName: () => string;
+  /** Get the saved title for a document, or null if not saved */
+  getDocumentTitle: (docId: string) => string | null;
+  /** Save a document's title to localStorage */
+  saveDocumentTitle: (docId: string, title: string) => void;
 }
 
 export const useDocumentStore = create<DocumentStore>((set, get) => ({
@@ -222,5 +231,37 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
     const windows = useWindowStore.getState().windows;
     const window = windows.find((w) => w.documentId === docId);
     return window?.id ?? null;
+  },
+
+  getUniqueUntitledName: () => {
+    const { savedDocumentIds } = get();
+
+    // Collect all existing "Untitled" names from saved documents
+    const existingNames = new Set<string>();
+    for (const docId of savedDocumentIds) {
+      const title = safeGetItem(`${TITLE_PREFIX}${docId}`);
+      if (title) {
+        existingNames.add(title);
+      }
+    }
+
+    // Find first available "Untitled" or "Untitled N" name
+    if (!existingNames.has('Untitled')) {
+      return 'Untitled';
+    }
+
+    let counter = 2;
+    while (existingNames.has(`Untitled ${counter}`)) {
+      counter++;
+    }
+    return `Untitled ${counter}`;
+  },
+
+  getDocumentTitle: (docId) => {
+    return safeGetItem(`${TITLE_PREFIX}${docId}`);
+  },
+
+  saveDocumentTitle: (docId, title) => {
+    safeSetItem(`${TITLE_PREFIX}${docId}`, title);
   },
 }));
