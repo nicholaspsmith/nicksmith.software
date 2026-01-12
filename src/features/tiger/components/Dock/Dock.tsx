@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useWindowStore } from '@/stores/windowStore';
 import { useAppStore } from '@/stores/appStore';
 import { motion, AnimatePresence } from 'motion/react';
+import { ContextMenu, type ContextMenuEntry } from '../ContextMenu';
 import styles from './Dock.module.css';
 
 /**
@@ -67,9 +68,13 @@ export function Dock() {
   const isDraggingMacintoshHD = useAppStore((s) => s.isDraggingMacintoshHD);
   const trashedIcons = useAppStore((s) => s.trashedIcons);
   const isHoveringOverTrash = useAppStore((s) => s.isHoveringOverTrash);
+  const emptyTrash = useAppStore((s) => s.emptyTrash);
 
   // Track which icons are currently bouncing
   const [bouncingIcons, setBouncingIcons] = useState<Set<string>>(new Set());
+
+  // Context menu state for trash
+  const [trashContextMenu, setTrashContextMenu] = useState<{ x: number; y: number } | null>(null);
 
   // Trigger bounce animation for an icon (single bounce)
   const triggerBounce = useCallback((iconId: string) => {
@@ -211,6 +216,10 @@ export function Dock() {
 
   const handleTrashClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    openTrashWindow();
+  };
+
+  const openTrashWindow = () => {
     // Trash opens Finder with Trash view
     // Check if Finder Trash window already exists
     const trashWindow = windows.find((w) => w.app === 'finder-trash' && w.state !== 'closed');
@@ -225,6 +234,41 @@ export function Dock() {
       openWindow('finder-trash');
     }
   };
+
+  const handleTrashContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setTrashContextMenu({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleEmptyTrash = () => {
+    if (trashedIcons.length === 0) {
+      showAlert({
+        title: 'Trash',
+        message: 'The Trash is already empty.',
+        type: 'note',
+      });
+      return;
+    }
+
+    showAlert({
+      title: 'Empty Trash',
+      message: `Are you sure you want to permanently delete ${trashedIcons.length} item${trashedIcons.length !== 1 ? 's' : ''}?`,
+      type: 'caution',
+      okText: 'Empty Trash',
+      showCancel: true,
+      onOk: () => {
+        emptyTrash();
+      },
+    });
+  };
+
+  // Trash context menu items
+  const trashContextMenuItems: ContextMenuEntry[] = [
+    { type: 'item', label: 'Open', onClick: openTrashWindow },
+    { type: 'divider' },
+    { type: 'item', label: 'Empty Trash', onClick: handleEmptyTrash, disabled: trashedIcons.length === 0 },
+  ];
 
   return (
     <div
@@ -364,6 +408,7 @@ export function Dock() {
           <button
             className={`${styles.dockIcon} ${isHoveringOverTrash ? styles.dockIconDragOver : ''}`}
             onClick={(e) => handleTrashClick(e)}
+            onContextMenu={handleTrashContextMenu}
             aria-label={isDraggingMacintoshHD ? 'Eject' : 'Trash'}
             data-label={isDraggingMacintoshHD ? 'Eject' : 'Trash'}
             data-testid="dock-icon-trash"
@@ -377,6 +422,16 @@ export function Dock() {
           </button>
         </motion.div>
       </div>
+
+      {/* Trash context menu */}
+      {trashContextMenu && (
+        <ContextMenu
+          x={trashContextMenu.x}
+          y={trashContextMenu.y}
+          items={trashContextMenuItems}
+          onClose={() => setTrashContextMenu(null)}
+        />
+      )}
     </div>
   );
 }
