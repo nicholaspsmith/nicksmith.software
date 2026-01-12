@@ -195,8 +195,8 @@ export function DesktopIcon({
         if (element) {
           element.style.transform = `translate(${info.offset.x}px, ${info.offset.y}px)`;
           element.style.opacity = '0.7';
-          // z-index 900: above windows (100+) but below menubar (1000)
-          element.style.zIndex = '900';
+          // z-index 1500: above everything including dock and menubar
+          element.style.zIndex = '1500';
         }
       }
     },
@@ -367,8 +367,8 @@ export function DesktopIcon({
       onDragEnd={handleDragEnd}
       whileDrag={{
         opacity: 0.7,
-        // z-index 900: above windows (100+) but below menubar (1000)
-        zIndex: 900,
+        // z-index 1500: above everything including dock (90) and menubar (1000)
+        zIndex: 1500,
         cursor: 'grabbing',
       }}
     >

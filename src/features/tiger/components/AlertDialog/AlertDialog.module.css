@@ -84,18 +84,16 @@
   padding: 5px 20px;
   /* Capsule/pill shape - fully rounded ends */
   border-radius: 9999px;
-  border: 1px solid #6a6a6a;
-  /* Aqua gel effect with specular highlight */
+  border: 1px solid #888;
+  /* Greyscale gradient - matches primary but desaturated */
   background: linear-gradient(
     180deg,
-    #fafafa 0%,
-    #f0f0f0 30%,
-    #d8d8d8 70%,
-    #c8c8c8 100%
+    #f0f0f0 0%,
+    #d8d8d8 30%,
+    #c0c0c0 70%,
+    #d0d0d0 100%
   );
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  color: #000;
   cursor: var(--aqua-cursor-default);
   min-width: 72px;
 }
@@ -103,75 +101,54 @@
 .button:hover {
   background: linear-gradient(
     180deg,
-    #ffffff 0%,
-    #f5f5f5 30%,
-    #e0e0e0 70%,
-    #d0d0d0 100%
+    #f8f8f8 0%,
+    #e0e0e0 30%,
+    #c8c8c8 70%,
+    #d8d8d8 100%
   );
 }
 
 .button:active {
   background: linear-gradient(
     180deg,
-    #d0d0d0 0%,
-    #c8c8c8 30%,
-    #d8d8d8 70%,
-    #e0e0e0 100%
+    #c0c0c0 0%,
+    #b0b0b0 30%,
+    #c8c8c8 70%,
+    #d0d0d0 100%
   );
 }
 
-/* Primary button (default action) - blue Aqua gel style with pulse */
+/* Primary button (default action) - blue gradient, no animation or shadow */
 .buttonPrimary {
-  /* Aqua blue gel gradient with specular highlight */
+  /* Aqua blue gel gradient */
   background: linear-gradient(
     180deg,
-    #e7f3ff,
-    #9acfff 30%,
-    #66a8ffe8,
-    #99c9ff 70%,
-    #a1c6ff
+    #a8d4ff 0%,
+    #6aafff 30%,
+    #4a9fff 70%,
+    #7ab8ff 100%
   );
-  color: black;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
-  /* Subtle pulsing glow animation */
-  padding: 1px;
-}
-
-/* Aqua-style subtle pulse animation for default button */
-@keyframes aquaPulse {
-  0%,
-  100% {
-    box-shadow:
-      0 1px 3px rgba(0, 0, 0, 0.25),
-      inset 0 1px 0 rgba(255, 255, 255, 0.4),
-      0 0 0 0 rgba(59, 141, 245, 0);
-  }
-  50% {
-    box-shadow:
-      0 1px 3px rgba(0, 0, 0, 0.25),
-      inset 0 1px 0 rgba(255, 255, 255, 0.4),
-      0 0 8px 2px rgba(59, 141, 245, 0.4);
-  }
+  border: 1px solid #4080c0;
+  color: #000;
 }
 
 .buttonPrimary:hover {
   background: linear-gradient(
     180deg,
-    #e7f3ff,
-    #9acfff 30%,
-    #509bffe8,
-    #71b4ff 70%,
-    #8bb9ff
+    #b8e0ff 0%,
+    #7abfff 30%,
+    #5aafff 70%,
+    #8ac8ff 100%
   );
 }
 
 .buttonPrimary:active {
   background: linear-gradient(
     180deg,
-    #a7d0ff 0%,
-    #5090e3 30%,
-    #6aacff 70%,
-    #bcdfff 100%
+    #5090e0 0%,
+    #4a8ad0 30%,
+    #6aa0e0 70%,
+    #90c0f0 100%
   );
 }
 
