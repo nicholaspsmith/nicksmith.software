@@ -73,6 +73,9 @@ interface AppStore {
   // Icon dragging state (for z-index management)
   isDraggingIcon: boolean;
 
+  // Restart state (for restart screen overlay)
+  isRestarting: boolean;
+
   // Alert dialog state
   alertOpen: boolean;
   alertConfig: AlertConfig | null;
@@ -124,6 +127,9 @@ interface AppStore {
   // Icon dragging actions
   setDraggingIcon: (isDragging: boolean) => void;
 
+  // Restart actions
+  triggerRestart: () => void;
+
   // Alert actions
   showAlert: (config: AlertConfig) => void;
   hideAlert: () => void;
@@ -144,6 +150,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   isDraggingMacintoshHD: false,
   isHoveringOverTrash: false,
   isDraggingIcon: false,
+  isRestarting: false,
   alertOpen: false,
   alertConfig: null,
 
@@ -442,6 +449,10 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   setDraggingIcon: (isDragging) => {
     set({ isDraggingIcon: isDragging });
+  },
+
+  triggerRestart: () => {
+    set({ isRestarting: true });
   },
 
   showAlert: (config) => set({ alertOpen: true, alertConfig: config }),
