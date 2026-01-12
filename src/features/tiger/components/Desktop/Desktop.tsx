@@ -61,6 +61,7 @@ function rectanglesIntersect(
 export function Desktop({ children, iconPositions, onIconsSelected }: DesktopProps) {
   const clearSelection = useAppStore((s) => s.clearSelection);
   const resetIconPositions = useAppStore((s) => s.resetIconPositions);
+  const restoreFromTrash = useAppStore((s) => s.restoreFromTrash);
   const clearActiveWindow = useWindowStore((s) => s.clearActiveWindow);
   const windows = useWindowStore((s) => s.windows);
   const activeWindowId = useWindowStore((s) => s.activeWindowId);
@@ -235,6 +236,24 @@ export function Desktop({ children, iconPositions, onIconsSelected }: DesktopPro
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selection.isSelecting, iconPositions, onIconsSelected]);
 
+  // Handle drag over for trash item restore
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    // Only allow drop if it's a trash item
+    if (e.dataTransfer.types.includes('application/x-trash-item')) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    }
+  }, []);
+
+  // Handle drop for trash item restore
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    const iconId = e.dataTransfer.getData('application/x-trash-item');
+    if (iconId) {
+      e.preventDefault();
+      restoreFromTrash(iconId);
+    }
+  }, [restoreFromTrash]);
+
   return (
     <div
       ref={desktopRef}
@@ -243,6 +262,8 @@ export function Desktop({ children, iconPositions, onIconsSelected }: DesktopPro
       onClick={handleClick}
       onMouseDown={handleMouseDown}
       onContextMenu={handleContextMenu}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
     >
       <MenuBar />
       {/* Bounds container for windows - only constrains top (below menu bar) */}
