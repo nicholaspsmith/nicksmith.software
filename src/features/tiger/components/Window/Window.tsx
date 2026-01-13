@@ -281,17 +281,17 @@ export function Window({ id, title, children, isStartupWindow = false, onTitleBa
   // Finder windows have larger bottom-right to cover the visual resize grip
   const isFinderWindow = windowState.parentApp === 'finder';
   const bottomRightStyle = isFinderWindow
-    ? { cursor: 'var(--aqua-cursor-resize-se)', zIndex: 9999, width: '20px', height: '20px', right: '-1px', bottom: '-1px' }
-    : { cursor: 'var(--aqua-cursor-resize-se)', zIndex: 9999, width: '12px', height: '12px' };
+    ? { cursor: 'var(--aqua-cursor-resize-se)', zIndex: 9999, width: '22px', height: '22px', right: '-1px', bottom: '-1px' }
+    : { cursor: 'var(--aqua-cursor-resize-se)', zIndex: 9999, width: '14px', height: '14px' };
   const resizeHandleStyles = {
     top: { cursor: 'var(--aqua-cursor-resize-n)', zIndex: 9999, height: '8px', top: '-5px' },
     right: { cursor: 'var(--aqua-cursor-resize-e)', zIndex: 9999, width: '5px', right: '-5px' },
     bottom: { cursor: 'var(--aqua-cursor-resize-s)', zIndex: 9999, height: '4px', left: '0px', bottom: '-1px' },
     left: { cursor: 'var(--aqua-cursor-resize-w)', zIndex: 9999, width: '5px', left: '-4px' },
-    topRight: { cursor: 'var(--aqua-cursor-resize-ne)', zIndex: 9999, width: '12px', height: '12px' },
+    topRight: { cursor: 'var(--aqua-cursor-resize-ne)', zIndex: 9999, width: '14px', height: '14px' },
     bottomRight: bottomRightStyle,
-    bottomLeft: { cursor: 'var(--aqua-cursor-resize-sw)', zIndex: 9999, width: '12px', height: '12px', left: '-5px', bottom: '-5px' },
-    topLeft: { cursor: 'var(--aqua-cursor-resize-nw)', zIndex: 9999, width: '12px', height: '12px', left: '-5px', top: '-5px' },
+    bottomLeft: { cursor: 'var(--aqua-cursor-resize-sw)', zIndex: 9999, width: '14px', height: '14px', left: '-5px', bottom: '-5px' },
+    topLeft: { cursor: 'var(--aqua-cursor-resize-nw)', zIndex: 9999, width: '14px', height: '14px', left: '-5px', top: '-5px' },
   };
 
   return (
