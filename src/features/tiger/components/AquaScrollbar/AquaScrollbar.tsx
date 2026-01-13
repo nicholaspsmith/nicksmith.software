@@ -17,6 +17,7 @@ interface AquaScrollbarProps {
   /** Event handlers to forward to the content element */
   onClick?: React.MouseEventHandler<HTMLDivElement>;
   onMouseDown?: React.MouseEventHandler<HTMLDivElement>;
+  onContextMenu?: React.MouseEventHandler<HTMLDivElement>;
   /** Data-testid for the wrapper element (used for drop detection) */
   'data-testid'?: string;
 }
@@ -41,6 +42,7 @@ export const AquaScrollbar = forwardRef<AquaScrollbarHandle, AquaScrollbarProps>
   autoHide = false,
   onClick,
   onMouseDown,
+  onContextMenu,
   'data-testid': dataTestId,
 }, ref) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -285,6 +287,7 @@ export const AquaScrollbar = forwardRef<AquaScrollbarHandle, AquaScrollbarProps>
         }}
         onClick={onClick}
         onMouseDown={onMouseDown}
+        onContextMenu={onContextMenu}
         data-aqua-scroll-content
       >
         {children}
