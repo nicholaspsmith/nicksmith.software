@@ -7,6 +7,25 @@ import styles from './Finder.module.css';
 import { TerminalIcon } from '@/features/tiger/components/icons';
 
 /**
+ * Music files from public/music folder
+ */
+const MUSIC_FILES: ContentItem[] = [
+  { id: 'music-1', name: 'Bruno Mars - Uptown Funk.mp3', icon: 'music-file', type: 'file' },
+  { id: 'music-2', name: 'La Bouche - Be My Lover.mp3', icon: 'music-file', type: 'file' },
+  { id: 'music-3', name: 'No Doubt - Underneath It All ft. Lady Saw.mp3', icon: 'music-file', type: 'file' },
+  { id: 'music-4', name: 'NOFX - Drugs Are Good.mp3', icon: 'music-file', type: 'file' },
+  { id: 'music-5', name: 'Real McCoy - Another Night.mp3', icon: 'music-file', type: 'file' },
+  { id: 'music-6', name: 'SNAP! - Rhythm Is A Dancer.mp3', icon: 'music-file', type: 'file' },
+];
+
+/**
+ * Video files from public/videos folder
+ */
+const VIDEO_FILES: ContentItem[] = [
+  { id: 'video-1', name: 'Numa Numa.mp4', icon: 'video-file', type: 'file' },
+];
+
+/**
  * Sidebar location item
  */
 interface SidebarItem {
@@ -239,6 +258,8 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
 
   // Window store for opening apps
   const openWindow = useWindowStore((s) => s.openWindow);
+  const openITunes = useWindowStore((s) => s.openITunes);
+  const openQuickTime = useWindowStore((s) => s.openQuickTime);
   const clearAppSelection = useAppStore((s) => s.clearSelection);
   const trashedIcons = useAppStore((s) => s.trashedIcons);
   const emptyTrash = useAppStore((s) => s.emptyTrash);
@@ -310,8 +331,6 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
         };
       case 'applications':
       case 'documents':
-      case 'movies':
-      case 'music':
       case 'pictures':
         // These folders show empty state for now
         return {
@@ -319,6 +338,20 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
           sidebarItems: SIDEBAR_ITEMS,
           contentItems: [],
           statusText: '0 items',
+        };
+      case 'music':
+        return {
+          title: 'Music',
+          sidebarItems: SIDEBAR_ITEMS,
+          contentItems: MUSIC_FILES,
+          statusText: `${MUSIC_FILES.length} items`,
+        };
+      case 'movies':
+        return {
+          title: 'Movies',
+          sidebarItems: SIDEBAR_ITEMS,
+          contentItems: VIDEO_FILES,
+          statusText: `${VIDEO_FILES.length} item${VIDEO_FILES.length !== 1 ? 's' : ''}`,
         };
       case 'trash': {
         // Convert trashed icons to content items
@@ -370,6 +403,18 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
         clearAppSelection();
       }
     } else {
+      // Check for music files
+      if (item.icon === 'music-file') {
+        openITunes(item.name);
+        clearAppSelection();
+        return;
+      }
+      // Check for video files
+      if (item.icon === 'video-file') {
+        openQuickTime(item.name);
+        clearAppSelection();
+        return;
+      }
       // Open file/app
       const windowId = OPENABLE_ITEMS[item.id];
       if (windowId) {
@@ -377,7 +422,7 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
         clearAppSelection();
       }
     }
-  }, [openWindow, clearAppSelection]);
+  }, [openWindow, openITunes, openQuickTime, clearAppSelection]);
 
   const handleContentClick = useCallback((itemId: string, e: React.MouseEvent) => {
     // Skip if we just finished marquee
@@ -1123,6 +1168,9 @@ const CONTENT_ICON_MAP: Record<string, string> = {
   'system-folder': '/icons/SystemFolderIcon.png',
   'home-folder': '/icons/HomeFolderIcon.png',
   'users-folder': '/icons/UsersFolderIcon.png',
+  // Media files
+  'music-file': '/icons/itunes.png',
+  'video-file': '/icons/quicktime-logo.png',
 };
 
 function ContentIcon({ type }: { type: string }) {
