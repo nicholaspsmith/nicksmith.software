@@ -8,7 +8,10 @@ export interface ContextMenuItemConfig {
   type: 'item';
   label: string;
   disabled?: boolean;
+  /** @deprecated Use submenu instead. Kept for backward compatibility with disabled menu items */
   hasSubmenu?: boolean;
+  /** Submenu items - when provided, renders a nested menu on hover */
+  submenu?: ContextMenuEntry[];
   onClick?: () => void;
 }
 
@@ -144,7 +147,12 @@ export function ContextMenu({ x, y, onClose, items, onCleanUp }: ContextMenuProp
                 key={entry.label}
                 label={entry.label}
                 disabled={entry.disabled}
-                hasSubmenu={entry.hasSubmenu}
+                hasSubmenu={entry.hasSubmenu || (entry.submenu && entry.submenu.length > 0)}
+                submenu={entry.submenu}
+                onSubmenuItemClick={(callback?: () => void) => {
+                  callback?.();
+                  onClose();
+                }}
                 onClick={() => {
                   entry.onClick?.();
                   onClose();
