@@ -62,6 +62,7 @@ const PROJECTS: Project[] = [
       'An AI-enhanced voice transcription plugin for Obsidian. Record voice notes, transcribe via AssemblyAI with multi-speaker detection, and generate structured summaries using Claude.',
     technologies: ['TypeScript', 'Obsidian API', 'AssemblyAI', 'Claude API'],
     link: 'https://github.com/nicholaspsmith/Obsidian-C-Scribe',
+    logo: '/icons/c-scribe.png',
   },
 ];
 
