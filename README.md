@@ -9,7 +9,7 @@ A personal portfolio website recreating the Mac OS X Tiger (10.4) desktop experi
 - **Authentic Tiger Desktop** - Faithful recreation of the Mac OS X 10.4 interface
 - **Working Window System** - Draggable, resizable windows with minimize/zoom
 - **Tiger Apps** - Finder, Terminal, TextEdit, and custom portfolio apps
-- **iOS Fallback** - Mobile visitors see an iOS 6-style interface
+- **iOS 15+ Mobile Interface** - Mobile and tablet visitors see a modern iOS experience
 - **Sound Effects** - Classic Mac sounds for UI interactions
 
 ## Tech Stack
@@ -39,6 +39,10 @@ npm run build
 ```bash
 npm run test
 ```
+
+## Acknowledgments
+
+- [ios-in-web](https://github.com/NWylynko/ios-in-web) by [@NWylynko](https://github.com/NWylynko) - iOS 15+ icons and design inspiration
 
 ## License
 

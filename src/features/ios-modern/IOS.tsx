@@ -6,7 +6,9 @@ import { useIOSStore, type IOSAppId } from './stores/iosStore';
 import { IOS_MODERN_SACRED } from './constants/sacred';
 
 // App imports
+import { AboutApp } from './apps/AboutApp';
 import { PhotosApp } from './apps/PhotosApp';
+import { GalleryApp } from './apps/GalleryApp';
 import { RemindersApp } from './apps/RemindersApp';
 import { MailApp } from './apps/MailApp';
 import { CameraApp } from './apps/CameraApp';
@@ -22,7 +24,9 @@ import styles from './IOS.module.css';
  * App component mapping
  */
 const APP_COMPONENTS: Record<IOSAppId, React.ComponentType> = {
+  about: AboutApp,
   photos: PhotosApp,
+  gallery: GalleryApp,
   reminders: RemindersApp,
   mail: MailApp,
   camera: CameraApp,

@@ -4,7 +4,9 @@ import { create } from 'zustand';
  * App IDs for iOS modern interface
  */
 export type IOSAppId =
+  | 'about'
   | 'photos'
+  | 'gallery'
   | 'reminders'
   | 'mail'
   | 'camera'
