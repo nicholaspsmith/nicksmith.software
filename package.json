@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "generate-media": "node scripts/generate-media-manifest.js",
+    "dev": "npm run generate-media && vite",
+    "build": "npm run generate-media && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",

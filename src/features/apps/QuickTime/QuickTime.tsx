@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useWindowStore } from '@/stores/windowStore';
 import styles from './QuickTime.module.css';
+import videoManifest from '@/generated/video-manifest.json';
 
 interface Video {
   id: string;
@@ -10,11 +11,9 @@ interface Video {
 }
 
 /**
- * Video files from public/videos
+ * Videos loaded from generated manifest (scanned from public/videos)
  */
-const VIDEOS: Video[] = [
-  { id: '1', title: 'Numa Numa', src: '/videos/Numa Numa.mp4', filename: 'Numa Numa.mp4' },
-];
+const VIDEOS: Video[] = videoManifest;
 
 export interface QuickTimeProps {
   /** Initial video to play (by filename) */

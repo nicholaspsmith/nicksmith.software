@@ -1,0 +1,20 @@
+[
+  {
+    "id": "video-1",
+    "filename": "Badger song (Badger badger badger , mushroom mushroom).mp4",
+    "title": "Badger song (Badger badger badger , mushroom mushroom)",
+    "src": "/videos/Badger song (Badger badger badger , mushroom mushroom).mp4"
+  },
+  {
+    "id": "video-2",
+    "filename": "Numa Numa.mp4",
+    "title": "Numa Numa",
+    "src": "/videos/Numa Numa.mp4"
+  },
+  {
+    "id": "video-3",
+    "filename": "taking the hobbits to isengard.mp4",
+    "title": "taking the hobbits to isengard",
+    "src": "/videos/taking the hobbits to isengard.mp4"
+  }
+]

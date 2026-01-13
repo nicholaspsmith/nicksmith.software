@@ -5,25 +5,28 @@ import { AquaScrollbar, type AquaScrollbarHandle } from '@/features/tiger/compon
 import { ContextMenu, type ContextMenuEntry } from '@/features/tiger/components/ContextMenu';
 import styles from './Finder.module.css';
 import { TerminalIcon } from '@/features/tiger/components/icons';
+import musicManifest from '@/generated/music-manifest.json';
+import videoManifest from '@/generated/video-manifest.json';
 
 /**
- * Music files from public/music folder
+ * Music files loaded from generated manifest (scanned from public/music)
  */
-const MUSIC_FILES: ContentItem[] = [
-  { id: 'music-1', name: 'Bruno Mars - Uptown Funk.mp3', icon: 'music-file', type: 'file' },
-  { id: 'music-2', name: 'La Bouche - Be My Lover.mp3', icon: 'music-file', type: 'file' },
-  { id: 'music-3', name: 'No Doubt - Underneath It All ft. Lady Saw.mp3', icon: 'music-file', type: 'file' },
-  { id: 'music-4', name: 'NOFX - Drugs Are Good.mp3', icon: 'music-file', type: 'file' },
-  { id: 'music-5', name: 'Real McCoy - Another Night.mp3', icon: 'music-file', type: 'file' },
-  { id: 'music-6', name: 'SNAP! - Rhythm Is A Dancer.mp3', icon: 'music-file', type: 'file' },
-];
+const MUSIC_FILES: ContentItem[] = musicManifest.map(track => ({
+  id: track.id,
+  name: track.filename,
+  icon: 'music-file',
+  type: 'file' as const,
+}));
 
 /**
- * Video files from public/videos folder
+ * Video files loaded from generated manifest (scanned from public/videos)
  */
-const VIDEO_FILES: ContentItem[] = [
-  { id: 'video-1', name: 'Numa Numa.mp4', icon: 'video-file', type: 'file' },
-];
+const VIDEO_FILES: ContentItem[] = videoManifest.map(video => ({
+  id: video.id,
+  name: video.filename,
+  icon: 'video-file',
+  type: 'file' as const,
+}));
 
 /**
  * Sidebar location item

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useWindowStore } from '@/stores/windowStore';
 import styles from './iTunes.module.css';
+import musicManifest from '@/generated/music-manifest.json';
 
 interface Track {
   id: string;
@@ -11,16 +12,9 @@ interface Track {
 }
 
 /**
- * Get playlist from music files in public/music
+ * Playlist loaded from generated manifest (scanned from public/music)
  */
-const PLAYLIST: Track[] = [
-  { id: '1', title: 'Uptown Funk', artist: 'Bruno Mars', src: '/music/Bruno Mars - Uptown Funk.mp3', filename: 'Bruno Mars - Uptown Funk.mp3' },
-  { id: '2', title: 'Be My Lover', artist: 'La Bouche', src: '/music/La Bouche - Be My Lover.mp3', filename: 'La Bouche - Be My Lover.mp3' },
-  { id: '3', title: 'Underneath It All', artist: 'No Doubt ft. Lady Saw', src: '/music/No Doubt - Underneath It All ft. Lady Saw.mp3', filename: 'No Doubt - Underneath It All ft. Lady Saw.mp3' },
-  { id: '4', title: 'Drugs Are Good', artist: 'NOFX', src: '/music/NOFX - Drugs Are Good.mp3', filename: 'NOFX - Drugs Are Good.mp3' },
-  { id: '5', title: 'Another Night', artist: 'Real McCoy', src: '/music/Real McCoy - Another Night.mp3', filename: 'Real McCoy - Another Night.mp3' },
-  { id: '6', title: 'Rhythm Is A Dancer', artist: 'SNAP!', src: '/music/SNAP! - Rhythm Is A Dancer.mp3', filename: 'SNAP! - Rhythm Is A Dancer.mp3' },
-];
+const PLAYLIST: Track[] = musicManifest;
 
 export interface ITunesProps {
   /** Initial track to play (by filename) */
