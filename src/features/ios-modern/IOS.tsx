@@ -66,9 +66,9 @@ export function IOS() {
             <motion.div
               key={activeApp}
               className={styles.appContainer}
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              exit={{ opacity: 0, scale: 0.9 }}
               transition={{
                 duration: IOS_MODERN_SACRED.appOpenDuration / 1000,
                 ease: 'easeOut',
