@@ -12,10 +12,10 @@ interface Project {
 const PROJECTS: Project[] = [
   {
     id: 'tiger-portfolio',
-    name: 'Tiger Portfolio',
+    name: 'Retro Portfolio',
     description:
-      'This very website! A faithful recreation of Mac OS X Tiger as a portfolio site, built with React, TypeScript, and Zustand.',
-    technologies: ['React', 'TypeScript', 'Zustand', 'CSS Modules'],
+      'This very website! Features a Mac OS X Tiger desktop interface and an iOS 15+ mobile interface, both fully interactive with functional apps.',
+    technologies: ['React', 'TypeScript', 'Zustand', 'Framer Motion', 'CSS Modules'],
     link: 'https://github.com/nicholaspsmith/nicksmith.software',
     logo: '/icons/finder.png',
   },
