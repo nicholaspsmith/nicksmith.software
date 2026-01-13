@@ -45,19 +45,16 @@ export function ITunesApp({ initialTrack }: ITunesProps) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  // Store reference to update title
-  const setWindowTitle = useWindowStore((s) => s.setWindowTitle);
-  const windows = useWindowStore((s) => s.windows);
-
   const currentTrack = PLAYLIST[currentTrackIndex];
 
   // Update window title when track changes
   useEffect(() => {
+    const windows = useWindowStore.getState().windows;
     const itunesWindow = windows.find(w => w.app === 'itunes');
     if (itunesWindow && currentTrack) {
-      setWindowTitle(itunesWindow.id, `${currentTrack.title} - ${currentTrack.artist}`);
+      useWindowStore.getState().setWindowTitle(itunesWindow.id, `${currentTrack.title} - ${currentTrack.artist}`);
     }
-  }, [currentTrack, windows, setWindowTitle]);
+  }, [currentTrack]);
 
   useEffect(() => {
     const audio = audioRef.current;

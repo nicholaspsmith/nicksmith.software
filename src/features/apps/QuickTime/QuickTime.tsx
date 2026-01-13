@@ -39,19 +39,16 @@ export function QuickTime({ initialVideo }: QuickTimeProps) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  // Store reference to update title
-  const setWindowTitle = useWindowStore((s) => s.setWindowTitle);
-  const windows = useWindowStore((s) => s.windows);
-
   const currentVideo = VIDEOS[currentVideoIndex];
 
   // Update window title when video changes
   useEffect(() => {
+    const windows = useWindowStore.getState().windows;
     const qtWindow = windows.find(w => w.app === 'quicktime');
     if (qtWindow && currentVideo) {
-      setWindowTitle(qtWindow.id, `QuickTime Player - ${currentVideo.title}`);
+      useWindowStore.getState().setWindowTitle(qtWindow.id, `QuickTime Player - ${currentVideo.title}`);
     }
-  }, [currentVideo, windows, setWindowTitle]);
+  }, [currentVideo]);
 
   useEffect(() => {
     const video = videoRef.current;
