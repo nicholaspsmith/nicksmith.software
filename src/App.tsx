@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
+import { useCallback, useMemo, useEffect, useRef, lazy, Suspense, useState } from 'react';
 import { MotionConfig, AnimatePresence } from 'motion/react';
 import { useAppStore, type IconPosition } from '@/stores/appStore';
 import { useWindowStore } from '@/stores/windowStore';
@@ -10,7 +10,8 @@ import {
 } from '@/hooks';
 import { Desktop } from '@/features/tiger/components/Desktop';
 import { DesktopIconGrid } from '@/features/tiger/components/DesktopIconGrid';
-import { DesktopIcon } from '@/features/tiger/components/DesktopIcon';
+import { DesktopIcon, type IconContextMenuEvent, type DesktopIconType } from '@/features/tiger/components/DesktopIcon';
+import { ContextMenu, type ContextMenuEntry } from '@/features/tiger/components/ContextMenu';
 import { Window } from '@/features/tiger/components/Window';
 import { MobileFallback } from '@/features/tiger/components/MobileFallback';
 import { AlertDialog } from '@/features/tiger/components/AlertDialog';
@@ -303,9 +304,36 @@ function TigerDesktop() {
   const dynamicIcons = useAppStore((s) => s.dynamicIcons);
   const trashedIcons = useAppStore((s) => s.trashedIcons);
   const setDraggingMacintoshHD = useAppStore((s) => s.setDraggingMacintoshHD);
+  const moveToTrash = useAppStore((s) => s.moveToTrash);
+  const copyToClipboard = useAppStore((s) => s.copyToClipboard);
+  const renameIcon = useAppStore((s) => s.renameIcon);
   const windows = useWindowStore((s) => s.windows);
   const openWindow = useWindowStore((s) => s.openWindow);
   const openSavedDocument = useWindowStore((s) => s.openSavedDocument);
+
+  // Icon context menu state
+  const [iconContextMenu, setIconContextMenu] = useState<{
+    x: number;
+    y: number;
+    iconId: string;
+    iconLabel: string;
+    iconType: DesktopIconType;
+  } | null>(null);
+
+  // Rename dialog state
+  const [renameDialog, setRenameDialog] = useState<{
+    iconId: string;
+    currentName: string;
+    newName: string;
+  } | null>(null);
+
+  // Window title bar context menu state
+  const [windowContextMenu, setWindowContextMenu] = useState<{
+    x: number;
+    y: number;
+    windowId: string;
+    app: string;
+  } | null>(null);
 
   // Initialize icon positions on mount
   useEffect(() => {
@@ -322,6 +350,17 @@ function TigerDesktop() {
   // Load trash from localStorage on mount
   useEffect(() => {
     useAppStore.getState().loadTrashFromStorage();
+  }, []);
+
+  // Prevent native context menu globally - we use custom context menus
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+    document.addEventListener('contextmenu', handleContextMenu);
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+    };
   }, []);
 
   // Open About Me window on first load (centered on screen)
@@ -465,6 +504,191 @@ function TigerDesktop() {
     [setMultipleIconPositions]
   );
 
+  // Handle icon context menu
+  const handleIconContextMenu = useCallback((event: IconContextMenuEvent) => {
+    setIconContextMenu({
+      x: event.x,
+      y: event.y,
+      iconId: event.iconId,
+      iconLabel: event.iconLabel,
+      iconType: event.iconType,
+    });
+  }, []);
+
+  // Close icon context menu
+  const closeIconContextMenu = useCallback(() => {
+    setIconContextMenu(null);
+  }, []);
+
+  // Get context menu items for an icon based on its type
+  const getIconContextMenuItems = useCallback((
+    iconId: string,
+    iconLabel: string,
+    iconType: DesktopIconType
+  ): ContextMenuEntry[] => {
+    // Find the icon to get its details for copying
+    const staticIcon = DESKTOP_ICONS.find(i => i.id === iconId);
+    const dynamicIcon = dynamicIcons.find(i => i.id === iconId);
+
+    // Common action handlers
+    const handleOpen = () => {
+      if (iconId === 'macintosh-hd') {
+        openWindow('finder-hd');
+      } else if (staticIcon?.opensWindow) {
+        openWindow(iconId);
+      } else if (dynamicIcon?.type === 'document' && dynamicIcon.documentId) {
+        openSavedDocument(dynamicIcon.documentId, dynamicIcon.label);
+      }
+      useAppStore.getState().clearSelection();
+    };
+
+    const handleCopy = () => {
+      if (dynamicIcon) {
+        copyToClipboard({
+          iconId: dynamicIcon.id,
+          label: dynamicIcon.label,
+          type: dynamicIcon.type,
+          icon: dynamicIcon.icon,
+          documentId: dynamicIcon.documentId,
+          sourceContext: 'desktop',
+        });
+      } else if (staticIcon) {
+        // For built-in icons, create a clipboard item
+        copyToClipboard({
+          iconId: staticIcon.id,
+          label: staticIcon.label,
+          type: 'document',
+          icon: staticIcon.icon,
+          sourceContext: 'desktop',
+        });
+      }
+    };
+
+    const handleRename = () => {
+      setRenameDialog({
+        iconId,
+        currentName: iconLabel,
+        newName: iconLabel,
+      });
+    };
+
+    const handleMoveToTrash = () => {
+      moveToTrash(iconId);
+    };
+
+    // Macintosh HD context menu
+    if (iconId === 'macintosh-hd') {
+      return [
+        { type: 'item', label: 'Open', onClick: handleOpen },
+        { type: 'item', label: 'Get Info', disabled: true },
+        { type: 'item', label: 'Manage Storage...', disabled: true },
+      ];
+    }
+
+    // Terminal context menu
+    if (iconId === 'terminal') {
+      return [
+        { type: 'item', label: 'Open', onClick: handleOpen },
+        { type: 'item', label: 'Copy', onClick: handleCopy },
+        { type: 'item', label: 'Move to Trash', onClick: handleMoveToTrash },
+      ];
+    }
+
+    // Folder context menu
+    if (iconType === 'folder' || iconType === 'smart-folder' || iconType === 'burn-folder') {
+      return [
+        { type: 'item', label: 'Open', onClick: handleOpen },
+        { type: 'item', label: 'Copy', onClick: handleCopy },
+        { type: 'item', label: 'Compress', disabled: true },
+        { type: 'item', label: 'Move to Trash', onClick: handleMoveToTrash },
+      ];
+    }
+
+    // Document/default context menu
+    return [
+      { type: 'item', label: 'Open', onClick: handleOpen },
+      { type: 'item', label: 'Rename', onClick: handleRename },
+      { type: 'item', label: 'Copy', onClick: handleCopy },
+      { type: 'item', label: 'Compress', disabled: true },
+      { type: 'item', label: 'Move to Trash', onClick: handleMoveToTrash },
+    ];
+  }, [dynamicIcons, openWindow, openSavedDocument, copyToClipboard, moveToTrash]);
+
+  // Handle rename confirmation
+  const handleRenameConfirm = useCallback(() => {
+    if (renameDialog && renameDialog.newName.trim()) {
+      renameIcon(renameDialog.iconId, renameDialog.newName.trim());
+    }
+    setRenameDialog(null);
+  }, [renameDialog, renameIcon]);
+
+  // Handle rename cancel
+  const handleRenameCancel = useCallback(() => {
+    setRenameDialog(null);
+  }, []);
+
+  // Handle window title bar context menu
+  const handleWindowContextMenu = useCallback((windowId: string, app: string) => (e: React.MouseEvent) => {
+    setWindowContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      windowId,
+      app,
+    });
+  }, []);
+
+  // Close window context menu
+  const closeWindowContextMenu = useCallback(() => {
+    setWindowContextMenu(null);
+  }, []);
+
+  // Get context menu items for window based on app type
+  const getWindowContextMenuItems = useCallback((windowId: string, app: string): ContextMenuEntry[] => {
+    const closeWindowAction = useWindowStore.getState().closeWindow;
+
+    // TextEdit documents
+    if (app === 'about' || app === 'projects' || app === 'resume' || app === 'contact' || app === 'untitled') {
+      return [
+        { type: 'item', label: 'New', onClick: () => openWindow('untitled') },
+        { type: 'item', label: 'Open...', disabled: true },
+        { type: 'divider' },
+        { type: 'item', label: 'Close', onClick: () => closeWindowAction(windowId) },
+        { type: 'item', label: 'Save', disabled: true },
+        { type: 'item', label: 'Save As...', disabled: true },
+        { type: 'divider' },
+        { type: 'item', label: 'Page Setup...', disabled: true },
+        { type: 'item', label: 'Print...', disabled: true },
+      ];
+    }
+
+    // Finder windows
+    if (app.startsWith('finder')) {
+      return [
+        { type: 'item', label: 'New Finder Window', onClick: () => openWindow('finder-home') },
+        { type: 'item', label: 'New Folder', disabled: true },
+        { type: 'divider' },
+        { type: 'item', label: 'Close Window', onClick: () => closeWindowAction(windowId) },
+        { type: 'divider' },
+        { type: 'item', label: 'Get Info', disabled: true },
+        { type: 'item', label: 'Find...', disabled: true },
+      ];
+    }
+
+    // Terminal
+    if (app === 'terminal') {
+      return [
+        { type: 'item', label: 'New Shell', disabled: true },
+        { type: 'divider' },
+        { type: 'item', label: 'Close', onClick: () => closeWindowAction(windowId) },
+      ];
+    }
+
+    // Default (generic)
+    return [
+      { type: 'item', label: 'Close', onClick: () => closeWindowAction(windowId) },
+    ];
+  }, [openWindow]);
+
   // Get icon position (fallback to calculated position if not yet initialized)
   const getIconPosition = (iconId: string, index: number) => {
     if (iconPositions[iconId]) {
@@ -506,6 +730,8 @@ function TigerDesktop() {
           {visibleDesktopIcons.map((icon, index) => {
             const position = getIconPosition(icon.id, index);
             const isMacHD = icon.id === 'macintosh-hd';
+            // Determine icon type for context menu
+            const iconType: DesktopIconType = isMacHD ? 'drive' : icon.id === 'terminal' ? 'application' : 'document';
             return (
               <DesktopIcon
                 key={icon.id}
@@ -515,9 +741,11 @@ function TigerDesktop() {
                 isSelected={selectedIconIds.includes(icon.id)}
                 x={position.x}
                 y={position.y}
+                iconType={iconType}
                 onClick={() => selectIcon(icon.id)}
                 onDoubleClick={() => handleDoubleClick(icon)}
                 onPositionChange={(x, y) => handlePositionChange(icon.id, x, y)}
+                onContextMenu={handleIconContextMenu}
                 selectedIconIds={selectedIconIds}
                 allIconPositions={iconPositions}
                 onMultiPositionChange={handleMultiPositionChange}
@@ -530,6 +758,11 @@ function TigerDesktop() {
           {dynamicIcons.map((icon, index) => {
             const totalStaticIcons = DESKTOP_ICONS.length;
             const position = getIconPosition(icon.id, totalStaticIcons + index);
+            // Map dynamic icon type to DesktopIconType
+            const iconType: DesktopIconType = icon.type === 'folder' ? 'folder'
+              : icon.type === 'smart-folder' ? 'smart-folder'
+              : icon.type === 'burn-folder' ? 'burn-folder'
+              : 'document';
             return (
               <DesktopIcon
                 key={icon.id}
@@ -539,6 +772,7 @@ function TigerDesktop() {
                 isSelected={selectedIconIds.includes(icon.id)}
                 x={position.x}
                 y={position.y}
+                iconType={iconType}
                 onClick={() => selectIcon(icon.id)}
                 onDoubleClick={() => {
                   // Document icons open their saved document
@@ -549,6 +783,7 @@ function TigerDesktop() {
                   // Folders don't open windows
                 }}
                 onPositionChange={(x, y) => handlePositionChange(icon.id, x, y)}
+                onContextMenu={handleIconContextMenu}
                 selectedIconIds={selectedIconIds}
                 allIconPositions={iconPositions}
                 onMultiPositionChange={handleMultiPositionChange}
@@ -564,6 +799,7 @@ function TigerDesktop() {
               id={w.id}
               title={w.title}
               isStartupWindow={isInitialStartup.current && w.app === 'about'}
+              onTitleBarContextMenu={handleWindowContextMenu(w.id, w.app)}
             >
               <WindowContent app={w.app} documentId={w.documentId} isEditing={w.isEditing} windowId={w.id} />
             </Window>
@@ -582,6 +818,50 @@ function TigerDesktop() {
         onCancel={handleAlertCancel}
         playSound={alertConfig?.playSound}
       />
+
+      {/* Icon context menu */}
+      {iconContextMenu && (
+        <ContextMenu
+          x={iconContextMenu.x}
+          y={iconContextMenu.y}
+          onClose={closeIconContextMenu}
+          items={getIconContextMenuItems(
+            iconContextMenu.iconId,
+            iconContextMenu.iconLabel,
+            iconContextMenu.iconType
+          )}
+        />
+      )}
+
+      {/* Rename dialog */}
+      <AlertDialog
+        isOpen={renameDialog !== null}
+        title="Rename"
+        message={`Enter a new name for "${renameDialog?.currentName ?? ''}"`}
+        type="note"
+        okText="Rename"
+        cancelText="Cancel"
+        showCancel
+        onOk={handleRenameConfirm}
+        onCancel={handleRenameCancel}
+        inputMode
+        inputValue={renameDialog?.newName ?? ''}
+        inputPlaceholder="New name"
+        onInputChange={(value) => setRenameDialog(prev => prev ? { ...prev, newName: value } : null)}
+      />
+
+      {/* Window title bar context menu */}
+      {windowContextMenu && (
+        <ContextMenu
+          x={windowContextMenu.x}
+          y={windowContextMenu.y}
+          onClose={closeWindowContextMenu}
+          items={getWindowContextMenuItems(
+            windowContextMenu.windowId,
+            windowContextMenu.app
+          )}
+        />
+      )}
     </>
   );
 }

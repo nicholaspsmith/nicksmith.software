@@ -23,6 +23,14 @@ export interface AlertDialogProps {
   onCancel?: () => void;
   /** Play Sosumi sound on open */
   playSound?: boolean;
+  /** Enable input mode - shows a text input between message and buttons */
+  inputMode?: boolean;
+  /** Current value of the input (only used when inputMode is true) */
+  inputValue?: string;
+  /** Placeholder text for the input (only used when inputMode is true) */
+  inputPlaceholder?: string;
+  /** Callback when input value changes (only used when inputMode is true) */
+  onInputChange?: (value: string) => void;
 }
 
 /**
@@ -44,20 +52,31 @@ export function AlertDialog({
   onCancel,
   // Sound is now handled by appStore.showAlert
   playSound: _playSound = true,
+  inputMode = false,
+  inputValue = "",
+  inputPlaceholder = "",
+  onInputChange,
 }: AlertDialogProps) {
   void _playSound; // Intentionally unused - kept for API compatibility
   const okButtonRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Focus OK button when dialog opens
+  // Focus appropriate element when dialog opens
   useEffect(() => {
     if (isOpen) {
       // Small delay to ensure dialog is rendered
       const timer = setTimeout(() => {
-        okButtonRef.current?.focus();
+        if (inputMode && inputRef.current) {
+          inputRef.current.focus();
+          // Select all text in the input for easy replacement
+          inputRef.current.select();
+        } else {
+          okButtonRef.current?.focus();
+        }
       }, 50);
       return () => clearTimeout(timer);
     }
-  }, [isOpen]);
+  }, [isOpen, inputMode]);
 
   // Handle keyboard events
   const handleKeyDown = useCallback(
@@ -125,6 +144,17 @@ export function AlertDialog({
                 <p id="alert-message" className={styles.message}>
                   {message}
                 </p>
+                {inputMode && (
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    className={styles.input}
+                    value={inputValue}
+                    placeholder={inputPlaceholder}
+                    onChange={(e) => onInputChange?.(e.target.value)}
+                    data-testid="alert-input"
+                  />
+                )}
               </div>
             </div>
             <div className={styles.buttons}>

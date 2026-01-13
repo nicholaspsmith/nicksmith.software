@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useWindowStore } from '@/stores/windowStore';
 import { useAppStore } from '@/stores/appStore';
 import { AquaScrollbar, type AquaScrollbarHandle } from '@/features/tiger/components/AquaScrollbar';
+import { ContextMenu, type ContextMenuEntry } from '@/features/tiger/components/ContextMenu';
 import styles from './Finder.module.css';
 import { TerminalIcon } from '@/features/tiger/components/icons';
 
@@ -241,8 +242,33 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
   const clearAppSelection = useAppStore((s) => s.clearSelection);
   const trashedIcons = useAppStore((s) => s.trashedIcons);
   const emptyTrash = useAppStore((s) => s.emptyTrash);
+  const restoreFromTrash = useAppStore((s) => s.restoreFromTrash);
+  const permanentlyDeleteItem = useAppStore((s) => s.permanentlyDeleteItem);
   const showAlert = useAppStore((s) => s.showAlert);
   const isHoveringOverTrash = useAppStore((s) => s.isHoveringOverTrash);
+  const moveToTrash = useAppStore((s) => s.moveToTrash);
+
+  // Trash item context menu state
+  const [trashContextMenu, setTrashContextMenu] = useState<{
+    x: number;
+    y: number;
+    itemId: string;
+    itemName: string;
+  } | null>(null);
+
+  // Finder background context menu state (same as title bar menu)
+  const [finderContextMenu, setFinderContextMenu] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
+  // Icon context menu state (for content and sidebar items)
+  const [iconContextMenu, setIconContextMenu] = useState<{
+    x: number;
+    y: number;
+    item: ContentItem | SidebarItem;
+    source: 'content' | 'sidebar';
+  } | null>(null);
 
   // Get view config based on selected sidebar item
   const getViewConfig = (): FinderViewConfig => {
@@ -556,10 +582,191 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
     e.dataTransfer.effectAllowed = 'move';
   }, []);
 
+  // Handle right-click on trash item
+  const handleTrashItemContextMenu = useCallback((e: React.MouseEvent, itemId: string, itemName: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setTrashContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      itemId,
+      itemName,
+    });
+  }, []);
+
+  // Close trash context menu
+  const closeTrashContextMenu = useCallback(() => {
+    setTrashContextMenu(null);
+  }, []);
+
+  // Get context menu items for trash item
+  const getTrashContextMenuItems = useCallback((itemId: string): ContextMenuEntry[] => {
+    return [
+      {
+        type: 'item',
+        label: 'Put Back',
+        onClick: () => restoreFromTrash(itemId),
+      },
+      {
+        type: 'item',
+        label: 'Delete Immediately',
+        onClick: () => permanentlyDeleteItem(itemId),
+      },
+      { type: 'divider' },
+      {
+        type: 'item',
+        label: 'Empty Trash',
+        onClick: () => {
+          showAlert({
+            title: 'Empty Trash',
+            message: `Are you sure you want to permanently delete ${trashedIcons.length} item${trashedIcons.length !== 1 ? 's' : ''}?`,
+            type: 'caution',
+            showCancel: true,
+            okText: 'Empty Trash',
+            cancelText: 'Cancel',
+            onOk: () => emptyTrash(),
+            playSound: true,
+          });
+        },
+      },
+    ];
+  }, [restoreFromTrash, permanentlyDeleteItem, showAlert, trashedIcons.length, emptyTrash]);
+
+  // Handle right-click on Finder background (not on items)
+  const handleFinderContextMenu = useCallback((e: React.MouseEvent) => {
+    // Only show if clicking on content area background, not on items
+    const target = e.target as HTMLElement;
+    const isItem = target.closest(`.${styles.contentItem}`) ||
+                   target.closest(`.${styles.listRow}`) ||
+                   target.closest(`.${styles.columnItem}`) ||
+                   target.closest(`.${styles.sidebarItem}`);
+    if (!isItem) {
+      e.preventDefault();
+      setFinderContextMenu({ x: e.clientX, y: e.clientY });
+    }
+  }, []);
+
+  // Close Finder context menu
+  const closeFinderContextMenu = useCallback(() => {
+    setFinderContextMenu(null);
+  }, []);
+
+  // Get Finder File menu items (same as title bar context menu)
+  const getFinderContextMenuItems = useCallback((): ContextMenuEntry[] => {
+    return [
+      { type: 'item', label: 'New Finder Window', onClick: () => openWindow('finder-home') },
+      { type: 'item', label: 'New Folder', disabled: true },
+      { type: 'divider' },
+      { type: 'item', label: 'Get Info', disabled: true },
+      { type: 'item', label: 'Find...', disabled: true },
+    ];
+  }, [openWindow]);
+
+  // Handle right-click on content item (not in trash)
+  const handleContentItemContextMenu = useCallback((e: React.MouseEvent, item: ContentItem) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIconContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      item,
+      source: 'content',
+    });
+  }, []);
+
+  // Handle right-click on sidebar item
+  const handleSidebarItemContextMenu = useCallback((e: React.MouseEvent, item: SidebarItem) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIconContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      item,
+      source: 'sidebar',
+    });
+  }, []);
+
+  // Close icon context menu
+  const closeIconContextMenu = useCallback(() => {
+    setIconContextMenu(null);
+  }, []);
+
+  // Get context menu items for an icon (same as desktop icon context menu)
+  const getIconContextMenuItems = useCallback((item: ContentItem | SidebarItem, source: 'content' | 'sidebar'): ContextMenuEntry[] => {
+    const itemId = item.id;
+    const isContentItem = source === 'content';
+    const contentItem = isContentItem ? (item as ContentItem) : null;
+
+    // Handle open action
+    const handleOpen = () => {
+      if (itemId === 'macintosh-hd') {
+        openWindow('finder-hd');
+      } else if (OPENABLE_ITEMS[itemId]) {
+        openWindow(OPENABLE_ITEMS[itemId]);
+      } else if (FOLDER_TO_SIDEBAR_MAP[itemId]) {
+        // Navigate to folder in current Finder window
+        setSelectedSidebarItem(FOLDER_TO_SIDEBAR_MAP[itemId]);
+        setSelectedContentItems([]);
+        setSearchQuery('');
+      }
+      clearAppSelection();
+    };
+
+    const handleMoveToTrash = () => {
+      moveToTrash(itemId);
+    };
+
+    // Macintosh HD context menu
+    if (itemId === 'macintosh-hd') {
+      return [
+        { type: 'item', label: 'Open', onClick: handleOpen },
+        { type: 'item', label: 'Get Info', disabled: true },
+        { type: 'item', label: 'Manage Storage...', disabled: true },
+      ];
+    }
+
+    // Terminal context menu
+    if (itemId === 'terminal') {
+      return [
+        { type: 'item', label: 'Open', onClick: handleOpen },
+        { type: 'item', label: 'Get Info', disabled: true },
+        { type: 'item', label: 'Move to Trash', onClick: handleMoveToTrash },
+      ];
+    }
+
+    // Sidebar items (locations) - can't be trashed
+    if (source === 'sidebar') {
+      return [
+        { type: 'item', label: 'Open', onClick: handleOpen },
+        { type: 'item', label: 'Get Info', disabled: true },
+      ];
+    }
+
+    // Folder context menu
+    if (contentItem?.type === 'folder') {
+      // System folders can't be trashed
+      const isSystemFolder = ['applications', 'developer', 'library', 'system', 'users', 'desktop', 'documents', 'movies', 'music', 'pictures', 'public', 'sites'].includes(itemId);
+      return [
+        { type: 'item', label: 'Open', onClick: handleOpen },
+        { type: 'item', label: 'Get Info', disabled: true },
+        { type: 'item', label: 'Compress', disabled: true },
+        ...(isSystemFolder ? [] : [{ type: 'item' as const, label: 'Move to Trash', onClick: handleMoveToTrash }]),
+      ];
+    }
+
+    // Document/file context menu
+    return [
+      { type: 'item', label: 'Open', onClick: handleOpen },
+      { type: 'item', label: 'Get Info', disabled: true },
+      { type: 'item', label: 'Compress', disabled: true },
+      { type: 'item', label: 'Move to Trash', onClick: handleMoveToTrash },
+    ];
+  }, [openWindow, clearAppSelection, moveToTrash]);
+
   return (
     <div className={styles.finder} data-testid="finder">
       {/* Toolbar - also acts as drag handle for window */}
-      <div className={`${styles.toolbar} window-drag-handle`}>
+      <div className={`${styles.toolbar} window-drag-handle`} onContextMenu={handleFinderContextMenu}>
         <div className={styles.toolbarLeft}>
           {/* Navigation buttons */}
           <div className={styles.navButtons}>
@@ -628,6 +835,7 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
                   key={item.id}
                   className={`${styles.sidebarItem} ${selectedSidebarItem === item.id ? styles.sidebarItemSelected : ''}`}
                   onClick={() => handleSidebarClick(item.id)}
+                  onContextMenu={(e) => handleSidebarItemContextMenu(e, item)}
                 >
                   <SidebarIcon type={item.icon} />
                   <span className={styles.sidebarLabel}>{item.label}</span>
@@ -667,6 +875,7 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
             className={`${styles.content} ${viewMode !== 'icon' ? styles.contentNoPadding : ''} ${selectedSidebarItem === 'trash' && isHoveringOverTrash ? styles.contentDragOver : ''}`}
             onClick={handleContentAreaClick}
             onMouseDown={handleContentMouseDown}
+            onContextMenu={handleFinderContextMenu}
             data-testid={selectedSidebarItem === 'trash' ? 'finder-trash-content' : undefined}
           >
           {config.contentItems.length === 0 ? (
@@ -681,6 +890,7 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
                   className={`${styles.contentItem} ${selectedContentItems.includes(item.id) ? styles.contentItemSelected : ''}`}
                   onClick={(e) => { e.stopPropagation(); handleContentClick(item.id, e); }}
                   onDoubleClick={() => handleContentDoubleClick(item)}
+                  onContextMenu={selectedSidebarItem === 'trash' ? (e) => handleTrashItemContextMenu(e, item.id, item.name) : (e) => handleContentItemContextMenu(e, item)}
                   draggable={selectedSidebarItem === 'trash'}
                   onDragStart={selectedSidebarItem === 'trash' ? (e) => handleTrashItemDragStart(e, item.id) : undefined}
                 >
@@ -701,6 +911,7 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
                   className={`${styles.listRow} ${selectedContentItems.includes(item.id) ? styles.listRowSelected : ''}`}
                   onClick={(e) => { e.stopPropagation(); handleContentClick(item.id, e); }}
                   onDoubleClick={() => handleContentDoubleClick(item)}
+                  onContextMenu={selectedSidebarItem === 'trash' ? (e) => handleTrashItemContextMenu(e, item.id, item.name) : (e) => handleContentItemContextMenu(e, item)}
                   draggable={selectedSidebarItem === 'trash'}
                   onDragStart={selectedSidebarItem === 'trash' ? (e) => handleTrashItemDragStart(e, item.id) : undefined}
                 >
@@ -720,6 +931,7 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
                     className={`${styles.columnItem} ${selectedContentItems.includes(item.id) ? styles.columnItemSelected : ''}`}
                     onClick={(e) => { e.stopPropagation(); handleContentClick(item.id, e); }}
                     onDoubleClick={() => handleContentDoubleClick(item)}
+                    onContextMenu={selectedSidebarItem === 'trash' ? (e) => handleTrashItemContextMenu(e, item.id, item.name) : (e) => handleContentItemContextMenu(e, item)}
                     draggable={selectedSidebarItem === 'trash'}
                     onDragStart={selectedSidebarItem === 'trash' ? (e) => handleTrashItemDragStart(e, item.id) : undefined}
                   >
@@ -766,10 +978,40 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
       </div>
 
       {/* Status bar */}
-      <div className={styles.statusBar}>
+      <div className={styles.statusBar} onContextMenu={handleFinderContextMenu}>
         {config.statusText}
         <div className={styles.resizeGrip} />
       </div>
+
+      {/* Trash item context menu */}
+      {trashContextMenu && (
+        <ContextMenu
+          x={trashContextMenu.x}
+          y={trashContextMenu.y}
+          onClose={closeTrashContextMenu}
+          items={getTrashContextMenuItems(trashContextMenu.itemId)}
+        />
+      )}
+
+      {/* Finder background context menu (same as title bar menu) */}
+      {finderContextMenu && (
+        <ContextMenu
+          x={finderContextMenu.x}
+          y={finderContextMenu.y}
+          onClose={closeFinderContextMenu}
+          items={getFinderContextMenuItems()}
+        />
+      )}
+
+      {/* Icon context menu (for sidebar and content items) */}
+      {iconContextMenu && (
+        <ContextMenu
+          x={iconContextMenu.x}
+          y={iconContextMenu.y}
+          onClose={closeIconContextMenu}
+          items={getIconContextMenuItems(iconContextMenu.item, iconContextMenu.source)}
+        />
+      )}
     </div>
   );
 }

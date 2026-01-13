@@ -51,6 +51,8 @@ export interface WindowProps {
   children?: React.ReactNode;
   /** Use slow fade-in animation for startup window */
   isStartupWindow?: boolean;
+  /** Right-click handler for title bar context menu */
+  onTitleBarContextMenu?: (e: React.MouseEvent) => void;
 }
 
 /**
@@ -65,7 +67,7 @@ export interface WindowProps {
  * - Close: open → closing → (removed from DOM)
  * - Minimize: open → minimizing → (hidden)
  */
-export function Window({ id, title, children, isStartupWindow = false }: WindowProps) {
+export function Window({ id, title, children, isStartupWindow = false, onTitleBarContextMenu }: WindowProps) {
   // ============================================
   // ALL HOOKS MUST BE CALLED BEFORE ANY RETURN
   // ============================================
@@ -333,6 +335,7 @@ export function Window({ id, title, children, isStartupWindow = false }: WindowP
           onMinimize={handleMinimize}
           onZoom={handleZoom}
           onShade={handleShade}
+          onContextMenu={onTitleBarContextMenu}
         >
           {children}
         </WindowChrome>

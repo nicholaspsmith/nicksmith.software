@@ -16,6 +16,8 @@ export interface WindowChromeProps {
   onMinimize?: () => void;
   onZoom?: () => void;
   onShade?: () => void;
+  /** Right-click handler for title bar context menu */
+  onContextMenu?: (e: React.MouseEvent) => void;
 }
 
 /**
@@ -39,6 +41,7 @@ export function WindowChrome({
   onMinimize,
   onZoom,
   onShade,
+  onContextMenu,
 }: WindowChromeProps) {
   const titleBarClass = `${styles.titleBar} ${isFocused ? styles.focused : styles.unfocused} ${compact ? styles.compact : ''} ${className || ''}`;
 
@@ -50,12 +53,22 @@ export function WindowChrome({
     }
   }, [onShade]);
 
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    // Only trigger context menu if not clicking on traffic lights
+    const target = e.target as HTMLElement;
+    if (!target.closest('[data-testid="traffic-lights"]')) {
+      e.preventDefault();
+      onContextMenu?.(e);
+    }
+  }, [onContextMenu]);
+
   return (
     <div className={styles.chrome} data-testid="window-chrome">
       <div
         className={titleBarClass}
         data-testid="title-bar"
         onDoubleClick={handleDoubleClick}
+        onContextMenu={handleContextMenu}
       >
         <TrafficLights
           isFocused={isFocused}

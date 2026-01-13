@@ -98,3 +98,47 @@
   height: 100vh;
   z-index: var(--aqua-z-context-menu-overlay, 9999);
 }
+
+/* Submenu - positioned to the right of parent item */
+.submenuContainer {
+  position: relative;
+}
+
+.submenu {
+  position: absolute;
+  left: 100%;
+  top: -4px; /* Align with top padding of parent menu */
+  min-width: 160px;
+  padding: 4px 0;
+  z-index: 1;
+
+  /* Same styling as main context menu */
+  background-color: #ececec;
+  background-image: repeating-linear-gradient(
+    0deg,
+    #f6f6f6 0px,
+    #f6f6f6 1px,
+    #e8e8e8 1px,
+    #e8e8e8 2px
+  );
+  border: 1px solid #808080;
+  border-radius: 5px;
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.25),
+    0 0 1px rgba(0, 0, 0, 0.1);
+  user-select: none;
+  font-family: var(--aqua-font-family);
+  font-size: var(--aqua-font-size-sm);
+}
+
+/* Submenu positioned to the left when near right edge */
+.submenuLeft {
+  left: auto;
+  right: 100%;
+}
+
+/* Submenu shifted up when near bottom edge */
+.submenuShiftUp {
+  top: auto;
+  bottom: -4px;
+}
