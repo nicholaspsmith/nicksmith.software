@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { playSound } from '@/utils/sounds';
+import { useWindowStore } from './windowStore';
 
 export type AppMode = 'tiger' | 'ios';
 export type AlertType = 'caution' | 'stop' | 'note';
@@ -10,6 +11,9 @@ export interface IconPosition {
   y: number;
 }
 
+/** Icon kind for sorting purposes */
+export type IconKind = 'drive' | 'file' | 'folder' | 'application';
+
 /** Dynamic desktop icon (created via File > New Folder, etc.) */
 export interface DynamicDesktopIcon {
   id: string;
@@ -18,7 +22,26 @@ export interface DynamicDesktopIcon {
   type: 'folder' | 'smart-folder' | 'burn-folder' | 'document';
   /** Document ID for document icons (links to documentStore) */
   documentId?: string;
+  /** Date created timestamp */
+  dateCreated?: number;
+  /** Date modified timestamp */
+  dateModified?: number;
+  /** Icon kind for sorting */
+  kind?: IconKind;
 }
+
+/** Clipboard state for copy/paste */
+export interface ClipboardItem {
+  iconId: string;
+  label: string;
+  type: DynamicDesktopIcon['type'];
+  icon: string;
+  documentId?: string;
+  sourceContext: 'desktop' | 'finder';
+}
+
+/** Sort criteria for Clean Up By */
+export type SortCriteria = 'name' | 'kind' | 'dateModified' | 'dateCreated';
 
 /** Trashed icon - includes original icon data plus metadata */
 export interface TrashedIcon extends DynamicDesktopIcon {
@@ -81,6 +104,9 @@ interface AppStore {
   alertOpen: boolean;
   alertConfig: AlertConfig | null;
 
+  // Clipboard state for copy/paste
+  clipboard: ClipboardItem | null;
+
   // Actions
   setMode: (mode: AppMode) => void;
   completeStartup: () => void;
@@ -114,10 +140,26 @@ interface AppStore {
   moveToTrash: (iconId: string, iconData?: DynamicDesktopIcon) => void;
   /** Permanently delete all items in trash */
   emptyTrash: () => void;
+  /** Permanently delete a single item from trash */
+  permanentlyDeleteItem: (iconId: string) => void;
   /** Restore an icon from trash to desktop */
   restoreFromTrash: (iconId: string) => void;
   /** Load trashed icons from localStorage (called on startup) */
   loadTrashFromStorage: () => void;
+
+  // Clipboard actions
+  /** Copy an icon to clipboard */
+  copyToClipboard: (icon: ClipboardItem) => void;
+  /** Paste from clipboard to create new icon */
+  pasteFromClipboard: () => void;
+  /** Clear the clipboard */
+  clearClipboard: () => void;
+
+  // Sorting actions
+  /** Sort icons by criteria and rearrange in grid */
+  sortIconsBy: (criteria: SortCriteria) => void;
+  /** Rename an icon */
+  renameIcon: (iconId: string, newLabel: string) => void;
 
   // Macintosh HD drag actions
   setDraggingMacintoshHD: (isDragging: boolean) => void;
@@ -154,6 +196,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   isRestarting: false,
   alertOpen: false,
   alertConfig: null,
+  clipboard: null,
 
   setMode: (mode) => set({ mode }),
   completeStartup: () => set({ startupComplete: true }),
@@ -314,6 +357,20 @@ export const useAppStore = create<AppStore>((set, get) => ({
     // Play trash sound
     playSound('moveToTrash');
 
+    // Close any windows associated with this icon
+    const windowStore = useWindowStore.getState();
+    const windows = windowStore.windows;
+    for (const window of windows) {
+      // Match by app id (for built-in icons like about, projects, etc.)
+      if (window.app === iconId) {
+        windowStore.closeWindow(window.id);
+      }
+      // Match by documentId (for dynamic document icons)
+      else if (iconToTrash.documentId && window.documentId === iconToTrash.documentId) {
+        windowStore.closeWindow(window.id);
+      }
+    }
+
     // Create trashed icon with metadata
     const trashedIcon: TrashedIcon = {
       ...iconToTrash,
@@ -446,6 +503,203 @@ export const useAppStore = create<AppStore>((set, get) => ({
     } catch {
       console.warn('Failed to load trash from localStorage');
     }
+  },
+
+  permanentlyDeleteItem: (iconId) => {
+    const { trashedIcons } = get();
+    const iconToDelete = trashedIcons.find((icon) => icon.id === iconId);
+
+    if (!iconToDelete) {
+      console.warn(`Cannot find icon to delete: ${iconId}`);
+      return;
+    }
+
+    // Play empty trash sound
+    playSound('emptyTrash');
+
+    // Clean up document content if it's a document icon
+    if (iconToDelete.type === 'document' && iconToDelete.documentId) {
+      localStorage.removeItem(`textedit:doc:${iconToDelete.documentId}`);
+      localStorage.removeItem(`textedit:title:${iconToDelete.documentId}`);
+
+      try {
+        const savedIdsJson = localStorage.getItem('textedit:saved-ids');
+        if (savedIdsJson) {
+          const savedIds: string[] = JSON.parse(savedIdsJson);
+          const updatedIds = savedIds.filter((id) => id !== iconToDelete.documentId);
+          localStorage.setItem('textedit:saved-ids', JSON.stringify(updatedIds));
+        }
+      } catch {
+        console.warn('Failed to update saved-ids');
+      }
+    }
+
+    // Remove from trash
+    const updatedTrash = trashedIcons.filter((icon) => icon.id !== iconId);
+    set({ trashedIcons: updatedTrash });
+
+    // Update localStorage
+    try {
+      if (updatedTrash.length > 0) {
+        localStorage.setItem(TRASH_STORAGE_KEY, JSON.stringify(updatedTrash));
+      } else {
+        localStorage.removeItem(TRASH_STORAGE_KEY);
+      }
+    } catch {
+      console.warn('Failed to update trash in localStorage');
+    }
+  },
+
+  copyToClipboard: (icon) => {
+    set({ clipboard: icon });
+  },
+
+  pasteFromClipboard: () => {
+    const { clipboard, dynamicIcons } = get();
+    if (!clipboard) return;
+
+    // Generate unique copy name
+    const baseName = clipboard.label;
+    let copyName = `${baseName} copy`;
+    let counter = 2;
+
+    // Check if "baseName copy" exists, then try "baseName copy 2", etc.
+    const existingLabels = dynamicIcons.map((icon) => icon.label);
+    while (existingLabels.includes(copyName)) {
+      copyName = `${baseName} copy ${counter}`;
+      counter++;
+    }
+
+    // Create new icon
+    const newId = `${clipboard.type}-${crypto.randomUUID()}`;
+    const newIcon: DynamicDesktopIcon = {
+      id: newId,
+      label: copyName,
+      icon: clipboard.icon,
+      type: clipboard.type,
+      documentId: clipboard.documentId ? `${clipboard.documentId}-copy-${Date.now()}` : undefined,
+      dateCreated: Date.now(),
+      dateModified: Date.now(),
+      kind: clipboard.type === 'folder' || clipboard.type === 'smart-folder' || clipboard.type === 'burn-folder'
+        ? 'folder'
+        : 'file',
+    };
+
+    set((state) => ({
+      dynamicIcons: [...state.dynamicIcons, newIcon],
+    }));
+  },
+
+  clearClipboard: () => {
+    set({ clipboard: null });
+  },
+
+  sortIconsBy: (criteria) => {
+    const { iconPositions } = get();
+
+    // Built-in icon order (for maintaining default positions)
+    const builtInOrder = ['macintosh-hd', 'about', 'projects', 'resume', 'contact', 'terminal'];
+
+    // Built-in icon fixed dates (to maintain default order when sorting by date)
+    const builtInDates: Record<string, number> = {
+      'macintosh-hd': 1,
+      'about': 2,
+      'projects': 3,
+      'resume': 4,
+      'contact': 5,
+      'terminal': 6,
+    };
+
+    // Get all icon IDs that have positions
+    const iconIds = Object.keys(iconPositions);
+
+    // Sort the icon IDs based on criteria
+    const sortedIds = [...iconIds].sort((a, b) => {
+      const aBuiltIn = builtInOrder.includes(a);
+      const bBuiltIn = builtInOrder.includes(b);
+
+      // For date sorting, built-in icons always come first in their default order
+      if (criteria === 'dateCreated' || criteria === 'dateModified') {
+        if (aBuiltIn && bBuiltIn) {
+          return builtInDates[a] - builtInDates[b];
+        }
+        if (aBuiltIn) return -1;
+        if (bBuiltIn) return 1;
+        // For user-created icons, sort by date (newest first)
+        // Since we don't have dates stored for all icons yet, just maintain current order
+        return 0;
+      }
+
+      // For name sorting
+      if (criteria === 'name') {
+        const aLabel = a; // Would need to get actual label from somewhere
+        const bLabel = b;
+        return aLabel.localeCompare(bLabel);
+      }
+
+      // For kind sorting
+      if (criteria === 'kind') {
+        // Built-in "macintosh-hd" is a drive, comes first
+        if (a === 'macintosh-hd') return -1;
+        if (b === 'macintosh-hd') return 1;
+        // Then sort alphabetically by kind (file, folder)
+        return 0;
+      }
+
+      return 0;
+    });
+
+    // Calculate new positions in a vertical grid from top-right
+    // Icons are laid out vertically (column by column) like default desktop layout
+    const ICON_WIDTH = 75;
+    const ICON_HEIGHT = 90;
+    const GRID_PADDING = 16;
+    const MENU_BAR_HEIGHT = 22;
+    const DOCK_HEIGHT = 70;
+    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
+    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 768;
+
+    // Calculate how many icons fit vertically (between menu bar and dock)
+    const availableHeight = viewportHeight - MENU_BAR_HEIGHT - DOCK_HEIGHT - GRID_PADDING * 2;
+    const iconsPerColumn = Math.max(1, Math.floor(availableHeight / ICON_HEIGHT));
+
+    const newPositions: Record<string, IconPosition> = {};
+    sortedIds.forEach((iconId, index) => {
+      // Vertical layout: fill columns top to bottom, then move left for next column
+      const row = index % iconsPerColumn;
+      const col = Math.floor(index / iconsPerColumn);
+
+      // Position from top-right
+      newPositions[iconId] = {
+        x: viewportWidth - GRID_PADDING - ICON_WIDTH - (col * ICON_WIDTH),
+        y: MENU_BAR_HEIGHT + GRID_PADDING + (row * ICON_HEIGHT),
+      };
+    });
+
+    set({ iconPositions: newPositions });
+  },
+
+  renameIcon: (iconId, newLabel) => {
+    const { dynamicIcons } = get();
+
+    // Check if it's a dynamic icon
+    const iconIndex = dynamicIcons.findIndex((icon) => icon.id === iconId);
+    if (iconIndex !== -1) {
+      const updatedIcons = [...dynamicIcons];
+      updatedIcons[iconIndex] = {
+        ...updatedIcons[iconIndex],
+        label: newLabel,
+        dateModified: Date.now(),
+      };
+      set({ dynamicIcons: updatedIcons });
+
+      // Update localStorage title if it's a document
+      const icon = updatedIcons[iconIndex];
+      if (icon.documentId) {
+        localStorage.setItem(`textedit:title:${icon.documentId}`, newLabel);
+      }
+    }
+    // Note: Built-in icons (about, projects, etc.) cannot be renamed
   },
 
   setDraggingMacintoshHD: (isDragging) => {
