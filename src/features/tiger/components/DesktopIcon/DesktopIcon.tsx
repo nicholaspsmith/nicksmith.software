@@ -25,6 +25,24 @@ export interface IconPositionRecord {
   [iconId: string]: { x: number; y: number };
 }
 
+/** Icon type for context menu determination */
+export type DesktopIconType =
+  | 'document'
+  | 'folder'
+  | 'application'
+  | 'drive'
+  | 'smart-folder'
+  | 'burn-folder';
+
+/** Context menu event info passed to handler */
+export interface IconContextMenuEvent {
+  iconId: string;
+  iconLabel: string;
+  iconType: DesktopIconType;
+  x: number;
+  y: number;
+}
+
 export interface DesktopIconProps {
   id: string;
   label: string;
@@ -34,6 +52,8 @@ export interface DesktopIconProps {
   x: number;
   /** Absolute Y position on desktop */
   y: number;
+  /** The type of icon (for context menu) */
+  iconType?: DesktopIconType;
   onClick?: () => void;
   onDoubleClick?: () => void;
   /** Called when icon is dragged to new position (single icon) */
@@ -48,6 +68,8 @@ export interface DesktopIconProps {
   onDragStart?: () => void;
   /** Called when drag ends (for special icons like Macintosh HD) */
   onDragEnd?: () => void;
+  /** Called when right-click on icon for context menu */
+  onContextMenu?: (event: IconContextMenuEvent) => void;
 }
 
 /**
@@ -64,6 +86,7 @@ export function DesktopIcon({
   isSelected = false,
   x,
   y,
+  iconType = 'document',
   onClick,
   onDoubleClick,
   onPositionChange,
@@ -72,6 +95,7 @@ export function DesktopIcon({
   onMultiPositionChange,
   onDragStart,
   onDragEnd,
+  onContextMenu,
 }: DesktopIconProps) {
   const controls = useAnimationControls();
   const prevPosition = useRef({ x, y });
@@ -157,6 +181,25 @@ export function DesktopIcon({
       onDoubleClick?.();
     }
   };
+
+  // Handle right-click for context menu
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Select the icon if not already selected
+    if (!isSelected) {
+      onClick?.();
+    }
+
+    onContextMenu?.({
+      iconId: id,
+      iconLabel: label,
+      iconType,
+      x: e.clientX,
+      y: e.clientY,
+    });
+  }, [id, label, iconType, isSelected, onClick, onContextMenu]);
 
   // Calculate drag constraints to keep icon within screen boundaries
   // Allow dragging into dock area so icons can be dropped on trash
@@ -410,6 +453,7 @@ export function DesktopIcon({
       onMouseDown={handleMouseDown}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
+      onContextMenu={handleContextMenu}
       onKeyDown={handleKeyDown}
       aria-label={label}
       aria-pressed={isSelected}
