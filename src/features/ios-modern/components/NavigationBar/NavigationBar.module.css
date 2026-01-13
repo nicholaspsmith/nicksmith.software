@@ -1,0 +1,75 @@
+.navBar {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  margin-top: 44px; /* Position below status bar */
+  padding: 0 8px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+}
+
+.navBar.transparent {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: none;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  color: #007AFF;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  font-size: 17px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.backButton:focus {
+  outline: none;
+}
+
+.backButton:active {
+  opacity: 0.5;
+}
+
+.backChevron {
+  width: 12px;
+  height: 20px;
+}
+
+.title {
+  flex: 1;
+  text-align: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: #000;
+  margin-right: 56px; /* Balance the back button width */
+}
+
+.navBar.transparent .title {
+  color: #fff;
+}
+
+/* Large title variant (iOS style) */
+.navBar.largeTitle {
+  flex-direction: column;
+  align-items: flex-start;
+  height: auto;
+  padding: 8px 16px 12px;
+}
+
+.navBar.largeTitle .title {
+  text-align: left;
+  font-size: 34px;
+  font-weight: 700;
+  margin-right: 0;
+  margin-top: 4px;
+}

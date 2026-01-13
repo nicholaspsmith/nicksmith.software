@@ -1,0 +1,85 @@
+import { AnimatePresence, motion } from 'motion/react';
+import { IPhoneFrame } from './components/IPhoneFrame';
+import { BootScreen } from './components/BootScreen';
+import { HomeScreen } from './components/HomeScreen';
+import { useIOSStore, type IOSAppId } from './stores/iosStore';
+import { IOS_MODERN_SACRED } from './constants/sacred';
+
+// App imports
+import { PhotosApp } from './apps/PhotosApp';
+import { RemindersApp } from './apps/RemindersApp';
+import { MailApp } from './apps/MailApp';
+import { CameraApp } from './apps/CameraApp';
+import { SafariApp } from './apps/SafariApp';
+import { SettingsApp } from './apps/SettingsApp';
+import { PhoneApp } from './apps/PhoneApp';
+import { MessagesApp } from './apps/MessagesApp';
+import { MusicApp } from './apps/MusicApp';
+
+import styles from './IOS.module.css';
+
+/**
+ * App component mapping
+ */
+const APP_COMPONENTS: Record<IOSAppId, React.ComponentType> = {
+  photos: PhotosApp,
+  reminders: RemindersApp,
+  mail: MailApp,
+  camera: CameraApp,
+  safari: SafariApp,
+  settings: SettingsApp,
+  phone: PhoneApp,
+  messages: MessagesApp,
+  music: MusicApp,
+};
+
+/**
+ * IOS - Main iOS 15+ interface component
+ *
+ * Composes:
+ * - IPhoneFrame (bezel wrapper)
+ * - BootScreen (initial load animation)
+ * - HomeScreen (app grid + dock)
+ * - App views (portfolio and utility apps)
+ *
+ * Handles boot sequence and app open/close animations.
+ */
+export function IOS() {
+  const isBooting = useIOSStore((s) => s.isBooting);
+  const activeApp = useIOSStore((s) => s.activeApp);
+
+  const ActiveAppComponent = activeApp ? APP_COMPONENTS[activeApp] : null;
+
+  return (
+    <div className={styles.container}>
+      <IPhoneFrame>
+        {/* Home screen is always rendered but hidden when app is open */}
+        <HomeScreen />
+
+        {/* Active app overlay */}
+        <AnimatePresence>
+          {ActiveAppComponent && (
+            <motion.div
+              key={activeApp}
+              className={styles.appContainer}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{
+                duration: IOS_MODERN_SACRED.appOpenDuration / 1000,
+                ease: 'easeOut',
+              }}
+            >
+              <ActiveAppComponent />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Boot screen overlay */}
+        <AnimatePresence>
+          {isBooting && <BootScreen />}
+        </AnimatePresence>
+      </IPhoneFrame>
+    </div>
+  );
+}
