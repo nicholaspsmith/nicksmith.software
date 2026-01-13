@@ -18,6 +18,8 @@ const APP_DISPLAY_NAMES: Record<string, string> = {
   finder: 'Finder',
   terminal: 'Terminal',
   safari: 'Safari',
+  itunes: 'iTunes',
+  quicktime: 'QuickTime Player',
 };
 
 /**
