@@ -55,6 +55,14 @@ const PROJECTS: Project[] = [
     link: 'https://github.com/nicholaspsmith/Centrifugue',
     logo: '/icons/centrifugue-logo.svg',
   },
+  {
+    id: 'obsidian-c-scribe',
+    name: 'Obsidian C-Scribe',
+    description:
+      'An AI-enhanced voice transcription plugin for Obsidian. Record voice notes, transcribe via AssemblyAI with multi-speaker detection, and generate structured summaries using Claude.',
+    technologies: ['TypeScript', 'Obsidian API', 'AssemblyAI', 'Claude API'],
+    link: 'https://github.com/nicholaspsmith/Obsidian-C-Scribe',
+  },
 ];
 
 /**
