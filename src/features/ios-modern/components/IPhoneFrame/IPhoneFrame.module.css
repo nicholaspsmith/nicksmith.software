@@ -1,0 +1,36 @@
+.frame {
+  border: 16px solid rgb(8, 8, 8);
+  border-radius: 64px;
+  overflow: hidden;
+  position: relative;
+  background-color: #000;
+
+  /* Responsive sizing */
+  width: 100%;
+  height: 100%;
+  max-width: 100vw;
+  max-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* iPhone notch */
+.frame::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50%;
+  height: 30px;
+  background-color: rgb(8, 8, 8);
+  border-bottom-left-radius: 22px;
+  border-bottom-right-radius: 22px;
+  z-index: 100;
+}
+
+.content {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}

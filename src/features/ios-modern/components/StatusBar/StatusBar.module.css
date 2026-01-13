@@ -1,0 +1,95 @@
+.statusBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  padding-top: 8px; /* Account for notch */
+  z-index: 50;
+  background: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.statusBar.light {
+  color: #fff;
+}
+
+.statusBar.dark {
+  color: #000;
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.centerSection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.time {
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.signal {
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+  height: 12px;
+}
+
+.signalBar {
+  width: 3px;
+  border-radius: 1px;
+}
+
+.statusBar.light .signalBar {
+  background-color: #fff;
+}
+
+.statusBar.dark .signalBar {
+  background-color: #000;
+}
+
+.signalBar.bar1 { height: 4px; }
+.signalBar.bar2 { height: 6px; }
+.signalBar.bar3 { height: 8px; }
+.signalBar.bar4 { height: 12px; }
+
+.battery {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.batteryPercent {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.batteryIcon {
+  width: 25px;
+  height: 12px;
+}
