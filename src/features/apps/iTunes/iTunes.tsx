@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useWindowStore } from '@/stores/windowStore';
+import { AquaScrollbar } from '@/features/tiger/components/AquaScrollbar';
 import styles from './iTunes.module.css';
 import musicManifest from '@/generated/music-manifest.json';
 
@@ -15,6 +16,8 @@ interface Track {
  * Playlist loaded from generated manifest (scanned from public/music)
  */
 const PLAYLIST: Track[] = musicManifest;
+
+const RATINGS_STORAGE_KEY = 'itunes-track-ratings';
 
 export interface ITunesProps {
   /** Initial track to play (by filename) */
@@ -38,6 +41,15 @@ export function ITunesApp({ initialTrack }: ITunesProps) {
   const [isPlaying, setIsPlaying] = useState(!!initialTrack);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [trackDurations, setTrackDurations] = useState<Record<string, number>>({});
+  const [ratings, setRatings] = useState<Record<string, number>>(() => {
+    try {
+      const stored = localStorage.getItem(RATINGS_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  });
 
   const currentTrack = PLAYLIST[currentTrackIndex];
 
@@ -88,6 +100,32 @@ export function ITunesApp({ initialTrack }: ITunesProps) {
       audio.pause();
     }
   }, [isPlaying, currentTrackIndex]);
+
+  // Load durations for all tracks
+  useEffect(() => {
+    const loadedTracks = new Set(Object.keys(trackDurations));
+
+    PLAYLIST.forEach((track) => {
+      // Use filename as key since it's stable (index-based IDs can shift)
+      if (loadedTracks.has(track.filename)) return;
+
+      const audio = new Audio();
+      const filename = track.filename; // Capture in closure
+      audio.preload = 'metadata';
+      audio.addEventListener('loadedmetadata', () => {
+        setTrackDurations((prev) => ({ ...prev, [filename]: audio.duration }));
+      });
+      audio.src = track.src;
+    });
+  }, [trackDurations]);
+
+  const handleRatingChange = useCallback((trackId: string, rating: number) => {
+    setRatings((prev) => {
+      const newRatings = { ...prev, [trackId]: rating };
+      localStorage.setItem(RATINGS_STORAGE_KEY, JSON.stringify(newRatings));
+      return newRatings;
+    });
+  }, []);
 
   const handleSelectTrack = (index: number) => {
     setCurrentTrackIndex(index);
@@ -181,10 +219,12 @@ export function ITunesApp({ initialTrack }: ITunesProps) {
           <span className={styles.colNum}>#</span>
           <span className={styles.colTitle}>Name</span>
           <span className={styles.colArtist}>Artist</span>
+          <span className={styles.colLength}>Length</span>
+          <span className={styles.colRating}>Rating</span>
         </div>
-        <div className={styles.trackList}>
+        <AquaScrollbar className={styles.trackList}>
           {PLAYLIST.map((track, index) => (
-            <button
+            <div
               key={track.id}
               className={`${styles.trackRow} ${index === currentTrackIndex ? styles.trackRowActive : ''}`}
               onClick={() => handleSelectTrack(index)}
@@ -198,9 +238,19 @@ export function ITunesApp({ initialTrack }: ITunesProps) {
               </span>
               <span className={styles.colTitle}>{track.title}</span>
               <span className={styles.colArtist}>{track.artist}</span>
-            </button>
+              <span className={styles.colLength}>
+                {trackDurations[track.filename] ? formatTime(trackDurations[track.filename]) : '--:--'}
+              </span>
+              <span className={styles.colRating}>
+                <StarRating
+                  rating={ratings[track.id] || 0}
+                  onChange={(rating) => handleRatingChange(track.id, rating)}
+                  isActive={index === currentTrackIndex}
+                />
+              </span>
+            </div>
           ))}
-        </div>
+        </AquaScrollbar>
       </div>
     </div>
   );
@@ -235,6 +285,35 @@ function SkipForwardIcon() {
     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
       <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
     </svg>
+  );
+}
+
+interface StarRatingProps {
+  rating: number;
+  onChange: (rating: number) => void;
+  isActive?: boolean;
+}
+
+function StarRating({ rating, onChange, isActive }: StarRatingProps) {
+  const handleClick = (e: React.MouseEvent, starValue: number) => {
+    e.stopPropagation();
+    // Toggle off if clicking same rating
+    onChange(rating === starValue ? 0 : starValue);
+  };
+
+  return (
+    <div className={styles.starRating}>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          className={`${styles.star} ${star <= rating ? styles.starFilled : ''} ${isActive ? styles.starActive : ''}`}
+          onClick={(e) => handleClick(e, star)}
+          aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+        >
+          ★
+        </button>
+      ))}
+    </div>
   );
 }
 
