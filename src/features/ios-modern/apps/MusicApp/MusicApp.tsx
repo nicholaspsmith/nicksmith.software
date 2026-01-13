@@ -21,7 +21,6 @@ const PLAYLIST: Track[] = [
   { id: '3', title: 'Another Night', artist: 'Real McCoy', src: '/music/Real McCoy - Another Night (Videoclip).mp3' },
   { id: '4', title: 'Rhythm Is A Dancer', artist: 'SNAP!', src: '/music/SNAP! - Rhythm Is A Dancer (Official Music Video).mp3' },
   { id: '5', title: 'Underneath It All', artist: 'No Doubt ft. Lady Saw', src: '/music/No Doubt - Underneath It All (Closed Captioned) ft. Lady Saw.mp3' },
-  { id: '6', title: 'Drugs Are Good', artist: 'NOFX', src: '/music/Drugs Are Good.mp3' },
 ];
 
 type View = 'list' | 'player';
