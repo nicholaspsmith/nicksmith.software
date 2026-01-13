@@ -6,6 +6,7 @@
   font-family: 'Lucida Grande', 'Segoe UI', sans-serif;
   font-size: 11px;
   overflow: hidden;
+  user-select: none;
 }
 
 /* Header with controls and display */
@@ -139,7 +140,6 @@
 
 .trackList {
   flex: 1;
-  overflow-y: auto;
 }
 
 .trackRow {
@@ -168,10 +168,6 @@
   color: #fff;
 }
 
-.trackRowActive .colArtist {
-  color: rgba(255, 255, 255, 0.8);
-}
-
 .colNum {
   width: 30px;
   text-align: center;
@@ -187,12 +183,29 @@
 }
 
 .colArtist {
-  width: 140px;
+  width: 120px;
   flex-shrink: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: #666;
+}
+
+.colLength {
+  width: 50px;
+  flex-shrink: 0;
+  text-align: right;
+  font-family: Monaco, monospace;
+  font-size: 10px;
+  color: #666;
+}
+
+.colRating {
+  width: 90px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .playingIndicator {
@@ -201,5 +214,48 @@
 }
 
 .trackRowActive .playingIndicator {
+  color: #fff;
+}
+
+.trackRowActive .colArtist,
+.trackRowActive .colLength {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Star rating */
+.starRating {
+  display: flex;
+  gap: 0.1px;
+}
+
+.star {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 18px;
+  line-height: 0;
+  margin-top: -5px;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.1s;
+}
+
+.star:hover {
+  color: #ffb800;
+}
+
+.starFilled {
+  color: #ffb800;
+}
+
+.starActive {
+  color: #ccc;
+}
+
+.starActive.starFilled {
+  color: #fff;
+}
+
+.starActive:hover {
   color: #fff;
 }

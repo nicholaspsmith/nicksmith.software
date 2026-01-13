@@ -34,7 +34,7 @@ export function QuickTime({ initialVideo }: QuickTimeProps) {
     }
     return 0;
   });
-  const [isPlaying, setIsPlaying] = useState(true); // Autoplay
+  const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 

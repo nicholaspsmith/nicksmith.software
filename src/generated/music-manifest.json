@@ -1,58 +1,58 @@
 [
   {
     "id": "music-1",
-    "filename": "Bruno Mars - Uptown Funk.mp3",
-    "title": "Uptown Funk",
-    "artist": "Bruno Mars",
-    "src": "/music/Bruno Mars - Uptown Funk.mp3"
-  },
-  {
-    "id": "music-2",
     "filename": "Green Day - Boulevard of Broken Dreams (Official Audio).mp3",
     "title": "Boulevard of Broken Dreams (Official Audio)",
     "artist": "Green Day",
     "src": "/music/Green Day - Boulevard of Broken Dreams (Official Audio).mp3"
   },
   {
-    "id": "music-3",
+    "id": "music-2",
     "filename": "La Bouche - Be My Lover.mp3",
     "title": "Be My Lover",
     "artist": "La Bouche",
     "src": "/music/La Bouche - Be My Lover.mp3"
   },
   {
-    "id": "music-4",
+    "id": "music-3",
     "filename": "No Doubt - Underneath It All ft. Lady Saw.mp3",
     "title": "Underneath It All ft. Lady Saw",
     "artist": "No Doubt",
     "src": "/music/No Doubt - Underneath It All ft. Lady Saw.mp3"
   },
   {
-    "id": "music-5",
+    "id": "music-4",
     "filename": "NOFX - Drugs Are Good.mp3",
     "title": "Drugs Are Good",
     "artist": "NOFX",
     "src": "/music/NOFX - Drugs Are Good.mp3"
   },
   {
-    "id": "music-6",
+    "id": "music-5",
     "filename": "Real McCoy - Another Night.mp3",
     "title": "Another Night",
     "artist": "Real McCoy",
     "src": "/music/Real McCoy - Another Night.mp3"
   },
   {
-    "id": "music-7",
+    "id": "music-6",
     "filename": "SNAP! - Rhythm Is A Dancer.mp3",
     "title": "Rhythm Is A Dancer",
     "artist": "SNAP!",
     "src": "/music/SNAP! - Rhythm Is A Dancer.mp3"
   },
   {
-    "id": "music-8",
+    "id": "music-7",
     "filename": "System Of A Down - B.Y.O.B. (Official HD Video).mp3",
     "title": "B.Y.O.B. (Official HD Video)",
     "artist": "System Of A Down",
     "src": "/music/System Of A Down - B.Y.O.B. (Official HD Video).mp3"
+  },
+  {
+    "id": "music-8",
+    "filename": "The Killers - Mr. Brightside.mp3",
+    "title": "Mr. Brightside",
+    "artist": "The Killers",
+    "src": "/music/The Killers - Mr. Brightside.mp3"
   }
 ]
