@@ -10,7 +10,6 @@
   padding: 0 24px;
   padding-top: 8px; /* Account for notch */
   z-index: 50;
-  background: #fff;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
   font-size: 14px;
   font-weight: 600;
@@ -22,6 +21,7 @@
 
 .statusBar.dark {
   color: #000;
+  background: #fff;
 }
 
 .leftSection {
