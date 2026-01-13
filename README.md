@@ -40,4 +40,6 @@ npm run test
 
 ## License
 
-MIT
+This project is licensed under the [Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0)](LICENSE).
+
+You are free to fork and modify this code, but you must give appropriate credit and may not use it for commercial purposes.
