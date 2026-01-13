@@ -1,9 +1,9 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useAppStore, type IconPosition } from '@/stores/appStore';
 import { useWindowStore } from '@/stores/windowStore';
 import { MenuBar } from '../MenuBar';
 import { Dock } from '../Dock';
-import { ContextMenu } from '../ContextMenu';
+import { ContextMenu, type ContextMenuEntry } from '../ContextMenu';
 import { SelectionRectangle, calculateBounds } from '../SelectionRectangle';
 import { SACRED } from '../../constants/sacred';
 import styles from './Desktop.module.css';
@@ -62,6 +62,9 @@ export function Desktop({ children, iconPositions, onIconsSelected }: DesktopPro
   const clearSelection = useAppStore((s) => s.clearSelection);
   const resetIconPositions = useAppStore((s) => s.resetIconPositions);
   const restoreFromTrash = useAppStore((s) => s.restoreFromTrash);
+  const sortIconsBy = useAppStore((s) => s.sortIconsBy);
+  const pasteFromClipboard = useAppStore((s) => s.pasteFromClipboard);
+  const clipboard = useAppStore((s) => s.clipboard);
   const clearActiveWindow = useWindowStore((s) => s.clearActiveWindow);
   const windows = useWindowStore((s) => s.windows);
   const activeWindowId = useWindowStore((s) => s.activeWindowId);
@@ -72,6 +75,36 @@ export function Desktop({ children, iconPositions, onIconsSelected }: DesktopPro
 
   // Context menu state
   const [contextMenuPosition, setContextMenuPosition] = useState<ContextMenuPosition | null>(null);
+
+  // Build desktop context menu items
+  const contextMenuItems: ContextMenuEntry[] = useMemo(() => [
+    { type: 'item', label: 'New Folder', disabled: true },
+    { type: 'item', label: 'Get Info', disabled: true },
+    { type: 'item', label: 'Change Desktop Background...', disabled: true },
+    { type: 'divider' },
+    {
+      type: 'item',
+      label: 'Clean Up',
+      onClick: resetIconPositions,
+    },
+    {
+      type: 'item',
+      label: 'Clean Up By',
+      submenu: [
+        { type: 'item', label: 'Name', onClick: () => sortIconsBy('name') },
+        { type: 'item', label: 'Kind', onClick: () => sortIconsBy('kind') },
+        { type: 'item', label: 'Date Modified', onClick: () => sortIconsBy('dateModified') },
+        { type: 'item', label: 'Date Created', onClick: () => sortIconsBy('dateCreated') },
+      ],
+    },
+    { type: 'divider' },
+    {
+      type: 'item',
+      label: 'Paste',
+      disabled: !clipboard,
+      onClick: pasteFromClipboard,
+    },
+  ], [clipboard, resetIconPositions, sortIconsBy, pasteFromClipboard]);
 
   // Selection rectangle state
   const [selection, setSelection] = useState<SelectionState>({
@@ -298,7 +331,7 @@ export function Desktop({ children, iconPositions, onIconsSelected }: DesktopPro
           x={contextMenuPosition.x}
           y={contextMenuPosition.y}
           onClose={handleCloseContextMenu}
-          onCleanUp={resetIconPositions}
+          items={contextMenuItems}
         />
       )}
     </div>
