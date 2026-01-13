@@ -28,6 +28,9 @@ import { AboutMe } from '@/features/apps/AboutMe';
 import { Projects } from '@/features/apps/Projects';
 import { Resume } from '@/features/apps/Resume';
 import { Contact } from '@/features/apps/Contact';
+// Media players
+import { ITunesApp } from '@/features/apps/iTunes';
+import { QuickTime } from '@/features/apps/QuickTime';
 
 // Lazy load Terminal to reduce initial bundle size (xterm.js is ~300KB)
 const TerminalApp = lazy(() =>
@@ -167,7 +170,7 @@ const STYLED_COMPONENTS: Record<string, React.ComponentType> = {
  * Renders the appropriate content for a window based on its app type
  * For built-in documents: shows styled component by default, EditableDocument when editing
  */
-function WindowContent({ app, documentId, isEditing, windowId }: { app: string; documentId?: string; isEditing?: boolean; windowId: string }) {
+function WindowContent({ app, documentId, isEditing, windowId, mediaFile }: { app: string; documentId?: string; isEditing?: boolean; windowId: string; mediaFile?: string }) {
   // Get and clear the search query for Finder search windows
   const finderSearchQuery = useWindowStore((s) => s.finderSearchQuery);
   // Window actions for context menu
@@ -265,6 +268,10 @@ function WindowContent({ app, documentId, isEditing, windowId }: { app: string; 
       return <Finder location="home" initialSearch={finderSearchQuery || ''} />;
     case 'about-this-mac':
       return <AboutThisMac />;
+    case 'itunes':
+      return <ITunesApp initialTrack={mediaFile} />;
+    case 'quicktime':
+      return <QuickTime initialVideo={mediaFile} />;
     default:
       return null;
   }
@@ -799,7 +806,7 @@ function TigerDesktop() {
               isStartupWindow={isInitialStartup.current && w.app === 'about'}
               onTitleBarContextMenu={handleWindowContextMenu(w.id, w.app)}
             >
-              <WindowContent app={w.app} documentId={w.documentId} isEditing={w.isEditing} windowId={w.id} />
+              <WindowContent app={w.app} documentId={w.documentId} isEditing={w.isEditing} windowId={w.id} mediaFile={w.mediaFile} />
             </Window>
           ))}
       </Desktop>

@@ -1,0 +1,115 @@
+.quicktime {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #1a1a1a;
+  font-family: 'Lucida Grande', 'Segoe UI', sans-serif;
+  font-size: 11px;
+  overflow: hidden;
+}
+
+/* Video container */
+.videoContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  position: relative;
+  cursor: pointer;
+  min-height: 0;
+}
+
+.video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.playOverlay {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 12px;
+  background: linear-gradient(to bottom, #3a3a3a, #2a2a2a);
+  border-top: 1px solid #4a4a4a;
+}
+
+.controlButtons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.controlButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 24px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background: linear-gradient(to bottom, #4a4a4a, #3a3a3a);
+  color: #ddd;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.controlButton:hover:not(:disabled) {
+  background: linear-gradient(to bottom, #5a5a5a, #4a4a4a);
+  color: #fff;
+}
+
+.controlButton:active:not(:disabled) {
+  background: linear-gradient(to bottom, #3a3a3a, #4a4a4a);
+}
+
+.controlButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Progress bar */
+.progressContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.time {
+  color: #aaa;
+  font-size: 10px;
+  font-family: Monaco, monospace;
+  min-width: 36px;
+}
+
+.time:last-child {
+  text-align: right;
+}
+
+.progressBar {
+  flex: 1;
+  height: 8px;
+  background: #222;
+  border-radius: 4px;
+  cursor: pointer;
+  overflow: hidden;
+  border: 1px solid #444;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(to bottom, #6af, #39f);
+  border-radius: 4px;
+  transition: width 0.1s linear;
+}

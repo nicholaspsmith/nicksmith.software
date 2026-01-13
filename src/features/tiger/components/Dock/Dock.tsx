@@ -41,6 +41,8 @@ const DEFAULT_DOCK_ICONS = [
   { id: 'finder', label: 'Finder', icon: '/icons/finder.png' },
   { id: 'textEdit', label: 'TextEdit', icon: '/icons/textedit.png' },
   { id: 'terminal', label: 'Terminal', icon: '/icons/terminal.png' },
+  { id: 'itunes', label: 'iTunes', icon: '/icons/itunes.png' },
+  { id: 'quicktime', label: 'QuickTime Player', icon: '/icons/quicktime-logo.png' },
   { id: 'system-preferences', label: 'System Preferences', icon: '/icons/system-preferences.png' },
 ] as const;
 
@@ -94,7 +96,7 @@ export function Dock() {
 
   // Get unique parent app IDs that are running, excluding apps in default icons
   const runningParentAppIds = [...new Set(runningApps.map((w) => w.parentApp))]
-    .filter((id) => id !== 'textEdit' && id !== 'finder' && id !== 'terminal');
+    .filter((id) => id !== 'textEdit' && id !== 'finder' && id !== 'terminal' && id !== 'itunes' && id !== 'quicktime');
 
   // Check if TextEdit has any running windows (for showing indicator)
   const hasTextEditWindows = runningApps.some((w) => w.parentApp === 'textEdit');
@@ -104,6 +106,12 @@ export function Dock() {
 
   // Check if Terminal has any running windows (for showing indicator)
   const hasTerminalWindows = runningApps.some((w) => w.parentApp === 'terminal');
+
+  // Check if iTunes has any running windows (for showing indicator)
+  const hasITunesWindows = runningApps.some((w) => w.parentApp === 'itunes');
+
+  // Check if QuickTime has any running windows (for showing indicator)
+  const hasQuickTimeWindows = runningApps.some((w) => w.parentApp === 'quicktime');
 
   // Get only minimized windows for thumbnails
   const minimizedWindows = windows.filter((w) => w.state === 'minimized');
@@ -177,6 +185,50 @@ export function Dock() {
       } else {
         // No Terminal windows open - open a new terminal
         openWindow('terminal');
+      }
+    } else if (iconId === 'itunes') {
+      // iTunes: focus or restore window if it exists
+      const itunesWindows = windows
+        .filter((w) => w.parentApp === 'itunes' && w.state !== 'closed')
+        .sort((a, b) => b.zIndex - a.zIndex);
+
+      // Only bounce if iTunes has no running windows
+      if (!hasITunesWindows) {
+        triggerBounce('itunes');
+      }
+
+      if (itunesWindows.length > 0) {
+        const topWindow = itunesWindows[0];
+        if (topWindow.state === 'minimized') {
+          restoreWindow(topWindow.id);
+        } else {
+          focusWindow(topWindow.id);
+        }
+      } else {
+        // No iTunes window open - open iTunes
+        useWindowStore.getState().openITunes();
+      }
+    } else if (iconId === 'quicktime') {
+      // QuickTime: focus or restore window if it exists
+      const quicktimeWindows = windows
+        .filter((w) => w.parentApp === 'quicktime' && w.state !== 'closed')
+        .sort((a, b) => b.zIndex - a.zIndex);
+
+      // Only bounce if QuickTime has no running windows
+      if (!hasQuickTimeWindows) {
+        triggerBounce('quicktime');
+      }
+
+      if (quicktimeWindows.length > 0) {
+        const topWindow = quicktimeWindows[0];
+        if (topWindow.state === 'minimized') {
+          restoreWindow(topWindow.id);
+        } else {
+          focusWindow(topWindow.id);
+        }
+      } else {
+        // No QuickTime window open - open QuickTime
+        useWindowStore.getState().openQuickTime();
       }
     } else if (iconId === 'system-preferences') {
       showAlert({
@@ -286,11 +338,13 @@ export function Dock() {
           <div className={styles.appSection}>
             {DEFAULT_DOCK_ICONS.map((icon) => {
               // Finder always shows indicator (it's always running in macOS)
-              // TextEdit and Terminal show indicator only when they have windows
+              // TextEdit, Terminal, iTunes, QuickTime show indicator only when they have windows
               const showIndicator =
                 icon.id === 'finder' ||
                 (icon.id === 'textEdit' && hasTextEditWindows) ||
-                (icon.id === 'terminal' && hasTerminalWindows);
+                (icon.id === 'terminal' && hasTerminalWindows) ||
+                (icon.id === 'itunes' && hasITunesWindows) ||
+                (icon.id === 'quicktime' && hasQuickTimeWindows);
               const isBouncing = bouncingIcons.has(icon.id);
 
               return (

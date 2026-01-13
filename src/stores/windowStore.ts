@@ -20,6 +20,9 @@ export const APP_GROUPS: Record<string, string> = {
   // About This Mac is a Finder/system dialog
   'about-this-mac': 'finder',
   // Terminal is its own app (not grouped)
+  // iTunes and QuickTime are their own apps
+  itunes: 'itunes',
+  quicktime: 'quicktime',
 };
 
 /**
@@ -42,6 +45,8 @@ const WINDOW_TITLES: Record<string, string> = {
   untitled: 'Untitled',
   'about-this-mac': 'About This Mac',
   about: 'About Me',
+  itunes: 'iTunes',
+  quicktime: 'QuickTime Player',
 };
 
 /**
@@ -78,6 +83,10 @@ const WINDOW_SIZE_CONFIGS: Record<string, WindowSizeConfig> = {
   contact: { width: 390, height: 440, minWidth: 300, minHeight: 300 },
   // Resume - needs width for content
   resume: { width: 700, height: 500, minWidth: 700, minHeight: 300 },
+  // iTunes - music player
+  itunes: { width: 500, height: 400, minWidth: 400, minHeight: 300 },
+  // QuickTime - video player
+  quicktime: { width: 640, height: 480, minWidth: 320, minHeight: 240 },
 };
 
 /**
@@ -143,6 +152,8 @@ export interface WindowState {
   documentId?: string;
   /** True when user is editing document content (switches from styled to textarea view) */
   isEditing?: boolean;
+  /** Media filename for iTunes/QuickTime windows */
+  mediaFile?: string;
 }
 
 interface WindowStore {
@@ -180,6 +191,10 @@ interface WindowStore {
   setEditMode: (id: string, isEditing: boolean) => void;
   /** Update a window's title */
   setWindowTitle: (id: string, title: string) => void;
+  /** Open iTunes with optional initial track */
+  openITunes: (mediaFile?: string) => string;
+  /** Open QuickTime with optional initial video */
+  openQuickTime: (mediaFile?: string) => string;
 }
 
 export const useWindowStore = create<WindowStore>((set, get) => ({
@@ -560,5 +575,113 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
         w.id === id ? { ...w, title } : w
       ),
     }));
+  },
+
+  openITunes: (mediaFile) => {
+    const { windows, maxZIndex } = get();
+
+    // iTunes is single-instance - check if already open
+    const existingWindow = windows.find((w) => w.app === 'itunes' && w.state !== 'closed');
+    if (existingWindow) {
+      // If opening with a specific file, update the mediaFile and restore/focus
+      if (mediaFile) {
+        set((state) => ({
+          windows: state.windows.map((w) =>
+            w.id === existingWindow.id ? { ...w, mediaFile } : w
+          ),
+        }));
+      }
+      get().focusWindow(existingWindow.id);
+      if (existingWindow.state === 'minimized') {
+        get().restoreWindow(existingWindow.id);
+      }
+      return existingWindow.id;
+    }
+
+    // Create new iTunes window
+    const id = crypto.randomUUID();
+    const newZIndex = maxZIndex + 1;
+    const app = 'itunes';
+    const parentApp = getParentApp(app);
+    const sizeConfig = getWindowSizeConfig(app);
+
+    set((state) => ({
+      windows: [...state.windows, {
+        id,
+        app,
+        parentApp,
+        title: getWindowTitle(app),
+        x: 100 + (state.windows.length * 30),
+        y: 100 + (state.windows.length * 30),
+        width: sizeConfig.width,
+        height: sizeConfig.height,
+        minWidth: sizeConfig.minWidth,
+        minHeight: sizeConfig.minHeight,
+        zIndex: newZIndex,
+        state: 'open',
+        isZoomed: false,
+        isShaded: false,
+        previousBounds: null,
+        restoredFromMinimized: false,
+        mediaFile,
+      }],
+      activeWindowId: id,
+      maxZIndex: newZIndex,
+    }));
+    return id;
+  },
+
+  openQuickTime: (mediaFile) => {
+    const { windows, maxZIndex } = get();
+
+    // QuickTime is single-instance - check if already open
+    const existingWindow = windows.find((w) => w.app === 'quicktime' && w.state !== 'closed');
+    if (existingWindow) {
+      // If opening with a specific file, update the mediaFile and restore/focus
+      if (mediaFile) {
+        set((state) => ({
+          windows: state.windows.map((w) =>
+            w.id === existingWindow.id ? { ...w, mediaFile } : w
+          ),
+        }));
+      }
+      get().focusWindow(existingWindow.id);
+      if (existingWindow.state === 'minimized') {
+        get().restoreWindow(existingWindow.id);
+      }
+      return existingWindow.id;
+    }
+
+    // Create new QuickTime window
+    const id = crypto.randomUUID();
+    const newZIndex = maxZIndex + 1;
+    const app = 'quicktime';
+    const parentApp = getParentApp(app);
+    const sizeConfig = getWindowSizeConfig(app);
+
+    set((state) => ({
+      windows: [...state.windows, {
+        id,
+        app,
+        parentApp,
+        title: getWindowTitle(app),
+        x: 100 + (state.windows.length * 30),
+        y: 100 + (state.windows.length * 30),
+        width: sizeConfig.width,
+        height: sizeConfig.height,
+        minWidth: sizeConfig.minWidth,
+        minHeight: sizeConfig.minHeight,
+        zIndex: newZIndex,
+        state: 'open',
+        isZoomed: false,
+        isShaded: false,
+        previousBounds: null,
+        restoredFromMinimized: false,
+        mediaFile,
+      }],
+      activeWindowId: id,
+      maxZIndex: newZIndex,
+    }));
+    return id;
   },
 }));
