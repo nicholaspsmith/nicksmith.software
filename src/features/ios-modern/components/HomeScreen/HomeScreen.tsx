@@ -47,11 +47,13 @@ const DOCK_APPS: AppConfig[] = [
  */
 export function HomeScreen() {
   const openApp = useIOSStore((s) => s.openApp);
+  const activeApp = useIOSStore((s) => s.activeApp);
 
   return (
     <div className={styles.homeScreen}>
       <div className={styles.background} />
-      <StatusBar variant="light" />
+      {/* Hide status bar when app is open - app has its own */}
+      {!activeApp && <StatusBar variant="light" />}
       <div className={styles.content}>
         <div className={styles.appGrid}>
           {HOME_APPS.map((app) => (
