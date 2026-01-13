@@ -2,6 +2,8 @@
 
 A personal portfolio website recreating the Mac OS X Tiger (10.4) desktop experience in the browser.
 
+**[Live Demo](https://nicksmith.software)**
+
 ## Features
 
 - **Authentic Tiger Desktop** - Faithful recreation of the Mac OS X 10.4 interface
