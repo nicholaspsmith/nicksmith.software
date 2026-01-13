@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useWindowStore } from '@/stores/windowStore';
 import { useAppStore } from '@/stores/appStore';
+import { usePhotoStore } from '@/features/ios-modern/stores/photoStore';
 import { AquaScrollbar, type AquaScrollbarHandle } from '@/features/tiger/components/AquaScrollbar';
 import { ContextMenu, type ContextMenuEntry } from '@/features/tiger/components/ContextMenu';
 import styles from './Finder.module.css';
@@ -45,6 +46,8 @@ interface ContentItem {
   name: string;
   icon: string;
   type: 'folder' | 'file';
+  /** Optional data URL for dynamically loaded images (e.g., camera photos) */
+  dataUrl?: string;
 }
 
 /**
@@ -263,6 +266,7 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
   const openWindow = useWindowStore((s) => s.openWindow);
   const openITunes = useWindowStore((s) => s.openITunes);
   const openQuickTime = useWindowStore((s) => s.openQuickTime);
+  const openPreview = useWindowStore((s) => s.openPreview);
   const clearAppSelection = useAppStore((s) => s.clearSelection);
   const trashedIcons = useAppStore((s) => s.trashedIcons);
   const emptyTrash = useAppStore((s) => s.emptyTrash);
@@ -271,6 +275,7 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
   const showAlert = useAppStore((s) => s.showAlert);
   const isHoveringOverTrash = useAppStore((s) => s.isHoveringOverTrash);
   const moveToTrash = useAppStore((s) => s.moveToTrash);
+  const photos = usePhotoStore((s) => s.photos);
 
   // Trash item context menu state
   const [trashContextMenu, setTrashContextMenu] = useState<{
@@ -334,7 +339,6 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
         };
       case 'applications':
       case 'documents':
-      case 'pictures':
         // These folders show empty state for now
         return {
           title: SIDEBAR_ITEMS.find(i => i.id === selectedSidebarItem)?.label || selectedSidebarItem,
@@ -342,6 +346,22 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
           contentItems: [],
           statusText: '0 items',
         };
+      case 'pictures': {
+        // Pictures folder shows photos from iOS camera
+        const pictureItems: ContentItem[] = photos.map((photo) => ({
+          id: photo.id,
+          name: `Photo ${new Date(photo.timestamp).toLocaleDateString()}`,
+          icon: 'picture-file',
+          type: 'file' as const,
+          dataUrl: photo.dataUrl,
+        }));
+        return {
+          title: 'Pictures',
+          sidebarItems: SIDEBAR_ITEMS,
+          contentItems: pictureItems,
+          statusText: `${pictureItems.length} item${pictureItems.length !== 1 ? 's' : ''}`,
+        };
+      }
       case 'music':
         return {
           title: 'Music',
@@ -418,6 +438,12 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
         clearAppSelection();
         return;
       }
+      // Check for picture files (from camera)
+      if (item.icon === 'picture-file' && item.dataUrl) {
+        openPreview(item.dataUrl, item.name);
+        clearAppSelection();
+        return;
+      }
       // Open file/app
       const windowId = OPENABLE_ITEMS[item.id];
       if (windowId) {
@@ -425,7 +451,7 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
         clearAppSelection();
       }
     }
-  }, [openWindow, openITunes, openQuickTime, clearAppSelection]);
+  }, [openWindow, openITunes, openQuickTime, openPreview, clearAppSelection]);
 
   const handleContentClick = useCallback((itemId: string, e: React.MouseEvent) => {
     // Skip if we just finished marquee
@@ -942,7 +968,7 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
                   draggable={selectedSidebarItem === 'trash'}
                   onDragStart={selectedSidebarItem === 'trash' ? (e) => handleTrashItemDragStart(e, item.id) : undefined}
                 >
-                  <ContentIcon type={item.icon} />
+                  <ContentIcon type={item.icon} dataUrl={item.dataUrl} />
                   <span className={styles.contentLabel}>{item.name}</span>
                 </button>
               ))}
@@ -1174,12 +1200,28 @@ const CONTENT_ICON_MAP: Record<string, string> = {
   // Media files
   'music-file': '/icons/itunes.png',
   'video-file': '/icons/quicktime-logo.png',
+  'picture-file': '/icons/PicturesFolderIcon.png',
 };
 
-function ContentIcon({ type }: { type: string }) {
+function ContentIcon({ type, dataUrl }: { type: string; dataUrl?: string }) {
   // Terminal uses custom SVG icon
   if (type === 'terminal') {
     return <TerminalIcon size={64} />;
+  }
+
+  // Picture files with dataUrl show actual photo thumbnail
+  if (type === 'picture-file' && dataUrl) {
+    return (
+      <img
+        src={dataUrl}
+        alt=""
+        width="64"
+        height="64"
+        aria-hidden="true"
+        draggable={false}
+        style={{ objectFit: 'cover', borderRadius: '4px' }}
+      />
+    );
   }
 
   // Use mapped icon or fallback to folder

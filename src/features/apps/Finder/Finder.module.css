@@ -27,8 +27,17 @@
   align-items: center;
   justify-content: space-between;
   padding: 4px 8px;
-  background: linear-gradient(170deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%, rgba(0, 0, 0, 0.08) 100%), var(--aqua-brushed-metal-texture);
-  background-size: auto, 530px 482px;
+  background:
+    linear-gradient(
+      170deg,
+      rgba(255, 255, 255, 0.15) 0%,
+      transparent 50%,
+      rgba(0, 0, 0, 0.08) 100%
+    ),
+    var(--aqua-brushed-metal-texture);
+  background-size:
+    auto,
+    530px 482px;
   background-repeat: repeat;
   min-height: 36px;
 }
@@ -47,8 +56,8 @@
 
 /* Empty Trash button - Aqua styled blue button */
 .emptyTrashButton {
-  background: linear-gradient(180deg, #6CB3F5 0%, #1E7AD6 50%, #1565C0 100%);
-  border: 1px solid #1565C0;
+  background: linear-gradient(180deg, #6cb3f5 0%, #1e7ad6 50%, #1565c0 100%);
+  border: 1px solid #1565c0;
   border-radius: 4px;
   color: white;
   font-size: 10px;
@@ -60,11 +69,11 @@
 }
 
 .emptyTrashButton:hover {
-  background: linear-gradient(180deg, #7DC4FF 0%, #2E8AE6 50%, #2575D0 100%);
+  background: linear-gradient(180deg, #7dc4ff 0%, #2e8ae6 50%, #2575d0 100%);
 }
 
 .emptyTrashButton:active {
-  background: linear-gradient(180deg, #1565C0 0%, #1E7AD6 50%, #6CB3F5 100%);
+  background: linear-gradient(180deg, #1565c0 0%, #1e7ad6 50%, #6cb3f5 100%);
 }
 
 /* Navigation buttons (back/forward) */
@@ -136,12 +145,12 @@
 }
 
 .viewButton:hover {
-  background: linear-gradient(180deg, #fff 0%, #e0e0e0 100%);
+  opacity: 0.8;
 }
 
 .viewButtonActive {
-  background: linear-gradient(180deg, #c0c0c0 0%, #a8a8a8 100%);
-  color: #333;
+  background: #3377f3;
+  color: #ddd;
 }
 
 /* Search field */
@@ -178,10 +187,21 @@
   flex: 1;
   overflow: hidden;
   /* Brushed metal border on left and right */
-  background: linear-gradient(173deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%, rgba(0, 0, 0, 0.08) 100%), var(--aqua-brushed-metal-texture);
-  background-size: auto, 530px 482px;
+  background:
+    linear-gradient(
+      173deg,
+      rgba(255, 255, 255, 0.15) 0%,
+      transparent 50%,
+      rgba(0, 0, 0, 0.08) 100%
+    ),
+    var(--aqua-brushed-metal-texture);
+  background-size:
+    auto,
+    530px 482px;
   background-repeat: repeat;
-  background-position: auto, 1847px 321px;
+  background-position:
+    auto,
+    1847px 321px;
   padding: 0 5px;
 }
 
@@ -504,8 +524,17 @@
   position: relative;
   padding: 4px 12px;
   min-height: 22px;
-  background: linear-gradient(173deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%, rgba(0, 0, 0, 0.08) 100%), var(--aqua-brushed-metal-texture);
-  background-size: auto, 530px 482px;
+  background:
+    linear-gradient(
+      173deg,
+      rgba(255, 255, 255, 0.15) 0%,
+      transparent 50%,
+      rgba(0, 0, 0, 0.08) 100%
+    ),
+    var(--aqua-brushed-metal-texture);
+  background-size:
+    auto,
+    530px 482px;
   background-repeat: repeat;
   font-size: 10px;
   color: #333;

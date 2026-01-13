@@ -31,6 +31,7 @@ import { Contact } from '@/features/apps/Contact';
 // Media players
 import { ITunesApp } from '@/features/apps/iTunes';
 import { QuickTime } from '@/features/apps/QuickTime';
+import { Preview } from '@/features/apps/Preview';
 
 // Lazy load Terminal to reduce initial bundle size (xterm.js is ~300KB)
 const TerminalApp = lazy(() =>
@@ -170,7 +171,7 @@ const STYLED_COMPONENTS: Record<string, React.ComponentType> = {
  * Renders the appropriate content for a window based on its app type
  * For built-in documents: shows styled component by default, EditableDocument when editing
  */
-function WindowContent({ app, documentId, isEditing, windowId, mediaFile }: { app: string; documentId?: string; isEditing?: boolean; windowId: string; mediaFile?: string }) {
+function WindowContent({ app, documentId, isEditing, windowId, mediaFile, imageDataUrl }: { app: string; documentId?: string; isEditing?: boolean; windowId: string; mediaFile?: string; imageDataUrl?: string }) {
   // Get and clear the search query for Finder search windows
   const finderSearchQuery = useWindowStore((s) => s.finderSearchQuery);
   // Window actions for context menu
@@ -272,6 +273,8 @@ function WindowContent({ app, documentId, isEditing, windowId, mediaFile }: { ap
       return <ITunesApp initialTrack={mediaFile} />;
     case 'quicktime':
       return <QuickTime initialVideo={mediaFile} />;
+    case 'preview':
+      return imageDataUrl ? <Preview imageDataUrl={imageDataUrl} /> : null;
     default:
       return null;
   }
@@ -806,7 +809,7 @@ function TigerDesktop() {
               isStartupWindow={isInitialStartup.current && w.app === 'about'}
               onTitleBarContextMenu={handleWindowContextMenu(w.id, w.app)}
             >
-              <WindowContent app={w.app} documentId={w.documentId} isEditing={w.isEditing} windowId={w.id} mediaFile={w.mediaFile} />
+              <WindowContent app={w.app} documentId={w.documentId} isEditing={w.isEditing} windowId={w.id} mediaFile={w.mediaFile} imageDataUrl={w.imageDataUrl} />
             </Window>
           ))}
       </Desktop>

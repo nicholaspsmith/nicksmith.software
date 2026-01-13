@@ -23,6 +23,8 @@ export const APP_GROUPS: Record<string, string> = {
   // iTunes and QuickTime are their own apps
   itunes: 'itunes',
   quicktime: 'quicktime',
+  // Preview for images
+  preview: 'preview',
 };
 
 /**
@@ -47,6 +49,7 @@ const WINDOW_TITLES: Record<string, string> = {
   about: 'About Me',
   itunes: 'iTunes',
   quicktime: 'QuickTime Player',
+  preview: 'Preview',
 };
 
 /**
@@ -87,6 +90,8 @@ const WINDOW_SIZE_CONFIGS: Record<string, WindowSizeConfig> = {
   itunes: { width: 500, height: 400, minWidth: 400, minHeight: 300 },
   // QuickTime - video player
   quicktime: { width: 640, height: 480, minWidth: 320, minHeight: 240 },
+  // Preview - image viewer
+  preview: { width: 400, height: 400, minWidth: 200, minHeight: 200 },
 };
 
 /**
@@ -154,6 +159,8 @@ export interface WindowState {
   isEditing?: boolean;
   /** Media filename for iTunes/QuickTime windows */
   mediaFile?: string;
+  /** Image data URL for Preview windows */
+  imageDataUrl?: string;
 }
 
 interface WindowStore {
@@ -195,6 +202,8 @@ interface WindowStore {
   openITunes: (mediaFile?: string) => string;
   /** Open QuickTime with optional initial video */
   openQuickTime: (mediaFile?: string) => string;
+  /** Open Preview with an image */
+  openPreview: (imageDataUrl: string, title?: string) => string;
 }
 
 export const useWindowStore = create<WindowStore>((set, get) => ({
@@ -678,6 +687,42 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
         previousBounds: null,
         restoredFromMinimized: false,
         mediaFile,
+      }],
+      activeWindowId: id,
+      maxZIndex: newZIndex,
+    }));
+    return id;
+  },
+
+  openPreview: (imageDataUrl, title) => {
+    const { windows, maxZIndex } = get();
+
+    // Preview allows multiple windows (one per image)
+    const id = crypto.randomUUID();
+    const newZIndex = maxZIndex + 1;
+    const app = 'preview';
+    const parentApp = getParentApp(app);
+    const sizeConfig = getWindowSizeConfig(app);
+
+    set((state) => ({
+      windows: [...state.windows, {
+        id,
+        app,
+        parentApp,
+        title: title || 'Preview',
+        x: 100 + (windows.length * 30),
+        y: 100 + (windows.length * 30),
+        width: sizeConfig.width,
+        height: sizeConfig.height,
+        minWidth: sizeConfig.minWidth,
+        minHeight: sizeConfig.minHeight,
+        zIndex: newZIndex,
+        state: 'open',
+        isZoomed: false,
+        isShaded: false,
+        previousBounds: null,
+        restoredFromMinimized: false,
+        imageDataUrl,
       }],
       activeWindowId: id,
       maxZIndex: newZIndex,
