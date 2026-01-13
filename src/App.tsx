@@ -6,16 +6,14 @@ import {
   useKeyboardShortcuts,
   useReducedMotion,
   useViewport,
-  MOBILE_BREAKPOINT,
 } from '@/hooks';
 import { Desktop } from '@/features/tiger/components/Desktop';
 import { DesktopIconGrid } from '@/features/tiger/components/DesktopIconGrid';
 import { DesktopIcon, type IconContextMenuEvent, type DesktopIconType } from '@/features/tiger/components/DesktopIcon';
 import { ContextMenu, type ContextMenuEntry } from '@/features/tiger/components/ContextMenu';
 import { Window } from '@/features/tiger/components/Window';
-import { MobileFallback } from '@/features/tiger/components/MobileFallback';
 import { AlertDialog } from '@/features/tiger/components/AlertDialog';
-import { HomeScreen, IOS_BREAKPOINT } from '@/features/ios';
+import { IOS, IOS_BREAKPOINT } from '@/features/ios-modern';
 import { RebootTransition } from '@/components/RebootTransition';
 import { RestartScreen } from '@/components/RestartScreen';
 import { SACRED } from '@/features/tiger/constants/sacred';
@@ -37,14 +35,14 @@ const TerminalApp = lazy(() =>
 );
 
 /** Viewport mode type */
-type ViewportMode = 'ios' | 'fallback' | 'desktop';
+type ViewportMode = 'ios' | 'desktop';
 
 /**
  * Determines the viewport mode based on width
+ * iOS for screens < 1024px, desktop for >= 1024px
  */
 function getViewportMode(width: number): ViewportMode {
   if (width < IOS_BREAKPOINT) return 'ios';
-  if (width < MOBILE_BREAKPOINT) return 'fallback';
   return 'desktop';
 }
 
@@ -870,12 +868,12 @@ function TigerDesktop() {
  * App - Root application component
  *
  * Determines viewport mode and renders the appropriate experience:
- * - iOS 6 home screen for mobile (< 768px)
- * - MobileFallback for tablets (768px - 1024px)
+ * - iOS 15+ home screen for mobile/tablet (< 1024px)
  * - Tiger desktop for large screens (>= 1024px)
  *
- * Transitions between iOS and Desktop/Fallback are animated
- * with a "reboot" effect for a polished context switch.
+ * iOS has its own boot screen. Tiger desktop shows a restart
+ * screen during startup. Transitions between modes use a
+ * "reboot" animation for a polished context switch.
  */
 export function App() {
   // Enable Tiger keyboard shortcuts (⌘W, ⌘M)
@@ -920,9 +918,7 @@ export function App() {
   const content = useMemo(() => {
     switch (mode) {
       case 'ios':
-        return <HomeScreen />;
-      case 'fallback':
-        return <MobileFallback />;
+        return <IOS />;
       case 'desktop':
         return <TigerDesktop />;
     }
@@ -930,19 +926,26 @@ export function App() {
 
   return (
     <MotionConfig reducedMotion={prefersReducedMotion ? 'always' : 'never'}>
-      {/* Always render content - restart screen overlays it */}
-      {startupComplete && (
+      {/* iOS mode renders immediately (has its own boot screen) */}
+      {mode === 'ios' && (
         <RebootTransition mode={mode} skipInitial={false}>
           {content}
         </RebootTransition>
       )}
 
-      {/* Boot/restart screen with fade out animation */}
+      {/* Desktop mode waits for startup and shows Tiger restart screen */}
+      {mode === 'desktop' && startupComplete && (
+        <RebootTransition mode={mode} skipInitial={false}>
+          {content}
+        </RebootTransition>
+      )}
+
+      {/* Tiger boot/restart screen - only for desktop mode */}
       <AnimatePresence>
-        {!startupComplete && (
+        {mode === 'desktop' && !startupComplete && (
           <RestartScreen key="boot" onComplete={handleBootComplete} duration={2000} />
         )}
-        {isRestarting && (
+        {mode === 'desktop' && isRestarting && (
           <RestartScreen key="restart" onComplete={handleRestartComplete} duration={2000} />
         )}
       </AnimatePresence>
