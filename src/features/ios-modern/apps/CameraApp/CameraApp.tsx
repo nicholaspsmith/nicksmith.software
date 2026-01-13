@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { useIOSStore } from '../../stores/iosStore';
+import { usePhotoStore } from '../../stores/photoStore';
 import { StatusBar } from '../../components/StatusBar';
 import styles from './CameraApp.module.css';
 
@@ -17,9 +18,36 @@ type CameraState = 'loading' | 'active' | 'permission-denied' | 'not-supported' 
  */
 export function CameraApp() {
   const closeApp = useIOSStore((s) => s.closeApp);
+  const addPhoto = usePhotoStore((s) => s.addPhoto);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [cameraState, setCameraState] = useState<CameraState>('loading');
+  const [isCapturing, setIsCapturing] = useState(false);
+
+  const capturePhoto = useCallback(() => {
+    if (!videoRef.current || !canvasRef.current || cameraState !== 'active') return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Set canvas size to match video
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // Draw video frame to canvas
+    ctx.drawImage(video, 0, 0);
+
+    // Convert to data URL and save
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+    addPhoto(dataUrl);
+
+    // Flash effect
+    setIsCapturing(true);
+    setTimeout(() => setIsCapturing(false), 150);
+  }, [cameraState, addPhoto]);
 
   useEffect(() => {
     let mounted = true;
@@ -139,6 +167,24 @@ export function CameraApp() {
             We couldn&apos;t find a camera on your device.
           </p>
         </div>
+      )}
+
+      {/* Hidden canvas for photo capture */}
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
+
+      {/* Flash overlay */}
+      {isCapturing && <div className={styles.flash} />}
+
+      {/* Shutter button */}
+      {cameraState === 'active' && (
+        <motion.button
+          className={styles.shutterButton}
+          onClick={capturePhoto}
+          whileTap={{ scale: 0.9 }}
+          aria-label="Take photo"
+        >
+          <div className={styles.shutterInner} />
+        </motion.button>
       )}
 
       <motion.button

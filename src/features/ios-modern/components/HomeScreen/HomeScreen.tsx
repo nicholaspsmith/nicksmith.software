@@ -13,11 +13,12 @@ interface AppConfig {
 }
 
 /**
- * Home screen apps (2x3 grid)
- * Order: Photos, Reminders, Mail, Camera, Safari, Settings
+ * Home screen apps grid
  */
 const HOME_APPS: AppConfig[] = [
-  { id: 'photos', label: 'Projects', icon: '/icons/ios/photos.svg' },
+  { id: 'about', label: 'About Me', icon: '/icons/ios/extracted/contacts.svg' },
+  { id: 'photos', label: 'Projects', icon: '/icons/ios/extracted/files.svg' },
+  { id: 'gallery', label: 'Photos', icon: '/icons/ios/photos.svg' },
   { id: 'reminders', label: 'Resume', icon: '/icons/ios/reminders.svg' },
   { id: 'mail', label: 'Contact', icon: '/icons/ios/mail.svg' },
   { id: 'camera', label: 'Camera', icon: '/icons/ios/camera.svg' },
@@ -30,7 +31,7 @@ const HOME_APPS: AppConfig[] = [
  * Order: Phone, Safari, Messages, Music
  */
 const DOCK_APPS: AppConfig[] = [
-  { id: 'phone', label: 'Phone', icon: '/icons/ios/phone.svg' },
+  { id: 'phone', label: 'Phone', icon: '/icons/ios/extracted/phone-icon.png' },
   { id: 'safari', label: 'Safari', icon: '/icons/ios/safari.svg' },
   { id: 'messages', label: 'Messages', icon: '/icons/ios/messages.svg' },
   { id: 'music', label: 'Music', icon: '/icons/ios/music.svg' },

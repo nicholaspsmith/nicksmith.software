@@ -54,6 +54,13 @@ const ABOUT_ITEMS: SettingsItem[] = [
  */
 export function SettingsApp() {
   const closeApp = useIOSStore((s) => s.closeApp);
+  const openApp = useIOSStore((s) => s.openApp);
+
+  const handleItemClick = (id: string) => {
+    if (id === 'about') {
+      openApp('about');
+    }
+  };
 
   return (
     <div className={styles.app}>
@@ -79,7 +86,11 @@ export function SettingsApp() {
           <div className={styles.sectionHeader}>Information</div>
           <div className={styles.list}>
             {ABOUT_ITEMS.map((item) => (
-              <button key={item.id} className={styles.item}>
+              <button
+                key={item.id}
+                className={styles.item}
+                onClick={() => handleItemClick(item.id)}
+              >
                 <div className={styles.itemIcon} style={{ backgroundColor: item.color }}>
                   {item.icon}
                 </div>

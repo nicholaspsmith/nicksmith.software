@@ -29,4 +29,6 @@ coverage/
 # Reference materials (local only)
 Reference/
 
+# Do not commit 3rd party repositories
 ios-in-web/
+genie.js/
