@@ -2,7 +2,10 @@
  * System sounds for Mac OS X Tiger experience
  *
  * Sound files are located in /public/sounds/
+ * Uses global volume from soundStore
  */
+
+import { useSoundStore } from '@/stores/soundStore';
 
 export type SystemSound = 'startup' | 'moveToTrash' | 'emptyTrash' | 'alert';
 
@@ -17,11 +20,10 @@ const SOUND_FILES: Record<SystemSound, string> = {
 const audioCache = new Map<SystemSound, HTMLAudioElement>();
 
 /**
- * Play a system sound
+ * Play a system sound using global volume from soundStore
  * @param sound - The sound to play
- * @param volume - Volume level (0-1), defaults to 1
  */
-export function playSound(sound: SystemSound, volume = 1): void {
+export function playSound(sound: SystemSound): void {
   // Don't play sounds during SSR
   if (typeof window === 'undefined') return;
 
@@ -33,9 +35,12 @@ export function playSound(sound: SystemSound, volume = 1): void {
       audioCache.set(sound, audio);
     }
 
+    // Get global volume from soundStore
+    const globalVolume = useSoundStore.getState().volume;
+
     // Reset to beginning if already playing
     audio.currentTime = 0;
-    audio.volume = Math.max(0, Math.min(1, volume));
+    audio.volume = globalVolume;
     audio.play().catch(() => {
       // Ignore autoplay errors - browser may block audio
       // until user interaction

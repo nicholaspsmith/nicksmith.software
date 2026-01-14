@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useWindowStore } from '@/stores/windowStore';
+import { useSoundStore } from '@/stores/soundStore';
 import { AquaScrollbar } from '@/features/tiger/components/AquaScrollbar';
 import styles from './iTunes.module.css';
 import musicManifest from '@/generated/music-manifest.json';
@@ -100,6 +101,14 @@ export function ITunesApp({ initialTrack }: ITunesProps) {
       audio.pause();
     }
   }, [isPlaying, currentTrackIndex]);
+
+  // Sync with global volume from soundStore
+  const globalVolume = useSoundStore((s) => s.volume);
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = globalVolume;
+    }
+  }, [globalVolume]);
 
   // Load durations for all tracks
   useEffect(() => {

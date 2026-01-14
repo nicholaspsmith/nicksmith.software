@@ -34,3 +34,9 @@
   border-bottom-left-radius: var(--aqua-window-radius);
   border-bottom-right-radius: var(--aqua-window-radius);
 }
+
+/* Minimized window in dock - actual window scaled down */
+.minimizedWindow {
+  /* Ensure window appears above dock shelf */
+  isolation: isolate;
+}

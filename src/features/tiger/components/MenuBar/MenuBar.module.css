@@ -436,15 +436,30 @@
 
 .volumeSlider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
   border-radius: 50%;
-  /* Aqua blue sphere */
-  background: linear-gradient(180deg, #7CB8FF 0%, #3B82F6 50%, #1E40AF 100%);
-  border: 1px solid rgba(0, 0, 0, 0.3);
+  /* Aqua blue sphere - traffic light style with glossy specular highlight */
+  /* Rotated 270deg to compensate for slider's -90deg rotation */
+  background:
+    /* Glossy specular highlight - positioned right-center (appears top after rotation) */
+    radial-gradient(
+      ellipse 45% 80% at 85% 50%,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.4) 40%,
+      rgba(255, 255, 255, 0) 70%
+    ),
+    /* Main color gradient - blue tones (270deg = right-to-left, appears top-to-bottom after rotation) */
+    linear-gradient(
+      270deg,
+      #6fade8 0%,
+      #3875d7 50%,
+      #98c8f5 100%
+    );
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    0 0 0px 0.8px rgb(0 0 0 / 32%),
+    inset 0 0 0 rgba(255, 255, 255, 0.15),
+    inset 0 0.6px 1.3px rgba(0, 0, 0, 0.15);
   cursor: var(--aqua-cursor-pointer);
 }
 
@@ -456,14 +471,31 @@
 }
 
 .volumeSlider::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
   border-radius: 50%;
-  background: linear-gradient(180deg, #7CB8FF 0%, #3B82F6 50%, #1E40AF 100%);
-  border: 1px solid rgba(0, 0, 0, 0.3);
+  border: none;
+  /* Aqua blue sphere - traffic light style with glossy specular highlight */
+  /* Rotated 270deg to compensate for slider's -90deg rotation */
+  background:
+    /* Glossy specular highlight - positioned right-center (appears top after rotation) */
+    radial-gradient(
+      ellipse 45% 80% at 85% 50%,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.4) 40%,
+      rgba(255, 255, 255, 0) 70%
+    ),
+    /* Main color gradient - blue tones (270deg = right-to-left, appears top-to-bottom after rotation) */
+    linear-gradient(
+      270deg,
+      #6fade8 0%,
+      #3875d7 50%,
+      #98c8f5 100%
+    );
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    0 0 0px 0.8px rgb(0 0 0 / 32%),
+    inset 0 0 0 rgba(255, 255, 255, 0.15),
+    inset 0 0.6px 1.3px rgba(0, 0, 0, 0.15);
   cursor: var(--aqua-cursor-pointer);
 }
 

@@ -161,6 +161,14 @@ export interface WindowState {
   mediaFile?: string;
   /** Image data URL for Preview windows */
   imageDataUrl?: string;
+  /** Captured thumbnail of window content for dock display (data URL) */
+  thumbnail?: string;
+  /** True when genie minimize animation is in progress - dock reserves slot */
+  isMinimizing?: boolean;
+  /** True when genie restore animation is in progress - dock keeps slot until animation ends */
+  isRestoring?: boolean;
+  /** True to keep dock slot visible during restore (cleared after 500ms delay) */
+  keepDockSlot?: boolean;
 }
 
 interface WindowStore {
@@ -185,8 +193,14 @@ interface WindowStore {
   closeAllWindowsOfApp: (parentApp: string) => void;
   focusWindow: (id: string) => void;
   clearActiveWindow: () => void;
+  /** Begin minimize animation - reserves dock slot immediately */
+  startMinimizing: (id: string) => void;
+  /** Complete minimize - sets state to minimized after genie animation */
   minimizeWindow: (id: string) => void;
+  /** Start restore - keeps window in dock during animation */
   restoreWindow: (id: string) => void;
+  /** Complete restore - removes from dock and clears thumbnail */
+  completeRestore: (id: string) => void;
   clearRestoredFlag: (id: string) => void;
   zoomWindow: (id: string) => void;
   shadeWindow: (id: string) => void;
@@ -204,6 +218,8 @@ interface WindowStore {
   openQuickTime: (mediaFile?: string) => string;
   /** Open Preview with an image */
   openPreview: (imageDataUrl: string, title?: string) => string;
+  /** Set the thumbnail for a minimized window */
+  setThumbnail: (id: string, thumbnail: string) => void;
 }
 
 export const useWindowStore = create<WindowStore>((set, get) => ({
@@ -478,10 +494,18 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
     set({ activeWindowId: null });
   },
 
+  startMinimizing: (id) => {
+    set((state) => ({
+      windows: state.windows.map((w) =>
+        w.id === id ? { ...w, isMinimizing: true } : w
+      ),
+    }));
+  },
+
   minimizeWindow: (id) => {
     set((state) => ({
       windows: state.windows.map((w) =>
-        w.id === id ? { ...w, state: 'minimized' as const } : w
+        w.id === id ? { ...w, state: 'minimized' as const, isMinimizing: false } : w
       ),
       activeWindowId: state.activeWindowId === id ? null : state.activeWindowId,
     }));
@@ -493,11 +517,27 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
     set((state) => ({
       windows: state.windows.map((w) =>
         w.id === id
-          ? { ...w, state: 'open' as const, zIndex: newZIndex, restoredFromMinimized: true }
+          ? { ...w, state: 'open' as const, zIndex: newZIndex, restoredFromMinimized: true, isRestoring: true, keepDockSlot: true }
           : w
       ),
       activeWindowId: id,
       maxZIndex: newZIndex,
+    }));
+    // Delay dock slot exit by 500ms for smooth animation
+    setTimeout(() => {
+      set((state) => ({
+        windows: state.windows.map((w) =>
+          w.id === id ? { ...w, keepDockSlot: false } : w
+        ),
+      }));
+    }, 500);
+  },
+
+  completeRestore: (id) => {
+    set((state) => ({
+      windows: state.windows.map((w) =>
+        w.id === id ? { ...w, isRestoring: false, thumbnail: undefined, restoredFromMinimized: false } : w
+      ),
     }));
   },
 
@@ -542,9 +582,12 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
             previousBounds: null,
           };
         } else {
-          // Zoom to "fit content" (Tiger behavior: larger comfortable size)
-          const zoomedWidth = 600;
-          const zoomedHeight = 450;
+          // Zoom to "fit content" - per-app sizes (Tiger behavior)
+          const zoomSizes: Record<string, { width: number; height: number }> = {
+            about: { width: 600, height: 510 },
+          };
+          const defaultSize = { width: 600, height: 450 };
+          const { width: zoomedWidth, height: zoomedHeight } = zoomSizes[w.app] || defaultSize;
           return {
             ...w,
             previousBounds: { x: w.x, y: w.y, width: w.width, height: w.height },
@@ -728,5 +771,13 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
       maxZIndex: newZIndex,
     }));
     return id;
+  },
+
+  setThumbnail: (id, thumbnail) => {
+    set((state) => ({
+      windows: state.windows.map((w) =>
+        w.id === id ? { ...w, thumbnail } : w
+      ),
+    }));
   },
 }));

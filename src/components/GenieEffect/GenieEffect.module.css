@@ -1,0 +1,21 @@
+/* GenieEffect - CSS module (minimal - most styling is inline) */
+
+.container {
+  transform-origin: bottom center;
+}
+
+.slice {
+  /* Base slice styles - most applied inline */
+}
+
+.curving .slice {
+  transition: left 300ms ease-out, width 300ms ease-out;
+}
+
+.collapsing {
+  transition: top 400ms ease-in, left 400ms ease-in, width 400ms ease-in, height 400ms ease-in;
+}
+
+.collapsing .slice {
+  transition: all 400ms ease-in;
+}

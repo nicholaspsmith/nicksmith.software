@@ -13,7 +13,7 @@ export interface WindowChromeProps {
   className?: string;
   children?: React.ReactNode;
   onClose?: () => void;
-  onMinimize?: () => void;
+  onMinimize?: (event?: { shiftKey?: boolean }) => void;
   onZoom?: () => void;
   onShade?: () => void;
   /** Right-click handler for title bar context menu */

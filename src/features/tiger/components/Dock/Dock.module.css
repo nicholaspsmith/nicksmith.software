@@ -25,7 +25,7 @@
 .shelf {
   display: flex;
   align-items: flex-end;
-  gap: 2px;
+  gap: 7px;
   padding: 4px 12px 6px 12px;
 
   /* 3D shelf effect - glossy translucent appearance */
@@ -44,7 +44,7 @@
 .appSection {
   display: flex;
   align-items: flex-end;
-  gap: 2px;
+  gap: 7px;
 }
 
 /* Wrapper for icons that need running indicator - keeps indicator stationary during bounce */
@@ -96,6 +96,7 @@
   height: 48px;
   filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.3));
   position: relative;
+  overflow: hidden;
 }
 
 /* Icon reflection on the shelf */

@@ -37,6 +37,7 @@
 .title {
   flex: 1;
   text-align: center;
+  padding-left: 10px;
   font-family: var(--aqua-font-family);
   font-size: var(--aqua-font-size-md);
   font-weight: var(--aqua-font-weight-bold);
