@@ -72,12 +72,25 @@
   line-height: 1.4;
 }
 
-.shutterButton {
+.bottomControls {
   position: absolute;
   bottom: 40px;
   left: 0;
   right: 0;
-  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  padding: 0 24px;
+  z-index: 10;
+}
+
+.controlSpacer {
+  width: 44px;
+  height: 44px;
+}
+
+.shutterButton {
   width: 72px;
   height: 72px;
   border-radius: 50%;
@@ -87,7 +100,6 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 10;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -100,6 +112,29 @@
   height: 58px;
   border-radius: 50%;
   background: #fff;
+}
+
+.flipButton {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.flipButton:focus {
+  outline: none;
+}
+
+.flipIcon {
+  width: 24px;
+  height: 24px;
+  color: #fff;
 }
 
 .flash {

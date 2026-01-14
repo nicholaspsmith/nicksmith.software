@@ -6,13 +6,14 @@ import { StatusBar } from '../../components/StatusBar';
 import styles from './CameraApp.module.css';
 
 type CameraState = 'loading' | 'active' | 'permission-denied' | 'not-supported' | 'no-camera';
+type FacingMode = 'user' | 'environment';
 
 /**
  * CameraApp - Live webcam viewfinder
  *
  * Features:
  * - WebRTC getUserMedia for camera access
- * - Fallback from rear to front camera
+ * - Toggle between front and rear cameras
  * - Permission denied / not supported / no camera error states
  * - Stream cleanup on unmount
  */
@@ -24,6 +25,8 @@ export function CameraApp() {
   const streamRef = useRef<MediaStream | null>(null);
   const [cameraState, setCameraState] = useState<CameraState>('loading');
   const [isCapturing, setIsCapturing] = useState(false);
+  const [facingMode, setFacingMode] = useState<FacingMode>('environment');
+  const [hasMultipleCameras, setHasMultipleCameras] = useState(false);
 
   const capturePhoto = useCallback(() => {
     if (!videoRef.current || !canvasRef.current || cameraState !== 'active') return;
@@ -49,6 +52,45 @@ export function CameraApp() {
     setTimeout(() => setIsCapturing(false), 150);
   }, [cameraState, addPhoto]);
 
+  const startCamera = useCallback(async (mode: FacingMode): Promise<boolean> => {
+    // Stop existing stream
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: mode },
+        audio: false,
+      });
+
+      if (videoRef.current) {
+        streamRef.current = stream;
+        videoRef.current.srcObject = stream;
+        setFacingMode(mode);
+        return true;
+      } else {
+        stream.getTracks().forEach((track) => track.stop());
+        return false;
+      }
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const switchCamera = useCallback(async () => {
+    if (cameraState !== 'active') return;
+
+    const newMode: FacingMode = facingMode === 'environment' ? 'user' : 'environment';
+    const success = await startCamera(newMode);
+
+    if (!success) {
+      // If switching fails, try to restore the original camera
+      await startCamera(facingMode);
+    }
+  }, [cameraState, facingMode, startCamera]);
+
   useEffect(() => {
     let mounted = true;
 
@@ -59,35 +101,32 @@ export function CameraApp() {
         return;
       }
 
+      // Check for multiple cameras
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter((d) => d.kind === 'videoinput');
+        if (mounted) {
+          setHasMultipleCameras(videoDevices.length > 1);
+        }
+      } catch {
+        // Ignore enumeration errors, just won't show toggle
+      }
+
       try {
         // Try rear camera first (environment)
-        let stream: MediaStream;
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'environment' },
-            audio: false,
-          });
-        } catch {
+        let success = await startCamera('environment');
+
+        if (!success) {
           // Fallback to front camera (user)
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'user' },
-            audio: false,
-          });
+          success = await startCamera('user');
         }
 
-        if (!mounted) {
-          // Component unmounted during async operation
-          stream.getTracks().forEach((track) => track.stop());
-          return;
-        }
+        if (!mounted) return;
 
-        if (videoRef.current) {
-          streamRef.current = stream;
-          videoRef.current.srcObject = stream;
+        if (success) {
           setCameraState('active');
         } else {
-          // Race condition: video element not ready, clean up stream
-          stream.getTracks().forEach((track) => track.stop());
+          setCameraState('no-camera');
         }
       } catch (error) {
         if (!mounted) return;
@@ -116,7 +155,7 @@ export function CameraApp() {
         streamRef.current = null;
       }
     };
-  }, []);
+  }, [startCamera]);
 
   return (
     <div className={styles.app}>
@@ -175,16 +214,36 @@ export function CameraApp() {
       {/* Flash overlay */}
       {isCapturing && <div className={styles.flash} />}
 
-      {/* Shutter button */}
+      {/* Bottom controls */}
       {cameraState === 'active' && (
-        <motion.button
-          className={styles.shutterButton}
-          onClick={capturePhoto}
-          whileTap={{ scale: 0.9 }}
-          aria-label="Take photo"
-        >
-          <div className={styles.shutterInner} />
-        </motion.button>
+        <div className={styles.bottomControls}>
+          {/* Spacer for symmetry */}
+          <div className={styles.controlSpacer} />
+
+          {/* Shutter button */}
+          <motion.button
+            className={styles.shutterButton}
+            onClick={capturePhoto}
+            whileTap={{ scale: 0.9 }}
+            aria-label="Take photo"
+          >
+            <div className={styles.shutterInner} />
+          </motion.button>
+
+          {/* Camera toggle button - only show if device has multiple cameras */}
+          {hasMultipleCameras ? (
+            <motion.button
+              className={styles.flipButton}
+              onClick={switchCamera}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Switch camera"
+            >
+              <FlipCameraIcon />
+            </motion.button>
+          ) : (
+            <div className={styles.controlSpacer} />
+          )}
+        </div>
       )}
 
       <motion.button
@@ -221,6 +280,15 @@ function CloseIcon() {
   return (
     <svg className={styles.closeIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function FlipCameraIcon() {
+  return (
+    <svg className={styles.flipIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M16 3h5v5M8 21H3v-5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M21 3l-7 7M3 21l7-7" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
