@@ -43,6 +43,7 @@ const PARENT_APP_CONFIG: Record<string, { label: string }> = {
   textEdit: { label: 'TextEdit' },
   terminal: { label: 'Terminal' },
   finder: { label: 'Finder' },
+  doom: { label: 'DOOM' },
 };
 
 /**
@@ -551,6 +552,10 @@ function AppIcon({ parentAppId }: { parentAppId: string }) {
         <text x="12" y="30" fontSize="20" fill="#33FF33" fontFamily="monospace">&gt;_</text>
       </svg>
     );
+  }
+
+  if (parentAppId === 'doom') {
+    return <img src="/icons/doom-icon.png" alt="" draggable={false} aria-hidden="true" />;
   }
 
   // Fallback: generic document icon

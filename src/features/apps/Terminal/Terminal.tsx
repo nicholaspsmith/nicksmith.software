@@ -29,6 +29,7 @@ const COMMANDS: Record<string, CommandHandler> = {
   ls        - List directory contents
   cat       - View file contents
   echo      - Echo text back
+  doom      - Play DOOM
 `,
   about: () => `
 Nick Smith - Software Engineer
@@ -222,8 +223,7 @@ rm: Attempting to halt...`;
 \x1b[31m██████╔╝╚██████╔╝╚██████╔╝██║ ╚═╝ ██║\x1b[0m
 \x1b[31m╚═════╝  ╚═════╝  ╚═════╝ ╚═╝     ╚═╝\x1b[0m
 
-Launching DOOM...
-Note: You'll need to upload a DOOM.WAD file to play.`;
+Launching DOOM...`;
   },
 };
 

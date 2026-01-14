@@ -126,14 +126,14 @@ const HD_CONTENTS: ContentItem[] = [
  * These are displayed greyed out and non-interactive (placeholder apps)
  */
 const APPLICATION_ITEMS: ContentItem[] = [
-  { id: 'safari', name: 'Safari', icon: 'app-safari', type: 'file', disabled: true },
-  { id: 'address-book', name: 'Address Book', icon: 'app-addressbook', type: 'file', disabled: true },
-  { id: 'preview', name: 'Preview', icon: 'app-preview', type: 'file', disabled: true },
-  { id: 'disk-utility', name: 'Disk Utility', icon: 'app-diskutility', type: 'file', disabled: true },
-  { id: 'network-utility', name: 'Network Utility', icon: 'app-networkutility', type: 'file', disabled: true },
-  { id: 'installer', name: 'Installer', icon: 'app-installer', type: 'file', disabled: true },
-  { id: 'internet-connect', name: 'Internet Connect', icon: 'app-internetconnect', type: 'file', disabled: true },
-  { id: 'filevault', name: 'FileVault', icon: 'app-filevault', type: 'file', disabled: true },
+  { id: 'safari', name: 'Safari', icon: 'app-safari', type: 'file' },
+  { id: 'address-book', name: 'Address Book', icon: 'app-addressbook', type: 'file' },
+  { id: 'preview', name: 'Preview', icon: 'app-preview', type: 'file' },
+  { id: 'disk-utility', name: 'Disk Utility', icon: 'app-diskutility', type: 'file' },
+  { id: 'network-utility', name: 'Network Utility', icon: 'app-networkutility', type: 'file' },
+  { id: 'installer', name: 'Installer', icon: 'app-installer', type: 'file' },
+  { id: 'internet-connect', name: 'Internet Connect', icon: 'app-internetconnect', type: 'file' },
+  { id: 'filevault', name: 'FileVault', icon: 'app-filevault', type: 'file' },
   { id: 'doom', name: 'DOOM', icon: 'app-doom', type: 'file' },
 ];
 
@@ -1314,7 +1314,7 @@ const CONTENT_ICON_MAP: Record<string, string> = {
   'app-installer': '/icons/Installer.png',
   'app-internetconnect': '/icons/GenericNetworkIcon.png',
   'app-filevault': '/icons/FileVaultIcon.png',
-  'app-doom': '/icons/Floppy.png',
+  'app-doom': '/icons/doom-icon.png',
 };
 
 function ContentIcon({ type, dataUrl }: { type: string; dataUrl?: string }) {

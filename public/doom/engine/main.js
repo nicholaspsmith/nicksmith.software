@@ -1,25 +1,30 @@
-import { initDOM } from "../uimanager.js";
-
 let lumpData = null;
 let patchNames = null;
 let paletteField = null;
 let textureField = null;
-let fileCheck = null;
 
-function onFileSelected(file) {
-  // console.log("File selected in main:", file.name);
-  fileCheck = file;
-  initializeGameData(file);
-}
-
-function onLoadLevelClicked(levelName) {
-  if (!fileCheck) {
-    return;
+// Auto-load WAD file on startup
+async function autoLoadWAD() {
+  try {
+    const response = await fetch('/DOOM.WAD');
+    if (!response.ok) {
+      throw new Error(`Failed to load WAD: ${response.status}`);
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    await initializeGameData(arrayBuffer);
+    // Wait for game engine loop to stabilize before loading level
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        loadLevel('E1M1');
+      });
+    });
+  } catch (error) {
+    console.error('Error loading DOOM WAD:', error);
   }
-  loadLevel(levelName);
 }
 
-initDOM(onFileSelected, onLoadLevelClicked);
+// Start auto-loading when page loads
+autoLoadWAD();
 
 async function loadData(name) {
   const response = await fetch(name);
@@ -29,9 +34,7 @@ async function loadData(name) {
   return response.json();
 }
 
-async function initializeGameData(file) {
-  const wadFileReader = new WADFileReader(file);
-  const arrayBuffer = await wadFileReader.readFile();
+async function initializeGameData(arrayBuffer) {
   const wadParser = new WADParser(arrayBuffer);
   lumpData = await wadParser.parse();
 
@@ -310,15 +313,6 @@ async function initializeGameData(file) {
   };
 
   gameEngine.actions = actions;
-  // const uniqueActionNames = new Set();
-
-  // for (const [key, value] of Object.entries(states)) {
-  //   console.log(key, value);
-  //   let action = value[3];
-  //   if (!uniqueActionNames.has(action)) {
-  //     uniqueActionNames.add(action);
-  //   }
-  // }
 
   const canvas = new Canvas("myCanvas");
   gameEngine.canvas = canvas;
