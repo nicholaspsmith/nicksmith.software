@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useWindowStore } from '@/stores/windowStore';
 import { useSoundStore } from '@/stores/soundStore';
 import { useAppStore } from '@/stores/appStore';
@@ -233,8 +234,12 @@ export function MenuBar() {
   const [spotlightQuery, setSpotlightQuery] = useState('');
   const [clockDropdownOpen, setClockDropdownOpen] = useState(false);
   const [volumeDropdownOpen, setVolumeDropdownOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState<{ left: number; top: number } | null>(null);
   const menuBarRef = useRef<HTMLElement>(null);
   const spotlightInputRef = useRef<HTMLInputElement>(null);
+  const appleMenuRef = useRef<HTMLButtonElement>(null);
+  const appMenuRef = useRef<HTMLButtonElement>(null);
+  const menuButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
   // Derive app name from focused window, default to "Finder"
   const activeWindow = windows.find((w) => w.id === activeWindowId);
@@ -299,15 +304,35 @@ export function MenuBar() {
     }
   }, [spotlightOpen]);
 
-  const handleMenuClick = useCallback((menuId: string) => {
+  const handleMenuClick = useCallback((menuId: string, buttonElement?: HTMLButtonElement | null) => {
+    const isClosing = openMenuId === menuId;
     setOpenMenuId((prev) => (prev === menuId ? null : menuId));
     setSpotlightOpen(false);
     setClockDropdownOpen(false);
-  }, []);
 
-  const handleMenuHover = useCallback((menuId: string) => {
+    // Calculate dropdown position from button bounds
+    if (!isClosing && buttonElement) {
+      const rect = buttonElement.getBoundingClientRect();
+      setDropdownPosition({
+        left: rect.left,
+        top: rect.bottom + 2,
+      });
+    } else if (isClosing) {
+      setDropdownPosition(null);
+    }
+  }, [openMenuId]);
+
+  const handleMenuHover = useCallback((menuId: string, buttonElement?: HTMLButtonElement | null) => {
     if (openMenuId !== null && openMenuId !== menuId) {
       setOpenMenuId(menuId);
+      // Update dropdown position for new menu
+      if (buttonElement) {
+        const rect = buttonElement.getBoundingClientRect();
+        setDropdownPosition({
+          left: rect.left,
+          top: rect.bottom + 2,
+        });
+      }
     }
   }, [openMenuId]);
 
@@ -508,9 +533,10 @@ export function MenuBar() {
         <div className={styles.menuContainer}>
           <button
             type="button"
+            ref={appleMenuRef}
             className={`${styles.appleLogo} ${openMenuId === 'apple' ? styles.menuActive : ''}`}
-            onClick={() => handleMenuClick('apple')}
-            onMouseEnter={() => handleMenuHover('apple')}
+            onClick={(e) => handleMenuClick('apple', e.currentTarget)}
+            onMouseEnter={(e) => handleMenuHover('apple', e.currentTarget)}
             aria-label="Apple menu"
             aria-expanded={openMenuId === 'apple'}
             aria-haspopup="menu"
@@ -537,9 +563,14 @@ export function MenuBar() {
             </svg>
           </button>
 
-          {/* Apple Menu Dropdown */}
-          {openMenuId === 'apple' && (
-            <div className={styles.dropdown} role="menu" data-testid="apple-menu-dropdown">
+          {/* Apple Menu Dropdown - rendered via portal */}
+          {openMenuId === 'apple' && dropdownPosition && createPortal(
+            <div
+              className={styles.dropdownPortal}
+              role="menu"
+              data-testid="apple-menu-dropdown"
+              style={{ left: dropdownPosition.left, top: dropdownPosition.top }}
+            >
               <button
                 type="button"
                 className={styles.dropdownItem}
@@ -587,7 +618,8 @@ export function MenuBar() {
                 <span className={styles.dropdownItemLabel}>Log Out Nick Smith...</span>
                 <span className={styles.dropdownItemShortcut}>⇧⌘Q</span>
               </button>
-            </div>
+            </div>,
+            document.body
           )}
         </div>
 
@@ -595,9 +627,10 @@ export function MenuBar() {
         <div className={styles.menuContainer}>
           <button
             type="button"
+            ref={appMenuRef}
             className={`${styles.appName} ${openMenuId === 'app' ? styles.menuActive : ''}`}
-            onClick={() => handleMenuClick('app')}
-            onMouseEnter={() => handleMenuHover('app')}
+            onClick={(e) => handleMenuClick('app', e.currentTarget)}
+            onMouseEnter={(e) => handleMenuHover('app', e.currentTarget)}
             aria-expanded={openMenuId === 'app'}
             aria-haspopup="menu"
             data-testid="app-name"
@@ -605,8 +638,13 @@ export function MenuBar() {
             {appName}
           </button>
 
-          {openMenuId === 'app' && (
-            <div className={styles.dropdown} role="menu" data-testid="app-menu-dropdown">
+          {openMenuId === 'app' && dropdownPosition && createPortal(
+            <div
+              className={styles.dropdownPortal}
+              role="menu"
+              data-testid="app-menu-dropdown"
+              style={{ left: dropdownPosition.left, top: dropdownPosition.top }}
+            >
               <button type="button" className={styles.dropdownItem} onClick={() => handleMenuItemClick(appName === 'About This Mac' ? 'About This Mac' : `About ${appName}`)} role="menuitem">
                 <span className={styles.dropdownItemLabel}>{appName === 'About This Mac' ? 'About This Mac' : `About ${appName}`}</span>
               </button>
@@ -637,7 +675,8 @@ export function MenuBar() {
                 <span className={styles.dropdownItemLabel}>Quit {appName}</span>
                 <span className={styles.dropdownItemShortcut}>⌘Q</span>
               </button>
-            </div>
+            </div>,
+            document.body
           )}
         </div>
 
@@ -647,9 +686,10 @@ export function MenuBar() {
             <div key={menu.id} className={styles.menuContainer}>
               <button
                 type="button"
+                ref={(el) => { if (el) menuButtonRefs.current.set(menu.id, el); }}
                 className={`${styles.menuItem} ${openMenuId === menu.id ? styles.menuActive : ''}`}
-                onClick={() => handleMenuClick(menu.id)}
-                onMouseEnter={() => handleMenuHover(menu.id)}
+                onClick={(e) => handleMenuClick(menu.id, e.currentTarget)}
+                onMouseEnter={(e) => handleMenuHover(menu.id, e.currentTarget)}
                 aria-expanded={openMenuId === menu.id}
                 aria-haspopup="menu"
                 data-testid={`menu-${menu.id}`}
@@ -657,10 +697,16 @@ export function MenuBar() {
                 {menu.label}
               </button>
 
-              {openMenuId === menu.id && (
-                <div className={styles.dropdown} role="menu" data-testid={`${menu.id}-menu-dropdown`}>
+              {openMenuId === menu.id && dropdownPosition && createPortal(
+                <div
+                  className={styles.dropdownPortal}
+                  role="menu"
+                  data-testid={`${menu.id}-menu-dropdown`}
+                  style={{ left: dropdownPosition.left, top: dropdownPosition.top }}
+                >
                   {renderDropdownItems(menu.items)}
-                </div>
+                </div>,
+                document.body
               )}
             </div>
           ))}

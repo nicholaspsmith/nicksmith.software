@@ -113,6 +113,28 @@
   z-index: var(--aqua-z-dropdown);
 }
 
+/* Portal-rendered dropdown - position fixed for rendering outside MenuBar */
+.dropdownPortal {
+  position: fixed;
+  min-width: 200px;
+  /* Tiger pinstripe background - authentic warm grey stripes */
+  background-color: #ececec;
+  background-image: repeating-linear-gradient(
+    0deg,
+    #f6f6f6 0px,
+    #f6f6f6 1px,
+    #e8e8e8 1px,
+    #e8e8e8 2px
+  );
+  border: 1px solid #808080;
+  border-radius: 0;
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.25),
+    0 0 1px rgba(0, 0, 0, 0.3);
+  padding: 4px 0;
+  z-index: var(--aqua-z-dropdown);
+}
+
 .dropdownItem {
   display: flex;
   align-items: center;
