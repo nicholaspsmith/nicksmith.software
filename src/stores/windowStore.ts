@@ -523,14 +523,14 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
       activeWindowId: id,
       maxZIndex: newZIndex,
     }));
-    // Delay dock slot exit by 500ms for smooth animation
+    // Delay dock slot exit by 1000ms for smooth animation (matches dock transition speed)
     setTimeout(() => {
       set((state) => ({
         windows: state.windows.map((w) =>
           w.id === id ? { ...w, keepDockSlot: false } : w
         ),
       }));
-    }, 500);
+    }, 1000);
   },
 
   completeRestore: (id) => {

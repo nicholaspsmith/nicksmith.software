@@ -1,9 +1,21 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useWindowStore } from '@/stores/windowStore';
 import { useAppStore } from '@/stores/appStore';
 import { motion, AnimatePresence } from 'motion/react';
 import { ContextMenu, type ContextMenuEntry } from '../ContextMenu';
 import styles from './Dock.module.css';
+
+/**
+ * Scale a value from one range to another (for dock magnification offset)
+ */
+function scaleValue(value: number, from: [number, number], to: [number, number]): number {
+  const scale = (to[1] - to[0]) / (from[1] - from[0]);
+  const capped = Math.min(from[1], Math.max(from[0], value)) - from[0];
+  return Math.floor(capped * scale + to[0]);
+}
+
+/** Maximum additional pixels for smooth magnification offset */
+const MAX_OFFSET_SIZE = 5;
 
 /**
  * Bounce animation for dock icons when app is launching
@@ -75,6 +87,30 @@ export function Dock() {
 
   // Track which icons are currently bouncing
   const [bouncingIcons, setBouncingIcons] = useState<Set<string>>(new Set());
+
+  // Ref for dock magnification CSS variables
+  const shelfRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Handle mouse move within an icon for smooth magnification offset
+   * Sets CSS variables based on cursor position within the hovered icon
+   */
+  const handleIconMouseMove = useCallback((ev: React.MouseEvent<HTMLElement>) => {
+    if (!shelfRef.current) return;
+
+    const mousePosition = ev.clientX;
+    const iconRect = ev.currentTarget.getBoundingClientRect();
+    const iconPositionLeft = iconRect.left;
+    const iconWidth = iconRect.width;
+
+    // Calculate how far across the icon the cursor is (0 to 1)
+    const cursorDistance = (mousePosition - iconPositionLeft) / iconWidth;
+    // Map to offset pixels for smooth transition between icons
+    const offsetPixels = scaleValue(cursorDistance, [0, 1], [-MAX_OFFSET_SIZE, MAX_OFFSET_SIZE]);
+
+    shelfRef.current.style.setProperty('--dock-offset-left', `${offsetPixels * -1}px`);
+    shelfRef.current.style.setProperty('--dock-offset-right', `${offsetPixels}px`);
+  }, []);
 
   // Context menu state for trash
   const [trashContextMenu, setTrashContextMenu] = useState<{ x: number; y: number } | null>(null);
@@ -327,25 +363,29 @@ export function Dock() {
     >
       <div className={styles.dock}>
         <motion.div
+          ref={shelfRef}
           className={styles.shelf}
           layout
-          transition={{ duration: 0.2, ease: 'linear' }}
+          transition={{ layout: { duration: 0.6, ease: 'easeOut' } }}
         >
-          {/* Default system icons */}
-          <div className={styles.appSection}>
-            {DEFAULT_DOCK_ICONS.map((icon) => {
-              // Finder always shows indicator (it's always running in macOS)
-              // TextEdit, Terminal, iTunes, QuickTime show indicator only when they have windows
-              const showIndicator =
-                icon.id === 'finder' ||
-                (icon.id === 'textEdit' && hasTextEditWindows) ||
-                (icon.id === 'terminal' && hasTerminalWindows) ||
-                (icon.id === 'itunes' && hasITunesWindows) ||
-                (icon.id === 'quicktime' && hasQuickTimeWindows);
-              const isBouncing = bouncingIcons.has(icon.id);
+          {/* Default system icons - direct children for CSS sibling selectors */}
+          {DEFAULT_DOCK_ICONS.map((icon) => {
+            // Finder always shows indicator (it's always running in macOS)
+            // TextEdit, Terminal, iTunes, QuickTime show indicator only when they have windows
+            const showIndicator =
+              icon.id === 'finder' ||
+              (icon.id === 'textEdit' && hasTextEditWindows) ||
+              (icon.id === 'terminal' && hasTerminalWindows) ||
+              (icon.id === 'itunes' && hasITunesWindows) ||
+              (icon.id === 'quicktime' && hasQuickTimeWindows);
+            const isBouncing = bouncingIcons.has(icon.id);
 
-              return (
-                <div key={icon.id} className={styles.iconWrapper}>
+            return (
+              <div
+                key={icon.id}
+                className={`${styles.iconWrapper} ${icon.id === 'system-preferences' ? styles.iconWrapperLarge : ''}`}
+                onMouseMove={handleIconMouseMove}
+              >
                   <motion.button
                     className={styles.dockIcon}
                     onClick={(e) => handleDefaultIconClick(e, icon.id)}
@@ -358,8 +398,6 @@ export function Dock() {
                       <img
                         src={icon.id === 'finder' && isCorrupted ? '/Reference/Sad-Mac.png' : icon.icon}
                         alt=""
-                        width={icon.id === 'system-preferences' ? 53 : 48}
-                        height={icon.id === 'system-preferences' ? 53 : 48}
                         draggable={false}
                         aria-hidden="true"
                       />
@@ -380,7 +418,6 @@ export function Dock() {
                 </div>
               );
             })}
-          </div>
 
           {/* Running application icons (one per parent app, e.g., one TextEdit icon) */}
           <AnimatePresence mode="popLayout">
@@ -397,6 +434,7 @@ export function Dock() {
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0, opacity: 0 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  onMouseMove={handleIconMouseMove}
                 >
                   <motion.button
                     className={styles.dockIcon}
@@ -417,43 +455,38 @@ export function Dock() {
             })}
           </AnimatePresence>
 
-          {/* Separator before minimized windows */}
-          {minimizedWindows.length > 0 && (
-            <div className={styles.separator} aria-hidden="true" />
-          )}
-
           {/* Minimized window slots - empty placeholders, actual windows render themselves */}
           <AnimatePresence mode="popLayout">
-            {minimizedWindows.map((window) => {
+            {minimizedWindows.map((window, index) => {
               // Windows that are minimizing get timed animation to match genie effect (~900ms)
               const isCurrentlyMinimizing = window.isMinimizing;
-              // Use variants to have different transitions for enter vs exit
+              // Use variants for enter/exit - only animate opacity to not conflict with CSS sizing
               const dockSlotVariants = {
-                initial: { scale: 0, opacity: 0, width: 0 },
+                initial: { opacity: 0 },
                 animate: {
-                  scale: 1,
                   opacity: 1,
-                  width: 'auto',
                   transition: isCurrentlyMinimizing
-                    ? { duration: 0.9, ease: 'easeOut' as const }
-                    : { type: 'spring' as const, stiffness: 400, damping: 25 },
+                    ? { duration: 0.3, ease: 'easeOut' as const } // Fast fade-in so thumbnail appears quickly after genie
+                    : { duration: 0.3, ease: 'easeOut' as const },
                 },
                 exit: {
-                  scale: 0,
                   opacity: 0,
-                  width: 0,
-                  // Exit animation matches minimize animation timing (0.9s)
-                  transition: { duration: 0.9, ease: 'easeIn' as const },
+                  transition: { duration: 0.6, ease: 'easeIn' as const },
                 },
               };
+              // First minimized window gets separator
+              const isFirstMinimized = index === 0;
               return (
                 <motion.div
                   key={window.id}
-                  className={styles.iconWrapper}
+                  className={`${styles.iconWrapper} ${styles.iconWrapperMinimized} ${isFirstMinimized ? styles.iconWrapperWithSeparator : ''}`}
                   variants={dockSlotVariants}
                   initial="initial"
                   animate="animate"
                   exit="exit"
+                  layout
+                  transition={{ layout: { duration: 0.6, ease: 'easeOut' } }}
+                  onMouseMove={handleIconMouseMove}
                 >
                   {/* Portal target - Window component will portal minimized content here */}
                   <div
@@ -461,34 +494,35 @@ export function Dock() {
                     data-label={window.title}
                     data-testid={`dock-slot-${window.id}`}
                     id={`dock-slot-${window.id}`}
-                  >
-                    {/* Window component renders minimized content here via portal */}
-                    <div className={styles.iconImage} />
-                  </div>
+                  />
+                  {/* Window component renders minimized content via portal */}
                 </motion.div>
               );
             })}
           </AnimatePresence>
 
-          {/* Separator before trash */}
-          <div className={styles.separator} aria-hidden="true" />
-
           {/* Trash icon - shows eject when dragging Macintosh HD */}
-          <button
-            className={`${styles.dockIcon} ${isHoveringOverTrash ? styles.dockIconDragOver : ''}`}
-            onClick={(e) => handleTrashClick(e)}
-            onContextMenu={handleTrashContextMenu}
-            aria-label={isDraggingMacintoshHD ? 'Eject' : 'Trash'}
-            data-label={isDraggingMacintoshHD ? 'Eject' : 'Trash'}
-            data-testid="dock-icon-trash"
+          {/* Gets separator class - appears after minimized windows or after app icons */}
+          <div
+            className={`${styles.iconWrapper} ${styles.iconWrapperWithSeparator}`}
+            onMouseMove={handleIconMouseMove}
           >
-            <div
-              className={styles.iconImage}
-              style={isHoveringOverTrash ? { filter: 'brightness(0.8)' } : undefined}
+            <button
+              className={`${styles.dockIcon} ${isHoveringOverTrash ? styles.dockIconDragOver : ''}`}
+              onClick={(e) => handleTrashClick(e)}
+              onContextMenu={handleTrashContextMenu}
+              aria-label={isDraggingMacintoshHD ? 'Eject' : 'Trash'}
+              data-label={isDraggingMacintoshHD ? 'Eject' : 'Trash'}
+              data-testid="dock-icon-trash"
             >
-              <TrashIcon showEject={isDraggingMacintoshHD} hasItems={trashedIcons.length > 0} />
-            </div>
-          </button>
+              <div
+                className={styles.iconImage}
+                style={isHoveringOverTrash ? { filter: 'brightness(0.8)' } : undefined}
+              >
+                <TrashIcon showEject={isDraggingMacintoshHD} hasItems={trashedIcons.length > 0} />
+              </div>
+            </button>
+          </div>
         </motion.div>
       </div>
 
@@ -512,7 +546,7 @@ export function Dock() {
 function AppIcon({ parentAppId }: { parentAppId: string }) {
   if (parentAppId === 'terminal') {
     return (
-      <svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true">
+      <svg viewBox="0 0 48 48" width="100%" height="100%" aria-hidden="true">
         <rect x="4" y="4" width="40" height="40" rx="8" fill="#1A1A1A" />
         <text x="12" y="30" fontSize="20" fill="#33FF33" fontFamily="monospace">&gt;_</text>
       </svg>
@@ -520,7 +554,7 @@ function AppIcon({ parentAppId }: { parentAppId: string }) {
   }
 
   // Fallback: generic document icon
-  return <img src="/icons/document.png" alt="" width={48} height={48} draggable={false} aria-hidden="true" />;
+  return <img src="/icons/document.png" alt="" draggable={false} aria-hidden="true" />;
 }
 
 /**
@@ -535,5 +569,5 @@ function TrashIcon({ showEject = false, hasItems = false }: { showEject?: boolea
   } else if (hasItems) {
     iconSrc = '/icons/trash-full.png';
   }
-  return <img src={iconSrc} alt="" width={48} height={48} draggable={false} aria-hidden="true" />;
+  return <img src={iconSrc} alt="" draggable={false} aria-hidden="true" />;
 }

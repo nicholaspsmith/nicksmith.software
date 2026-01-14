@@ -219,8 +219,10 @@ export function Window({ id, title, children, isStartupWindow = false, onTitleBa
       const speedMultiplier = event?.shiftKey ? 0.25 : 1;
 
       // Apply genie effect to the ACTUAL window element
+      // Offset thumbX by -35px to compensate for dock shift during enter animation
+      // (dock is centered and shifts left as the slot grows during enter)
       applyGenieEffect(windowRef.current, {
-        thumbX: slotPos.x,
+        thumbX: slotPos.x - 35,
         thumbY: slotPos.y,
         thumbWidth: DOCK_THUMBNAIL_SIZE,
         speedMultiplier,
@@ -316,25 +318,32 @@ export function Window({ id, title, children, isStartupWindow = false, onTitleBa
   // Use store state (isMinimizingFromStore) for atomic check - prevents flash on state transition
   const showMinimizedInDock = isMinimized && dockSlotElement && !isMinimizingFromStore;
 
+  // Calculate scale factor for the minimized window (scales to fit in 48px base size)
+  const baseScale = DOCK_THUMBNAIL_SIZE / Math.max(windowState.width, windowState.height);
+
   // Minimized window content to render in dock slot (via portal)
   const minimizedContent = (
     <div
       className={styles.minimizedWindow}
+      data-minimized-window
       style={{
+        // Set base scale as CSS variable for hover magnification in Dock.module.css
+        '--base-scale': baseScale,
         width: windowState.width,
         height: windowState.height,
-        transform: `scale(${DOCK_THUMBNAIL_SIZE / Math.max(windowState.width, windowState.height)})`,
-        transformOrigin: 'top left',
-        // Position to center the scaled content in the 48x48 dock slot
+        // Center in container and scale down to fit
         position: 'absolute',
-        left: (DOCK_THUMBNAIL_SIZE - (windowState.width * DOCK_THUMBNAIL_SIZE / Math.max(windowState.width, windowState.height))) / 2,
-        top: (DOCK_THUMBNAIL_SIZE - (windowState.height * DOCK_THUMBNAIL_SIZE / Math.max(windowState.width, windowState.height))) / 2,
+        left: '50%',
+        top: '50%',
+        transform: `translate(-50%, -50%) scale(${baseScale})`,
+        transformOrigin: 'center',
         cursor: isRestoring ? 'default' : 'pointer',
         pointerEvents: isRestoring ? 'none' : 'auto',
         // Hide once genie animation starts (genie slices provide the visual)
         opacity: genieRestoreRunning ? 0 : 1,
-        transition: 'opacity 0.05s',
-      }}
+        // Smooth transition for magnification scaling
+        transition: 'transform 100ms cubic-bezier(0.25, 1, 0.5, 1), opacity 0.05s',
+      } as React.CSSProperties}
       onClick={(e) => {
         e.stopPropagation();
         if (!isRestoring) {

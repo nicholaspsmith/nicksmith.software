@@ -48,6 +48,10 @@ interface ContentItem {
   type: 'folder' | 'file';
   /** Optional data URL for dynamically loaded images (e.g., camera photos) */
   dataUrl?: string;
+  /** Optional document ID for opening in TextEdit */
+  documentId?: string;
+  /** If true, item is greyed out and non-interactive */
+  disabled?: boolean;
 }
 
 /**
@@ -113,6 +117,22 @@ const HD_CONTENTS: ContentItem[] = [
   { id: 'library', name: 'Library', icon: 'library-folder', type: 'folder' },
   { id: 'system', name: 'System', icon: 'system-folder', type: 'folder' },
   { id: 'users', name: 'Users', icon: 'users-folder', type: 'folder' },
+];
+
+/**
+ * Applications folder contents
+ * These are displayed greyed out and non-interactive (placeholder apps)
+ */
+const APPLICATION_ITEMS: ContentItem[] = [
+  { id: 'safari', name: 'Safari', icon: 'app-safari', type: 'file', disabled: true },
+  { id: 'address-book', name: 'Address Book', icon: 'app-addressbook', type: 'file', disabled: true },
+  { id: 'preview', name: 'Preview', icon: 'app-preview', type: 'file', disabled: true },
+  { id: 'disk-utility', name: 'Disk Utility', icon: 'app-diskutility', type: 'file', disabled: true },
+  { id: 'network-utility', name: 'Network Utility', icon: 'app-networkutility', type: 'file', disabled: true },
+  { id: 'installer', name: 'Installer', icon: 'app-installer', type: 'file', disabled: true },
+  { id: 'internet-connect', name: 'Internet Connect', icon: 'app-internetconnect', type: 'file', disabled: true },
+  { id: 'filevault', name: 'FileVault', icon: 'app-filevault', type: 'file', disabled: true },
+  { id: 'doom', name: 'DOOM', icon: 'app-doom', type: 'file', disabled: true },
 ];
 
 /** View mode types */
@@ -267,8 +287,10 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
   const openITunes = useWindowStore((s) => s.openITunes);
   const openQuickTime = useWindowStore((s) => s.openQuickTime);
   const openPreview = useWindowStore((s) => s.openPreview);
+  const openSavedDocument = useWindowStore((s) => s.openSavedDocument);
   const clearAppSelection = useAppStore((s) => s.clearSelection);
   const trashedIcons = useAppStore((s) => s.trashedIcons);
+  const folderContents = useAppStore((s) => s.folderContents);
   const emptyTrash = useAppStore((s) => s.emptyTrash);
   const restoreFromTrash = useAppStore((s) => s.restoreFromTrash);
   const permanentlyDeleteItem = useAppStore((s) => s.permanentlyDeleteItem);
@@ -299,6 +321,31 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
     source: 'content' | 'sidebar';
   } | null>(null);
 
+  // Helper to convert dynamic icons to content items
+  const dynamicIconsToContentItems = (folderId: string): ContentItem[] => {
+    const icons = folderContents[folderId] || [];
+    return icons.map((icon) => {
+      // Map icon type to content icon type
+      let contentIcon = 'document';
+      if (icon.type === 'folder') contentIcon = 'folder';
+      else if (icon.type === 'smart-folder') contentIcon = 'folder';
+      else if (icon.type === 'burn-folder') contentIcon = 'folder';
+      else if (icon.id === 'terminal') contentIcon = 'terminal';
+      else if (icon.id === 'about') contentIcon = 'about-doc';
+      else if (icon.id === 'projects') contentIcon = 'projects-doc';
+      else if (icon.id === 'resume') contentIcon = 'resume-doc';
+      else if (icon.id === 'contact') contentIcon = 'contact-doc';
+
+      return {
+        id: icon.id,
+        name: icon.label,
+        icon: contentIcon,
+        type: icon.type === 'folder' || icon.type === 'smart-folder' || icon.type === 'burn-folder' ? 'folder' as const : 'file' as const,
+        documentId: icon.documentId,
+      };
+    });
+  };
+
   // Get view config based on selected sidebar item
   const getViewConfig = (): FinderViewConfig => {
     // If searching, return search results
@@ -323,59 +370,84 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
           contentItems: HD_CONTENTS,
           statusText: '5 items, 1.91 GB available',
         };
-      case 'user':
+      case 'user': {
+        const userDynamicItems = dynamicIconsToContentItems('user');
+        const allUserItems = [...HOME_CONTENTS, ...userDynamicItems];
         return {
           title: 'nick',
           sidebarItems: SIDEBAR_ITEMS,
-          contentItems: HOME_CONTENTS,
-          statusText: '8 items, 1.91 GB available',
+          contentItems: allUserItems,
+          statusText: `${allUserItems.length} item${allUserItems.length !== 1 ? 's' : ''}, 1.91 GB available`,
         };
-      case 'desktop':
+      }
+      case 'desktop': {
+        const desktopDynamicItems = dynamicIconsToContentItems('desktop');
+        const allDesktopItems = [...DESKTOP_CONTENTS, ...desktopDynamicItems];
         return {
           title: 'Desktop',
           sidebarItems: SIDEBAR_ITEMS,
-          contentItems: DESKTOP_CONTENTS,
-          statusText: `${DESKTOP_CONTENTS.length} items, 1.91 GB available`,
+          contentItems: allDesktopItems,
+          statusText: `${allDesktopItems.length} item${allDesktopItems.length !== 1 ? 's' : ''}, 1.91 GB available`,
         };
+      }
       case 'applications':
-      case 'documents':
-        // These folders show empty state for now
+        // Applications folder shows greyed-out placeholder apps
         return {
-          title: SIDEBAR_ITEMS.find(i => i.id === selectedSidebarItem)?.label || selectedSidebarItem,
+          title: 'Applications',
           sidebarItems: SIDEBAR_ITEMS,
-          contentItems: [],
-          statusText: '0 items',
+          contentItems: APPLICATION_ITEMS,
+          statusText: `${APPLICATION_ITEMS.length} items`,
         };
+      case 'documents': {
+        // Documents folder shows dynamic contents (dropped icons)
+        const docItems = dynamicIconsToContentItems('documents');
+        return {
+          title: 'Documents',
+          sidebarItems: SIDEBAR_ITEMS,
+          contentItems: docItems,
+          statusText: docItems.length === 0
+            ? '0 items'
+            : `${docItems.length} item${docItems.length !== 1 ? 's' : ''}`,
+        };
+      }
       case 'pictures': {
-        // Pictures folder shows photos from iOS camera
-        const pictureItems: ContentItem[] = photos.map((photo) => ({
+        // Pictures folder shows photos from iOS camera + dropped icons
+        const photoItems: ContentItem[] = photos.map((photo) => ({
           id: photo.id,
           name: `Photo ${new Date(photo.timestamp).toLocaleDateString()}`,
           icon: 'picture-file',
           type: 'file' as const,
           dataUrl: photo.dataUrl,
         }));
+        const pictureDynamicItems = dynamicIconsToContentItems('pictures');
+        const allPictureItems = [...photoItems, ...pictureDynamicItems];
         return {
           title: 'Pictures',
           sidebarItems: SIDEBAR_ITEMS,
-          contentItems: pictureItems,
-          statusText: `${pictureItems.length} item${pictureItems.length !== 1 ? 's' : ''}`,
+          contentItems: allPictureItems,
+          statusText: `${allPictureItems.length} item${allPictureItems.length !== 1 ? 's' : ''}`,
         };
       }
-      case 'music':
+      case 'music': {
+        const musicDynamicItems = dynamicIconsToContentItems('music');
+        const allMusicItems = [...MUSIC_FILES, ...musicDynamicItems];
         return {
           title: 'Music',
           sidebarItems: SIDEBAR_ITEMS,
-          contentItems: MUSIC_FILES,
-          statusText: `${MUSIC_FILES.length} items`,
+          contentItems: allMusicItems,
+          statusText: `${allMusicItems.length} item${allMusicItems.length !== 1 ? 's' : ''}`,
         };
-      case 'movies':
+      }
+      case 'movies': {
+        const moviesDynamicItems = dynamicIconsToContentItems('movies');
+        const allMoviesItems = [...VIDEO_FILES, ...moviesDynamicItems];
         return {
           title: 'Movies',
           sidebarItems: SIDEBAR_ITEMS,
-          contentItems: VIDEO_FILES,
-          statusText: `${VIDEO_FILES.length} item${VIDEO_FILES.length !== 1 ? 's' : ''}`,
+          contentItems: allMoviesItems,
+          statusText: `${allMoviesItems.length} item${allMoviesItems.length !== 1 ? 's' : ''}`,
         };
+      }
       case 'trash': {
         // Convert trashed icons to content items
         const trashContents: ContentItem[] = trashedIcons.map((icon) => ({
@@ -444,6 +516,12 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
         clearAppSelection();
         return;
       }
+      // Check for documents with documentId (opens in TextEdit)
+      if (item.documentId) {
+        openSavedDocument(item.documentId, item.name);
+        clearAppSelection();
+        return;
+      }
       // Open file/app
       const windowId = OPENABLE_ITEMS[item.id];
       if (windowId) {
@@ -451,7 +529,7 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
         clearAppSelection();
       }
     }
-  }, [openWindow, openITunes, openQuickTime, openPreview, clearAppSelection]);
+  }, [openWindow, openITunes, openQuickTime, openPreview, openSavedDocument, clearAppSelection]);
 
   const handleContentClick = useCallback((itemId: string, e: React.MouseEvent) => {
     // Skip if we just finished marquee
@@ -950,7 +1028,8 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
             onClick={handleContentAreaClick}
             onMouseDown={handleContentMouseDown}
             onContextMenu={handleFinderContextMenu}
-            data-testid={selectedSidebarItem === 'trash' ? 'finder-trash-content' : undefined}
+            data-testid={selectedSidebarItem === 'trash' ? 'finder-trash-content' : 'finder-folder-content'}
+            data-folder-id={selectedSidebarItem}
           >
           {config.contentItems.length === 0 ? (
             <div className={styles.emptyState}>
@@ -961,11 +1040,11 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
               {config.contentItems.map((item) => (
                 <button
                   key={item.id}
-                  className={`${styles.contentItem} ${selectedContentItems.includes(item.id) ? styles.contentItemSelected : ''}`}
-                  onClick={(e) => { e.stopPropagation(); handleContentClick(item.id, e); }}
-                  onDoubleClick={() => handleContentDoubleClick(item)}
+                  className={`${styles.contentItem} ${selectedContentItems.includes(item.id) ? styles.contentItemSelected : ''} ${item.disabled ? styles.contentItemDisabled : ''}`}
+                  onClick={(e) => { e.stopPropagation(); if (!item.disabled) handleContentClick(item.id, e); }}
+                  onDoubleClick={() => { if (!item.disabled) handleContentDoubleClick(item); }}
                   onContextMenu={selectedSidebarItem === 'trash' ? (e) => handleTrashItemContextMenu(e, item.id, item.name) : (e) => handleContentItemContextMenu(e, item)}
-                  draggable={selectedSidebarItem === 'trash'}
+                  draggable={selectedSidebarItem === 'trash' && !item.disabled}
                   onDragStart={selectedSidebarItem === 'trash' ? (e) => handleTrashItemDragStart(e, item.id) : undefined}
                 >
                   <ContentIcon type={item.icon} dataUrl={item.dataUrl} />
@@ -982,11 +1061,11 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
               {config.contentItems.map((item) => (
                 <button
                   key={item.id}
-                  className={`${styles.listRow} ${selectedContentItems.includes(item.id) ? styles.listRowSelected : ''}`}
-                  onClick={(e) => { e.stopPropagation(); handleContentClick(item.id, e); }}
-                  onDoubleClick={() => handleContentDoubleClick(item)}
+                  className={`${styles.listRow} ${selectedContentItems.includes(item.id) ? styles.listRowSelected : ''} ${item.disabled ? styles.contentItemDisabled : ''}`}
+                  onClick={(e) => { e.stopPropagation(); if (!item.disabled) handleContentClick(item.id, e); }}
+                  onDoubleClick={() => { if (!item.disabled) handleContentDoubleClick(item); }}
                   onContextMenu={selectedSidebarItem === 'trash' ? (e) => handleTrashItemContextMenu(e, item.id, item.name) : (e) => handleContentItemContextMenu(e, item)}
-                  draggable={selectedSidebarItem === 'trash'}
+                  draggable={selectedSidebarItem === 'trash' && !item.disabled}
                   onDragStart={selectedSidebarItem === 'trash' ? (e) => handleTrashItemDragStart(e, item.id) : undefined}
                 >
                   <span className={styles.listDisclosure}>▶</span>
@@ -1002,11 +1081,11 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
                 {config.contentItems.map((item) => (
                   <button
                     key={item.id}
-                    className={`${styles.columnItem} ${selectedContentItems.includes(item.id) ? styles.columnItemSelected : ''}`}
-                    onClick={(e) => { e.stopPropagation(); handleContentClick(item.id, e); }}
-                    onDoubleClick={() => handleContentDoubleClick(item)}
+                    className={`${styles.columnItem} ${selectedContentItems.includes(item.id) ? styles.columnItemSelected : ''} ${item.disabled ? styles.contentItemDisabled : ''}`}
+                    onClick={(e) => { e.stopPropagation(); if (!item.disabled) handleContentClick(item.id, e); }}
+                    onDoubleClick={() => { if (!item.disabled) handleContentDoubleClick(item); }}
                     onContextMenu={selectedSidebarItem === 'trash' ? (e) => handleTrashItemContextMenu(e, item.id, item.name) : (e) => handleContentItemContextMenu(e, item)}
-                    draggable={selectedSidebarItem === 'trash'}
+                    draggable={selectedSidebarItem === 'trash' && !item.disabled}
                     onDragStart={selectedSidebarItem === 'trash' ? (e) => handleTrashItemDragStart(e, item.id) : undefined}
                   >
                     <SmallIcon type={item.icon} />
@@ -1201,6 +1280,16 @@ const CONTENT_ICON_MAP: Record<string, string> = {
   'music-file': '/icons/itunes.png',
   'video-file': '/icons/quicktime-logo.png',
   'picture-file': '/icons/PicturesFolderIcon.png',
+  // Application icons (greyed out in Applications folder)
+  'app-safari': '/icons/compass.png',
+  'app-addressbook': '/icons/AddressBook.png',
+  'app-preview': '/icons/preview.png',
+  'app-diskutility': '/icons/diskcopy.png',
+  'app-networkutility': '/icons/NetworkUtility.png',
+  'app-installer': '/icons/Installer.png',
+  'app-internetconnect': '/icons/GenericNetworkIcon.png',
+  'app-filevault': '/icons/FileVaultIcon.png',
+  'app-doom': '/icons/Floppy.png',
 };
 
 function ContentIcon({ type, dataUrl }: { type: string; dataUrl?: string }) {
