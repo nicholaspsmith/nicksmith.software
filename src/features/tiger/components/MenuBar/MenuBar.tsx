@@ -267,7 +267,13 @@ export function MenuBar() {
   // Close all menus/dropdowns when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (menuBarRef.current && !menuBarRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      // Check if click is inside menuBar
+      const isInsideMenuBar = menuBarRef.current && menuBarRef.current.contains(target);
+      // Check if click is inside a portal dropdown (rendered to document.body)
+      const isInsideDropdownPortal = (target as Element).closest?.('[data-menu-dropdown]');
+
+      if (!isInsideMenuBar && !isInsideDropdownPortal) {
         setOpenMenuId(null);
         setSpotlightOpen(false);
         setClockDropdownOpen(false);
@@ -568,6 +574,7 @@ export function MenuBar() {
             <div
               className={styles.dropdownPortal}
               role="menu"
+              data-menu-dropdown
               data-testid="apple-menu-dropdown"
               style={{ left: dropdownPosition.left, top: dropdownPosition.top }}
             >
@@ -642,6 +649,7 @@ export function MenuBar() {
             <div
               className={styles.dropdownPortal}
               role="menu"
+              data-menu-dropdown
               data-testid="app-menu-dropdown"
               style={{ left: dropdownPosition.left, top: dropdownPosition.top }}
             >
@@ -701,6 +709,7 @@ export function MenuBar() {
                 <div
                   className={styles.dropdownPortal}
                   role="menu"
+                  data-menu-dropdown
                   data-testid={`${menu.id}-menu-dropdown`}
                   style={{ left: dropdownPosition.left, top: dropdownPosition.top }}
                 >

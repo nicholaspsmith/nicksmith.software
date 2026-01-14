@@ -335,7 +335,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     const newIcon: DynamicDesktopIcon = {
       id,
       label,
-      icon: '/icons/textedit.png',
+      icon: '/icons/document.png',
       type: 'document',
       documentId,
     };
