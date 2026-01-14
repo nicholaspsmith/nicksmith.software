@@ -1337,8 +1337,8 @@ function ContentIcon({ type, dataUrl }: { type: string; dataUrl?: string }) {
     );
   }
 
-  // Use mapped icon or fallback to folder
-  const iconSrc = CONTENT_ICON_MAP[type] || CONTENT_ICON_MAP.folder;
+  // Use direct path if type starts with /, otherwise look up in map
+  const iconSrc = type.startsWith('/') ? type : (CONTENT_ICON_MAP[type] || CONTENT_ICON_MAP.folder);
 
   return (
     <img
@@ -1358,8 +1358,8 @@ function SmallIcon({ type }: { type: string }) {
     return <TerminalIcon size={16} />;
   }
 
-  // Use mapped icon or fallback to folder
-  const iconSrc = CONTENT_ICON_MAP[type] || CONTENT_ICON_MAP.folder;
+  // Use direct path if type starts with /, otherwise look up in map
+  const iconSrc = type.startsWith('/') ? type : (CONTENT_ICON_MAP[type] || CONTENT_ICON_MAP.folder);
 
   return (
     <img
