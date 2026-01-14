@@ -1,0 +1,1 @@
+export { KonamiEasterEgg } from './KonamiEasterEgg';
