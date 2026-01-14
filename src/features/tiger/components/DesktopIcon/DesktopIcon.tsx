@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useEffect, useState } from 'react';
+import { useCallback, useMemo, useRef, useEffect } from 'react';
 import { motion, useAnimationControls, type PanInfo } from 'motion/react';
 import { useAppStore } from '@/stores/appStore';
 import { iconVariants } from '@/animations/aqua';
@@ -100,7 +100,6 @@ export function DesktopIcon({
   const controls = useAnimationControls();
   const prevPosition = useRef({ x, y });
   const isDragging = useRef(false);
-  const [isCurrentlyDragging, setIsCurrentlyDragging] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Multi-drag actions from store (only subscribe to actions, not changing state)
@@ -220,8 +219,7 @@ export function DesktopIcon({
 
   const handleDragStart = useCallback(() => {
     isDragging.current = true;
-    setIsCurrentlyDragging(true);
-    // Set global dragging state for z-index management
+    // Set global dragging state
     setDraggingIcon(true);
     // If this is a multi-drag (icon is selected with others), mark as dragging
     if (isSelected && selectedIconIds.length > 1) {
@@ -284,8 +282,6 @@ export function DesktopIcon({
         if (element) {
           element.style.transform = `translate(${info.offset.x}px, ${info.offset.y}px)`;
           element.style.opacity = '0.7';
-          // z-index 10000: above everything including dock and menubar
-          element.style.zIndex = '10000';
         }
       }
     },
@@ -296,7 +292,6 @@ export function DesktopIcon({
     (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
       // Reset trash hover state and dragging state
       wasHoveringOverTrash.current = false;
-      setIsCurrentlyDragging(false);
       setHoveringOverTrash(false);
       setDraggingIcon(false);
 
@@ -452,7 +447,6 @@ export function DesktopIcon({
             // Clear transform - icon stays visually in place
             element.style.transform = '';
             element.style.opacity = '';
-            element.style.zIndex = '';
 
             // Mark this icon to skip its React animation
             skipAnimationForIcons.add(iconId);
@@ -506,14 +500,12 @@ export function DesktopIcon({
       aria-label={label}
       aria-pressed={isSelected}
       // Absolute positioning (multi-drag transforms applied directly via DOM)
-      // z-index 10000 during drag: above everything including windows, dock (90), and menubar (1000)
       style={{
         position: 'absolute',
         left: x,
         top: y,
         width: SACRED.iconGridCellWidth,
         height: SACRED.iconGridCellHeight,
-        zIndex: isCurrentlyDragging ? 10000 : undefined,
       }}
       // Drag functionality
       drag
@@ -525,8 +517,6 @@ export function DesktopIcon({
       onDragEnd={handleDragEnd}
       whileDrag={{
         opacity: 0.7,
-        // z-index 10000: above everything including dock (90) and menubar (1000)
-        zIndex: 10000,
         cursor: 'grabbing',
       }}
     >
