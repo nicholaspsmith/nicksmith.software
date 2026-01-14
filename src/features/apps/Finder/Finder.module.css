@@ -356,13 +356,28 @@
 .contentItemSelected .contentLabel {
   color: #fff;
   background: var(--aqua-selection-bg);
+  /* Show full text when selected */
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* Disabled items (greyed out, non-interactive) */
+.contentItemDisabled {
+  pointer-events: none;
+  cursor: default;
+  opacity: 0.45;
+  filter: grayscale(0.3);
 }
 
 .contentLabel {
   font-size: 10px;
   color: #000;
   text-align: center;
-  word-break: break-word;
+  /* Prevent mid-word breaks, truncate with ellipsis if too long */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   max-width: 80px;
   /* Fixed padding to prevent height change on selection */
   padding: 1px 4px;
