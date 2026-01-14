@@ -7,44 +7,6 @@ import { WindowChrome } from '../WindowChrome';
 import { windowVariants } from '@/animations/aqua';
 import styles from './Window.module.css';
 
-/**
- * Calculate the dock target position for minimize animation.
- * The thumbnail appears after the separator, so we need to calculate
- * based on existing minimized windows.
- */
-function calculateDockTargetPosition(
-  windowX: number,
-  windowY: number,
-  windowWidth: number,
-  windowHeight: number,
-  minimizedIndex: number
-): { x: number; y: number } {
-  // Dock is centered at bottom, thumbnail section starts after separator
-  // Each thumbnail is ~64px wide with 2px gap
-  const thumbnailWidth = 66; // 64 icon + 2 gap
-  const dockHeight = SACRED.dockHeight;
-
-  // Dock center is at 50% of viewport
-  // Thumbnails appear after app icons and separator
-  // Estimate: Finder(50) + TextEdit(50) + SysPrefs(50) + separator(13) ≈ 163px from center-left
-  const baseOffset = 163;
-
-  // Calculate x position: dock center + offset for this thumbnail
-  const targetX = window.innerWidth / 2 + baseOffset + (minimizedIndex * thumbnailWidth);
-  // Target the center of the dock (where thumbnails appear), not the top edge
-  const targetY = window.innerHeight - dockHeight / 2;
-
-  // Since transform origin is at bottom center (originY: 1, originX: 0.5),
-  // we need to offset from the window's bottom center point
-  const windowBottomY = windowY + windowHeight;
-  const windowCenterX = windowX + windowWidth / 2;
-
-  return {
-    x: targetX - windowCenterX,
-    y: targetY - windowBottomY,
-  };
-}
-
 export interface WindowProps {
   id: string;
   title: string;
@@ -65,7 +27,7 @@ export interface WindowProps {
  * Animation lifecycle:
  * - Mount: closed → opening → open
  * - Close: open → closing → (removed from DOM)
- * - Minimize: open → minimizing → (hidden)
+ * - Minimize: open → minimizing (genie effect) → (hidden, thumbnail in dock)
  */
 export function Window({ id, title, children, isStartupWindow = false, onTitleBarContextMenu }: WindowProps) {
   // ============================================
@@ -107,43 +69,51 @@ export function Window({ id, title, children, isStartupWindow = false, onTitleBa
     }
   }, [windowState?.restoredFromMinimized]);
 
-  // Calculate animation value
+  // Calculate animation value for genie effect
   const animateValue = useMemo(() => {
-    if (animationState === 'minimizing' && dockTarget) {
-      // Simplified genie-like effect: scale down while moving to dock
-      // Uses CSS transforms - true genie distortion requires WebGL/Canvas
+    if (animationState === 'minimizing' && dockTarget && windowState) {
+      // Calculate where the window needs to move to reach the dock
+      // Window bottom center needs to reach dockTarget
+      const windowBottomY = windowState.y + windowState.height;
+      const windowCenterX = windowState.x + windowState.width / 2;
+
+      const deltaX = dockTarget.x - windowCenterX;
+      const deltaY = dockTarget.y - windowBottomY;
+
+      // Genie effect: scale down while moving to dock
+      // The window shrinks horizontally more than vertically for the genie look
       return {
-        opacity: [1, 0.9, 0],
-        scaleX: [1, 0.3, 0.02],
-        scaleY: [1, 0.15, 0.01],
-        x: [0, dockTarget.x * 0.6, dockTarget.x],
-        y: [0, dockTarget.y * 0.7, dockTarget.y],
+        scaleX: [1, 0.5, 0.15, 0.08],
+        scaleY: [1, 0.6, 0.3, 0.08],
+        x: [0, deltaX * 0.3, deltaX * 0.7, deltaX],
+        y: [0, deltaY * 0.4, deltaY * 0.8, deltaY],
+        opacity: [1, 1, 0.8, 0],
         transition: {
-          duration: 0.35,
-          times: [0, 0.6, 1],
-          ease: 'linear' as const,
+          duration: 0.5,
+          times: [0, 0.3, 0.7, 1],
+          ease: 'easeInOut' as const,
         },
       };
     }
 
-    if (animationState === 'restoring') {
-      // Reverse: expand from dock back to position
+    if (animationState === 'restoring' && dockTarget && windowState) {
+      // Restore from dock: expand back to position
       return {
-        opacity: 1,
         scaleX: 1,
         scaleY: 1,
         x: 0,
         y: 0,
+        opacity: 1,
         transition: {
-          duration: 0.35,
-          ease: 'linear' as const,
+          duration: 0.4,
+          ease: 'easeOut' as const,
         },
       };
     }
 
-    // Use variant name for other states
+    // Use variant name for other states (opening, open, closing)
     return animationState;
-  }, [animationState, dockTarget]);
+  }, [animationState, dockTarget, windowState]);
 
   // ALL useCallback hooks must be before any conditional return
   const handleDragStop = useCallback(
@@ -193,21 +163,22 @@ export function Window({ id, title, children, isStartupWindow = false, onTitleBa
   }, []);
 
   const handleMinimize = useCallback(() => {
-    // Calculate dock target position before starting animation
+    // Calculate dock target position for genie effect
     if (windowState) {
-      const target = calculateDockTargetPosition(
-        windowState.x,
-        windowState.y,
-        windowState.width,
-        windowState.height,
-        minimizedCount
-      );
-      setDockTarget(target);
+      const dockHeight = SACRED.dockHeight;
+      // Calculate the dock position (centered dock, thumbnail area)
+      const thumbnailWidth = 66;
+      const baseOffset = 163;
+      const targetX = window.innerWidth / 2 + baseOffset + (minimizedCount * thumbnailWidth);
+      const targetY = window.innerHeight - dockHeight / 2;
+      setDockTarget({ x: targetX, y: targetY });
+
+      // Update store IMMEDIATELY so dock grows right away
+      minimizeWindowAction(id);
+
+      // Start genie animation (window continues rendering during animation)
+      setAnimationState('minimizing');
     }
-    // Update store immediately so dock can start growing right away
-    // Window continues rendering during animation due to animationState check
-    minimizeWindowAction(id);
-    setAnimationState('minimizing');
   }, [windowState, minimizedCount, minimizeWindowAction, id]);
 
   const handleZoom = useCallback(() => {
@@ -229,9 +200,10 @@ export function Window({ id, title, children, isStartupWindow = false, onTitleBa
     } else if (animationState === 'closing') {
       closeWindow(id);
     } else if (animationState === 'minimizing') {
-      // Reset to 'open' so the early return check can fire
-      // (windowState.state === 'minimized' && animationState !== 'minimizing')
+      // Genie animation complete - window is now hidden
+      // Reset to 'open' so next time we render it starts fresh
       setAnimationState('open');
+      setDockTarget(null);
     }
   }, [animationState, id, closeWindow, clearRestoredFlag]);
 
@@ -265,7 +237,7 @@ export function Window({ id, title, children, isStartupWindow = false, onTitleBa
   // EARLY RETURNS MUST COME AFTER ALL HOOKS
   // ============================================
 
-  // Don't render if window not found or minimized (but not during minimize animation)
+  // Don't render if window not found or minimized (but keep rendering during minimize animation)
   if (!windowState || (windowState.state === 'minimized' && animationState !== 'minimizing')) {
     return null;
   }
@@ -321,7 +293,11 @@ export function Window({ id, title, children, isStartupWindow = false, onTitleBa
         animate={animateValue}
         onAnimationComplete={handleAnimationComplete}
         onClick={handleClick}
-        style={animationState === 'minimizing' || animationState === 'restoring' ? { originY: 1, originX: 0.5 } : undefined}
+        style={
+          animationState === 'minimizing' || animationState === 'restoring'
+            ? { originY: 1, originX: 0.5, pointerEvents: 'none' }
+            : undefined
+        }
       >
         <WindowChrome
           title={title}
