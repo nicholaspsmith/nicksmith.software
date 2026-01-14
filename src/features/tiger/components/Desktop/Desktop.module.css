@@ -11,7 +11,10 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: url('/tiger-wallpaper.png') center center / cover no-repeat;
+  /* Background image applied via inline style for progressive loading */
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
   overflow: hidden;
   /* No z-index - allows children to escape stacking context during drag */
   cursor: var(--aqua-cursor-default);

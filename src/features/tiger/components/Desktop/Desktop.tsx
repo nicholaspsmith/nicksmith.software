@@ -8,6 +8,11 @@ import { SelectionRectangle, calculateBounds } from '../SelectionRectangle';
 import { SACRED } from '../../constants/sacred';
 import styles from './Desktop.module.css';
 
+/** Low-res placeholder wallpaper (9KB) */
+const LOW_RES_WALLPAPER = '/tiger-wallpaper-low.jpg';
+/** Full resolution wallpaper (6MB) */
+const HIGH_RES_WALLPAPER = '/tiger-wallpaper.png';
+
 export interface DesktopProps {
   children?: React.ReactNode;
   /** Icon positions for intersection detection during marquee select */
@@ -69,6 +74,16 @@ export function Desktop({ children, iconPositions, onIconsSelected }: DesktopPro
   const windows = useWindowStore((s) => s.windows);
   const activeWindowId = useWindowStore((s) => s.activeWindowId);
   const desktopRef = useRef<HTMLDivElement>(null);
+
+  // Progressive wallpaper loading - start with low-res, swap to high-res when loaded
+  const [wallpaperLoaded, setWallpaperLoaded] = useState(false);
+
+  // Preload high-res wallpaper
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => setWallpaperLoaded(true);
+    img.src = HIGH_RES_WALLPAPER;
+  }, []);
 
   // Track if we just finished a marquee selection (to prevent click from clearing)
   const justFinishedMarquee = useRef(false);
@@ -287,6 +302,9 @@ export function Desktop({ children, iconPositions, onIconsSelected }: DesktopPro
     }
   }, [restoreFromTrash]);
 
+  // Current wallpaper based on loading state
+  const currentWallpaper = wallpaperLoaded ? HIGH_RES_WALLPAPER : LOW_RES_WALLPAPER;
+
   return (
     <div
       ref={desktopRef}
@@ -297,6 +315,7 @@ export function Desktop({ children, iconPositions, onIconsSelected }: DesktopPro
       onContextMenu={handleContextMenu}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
+      style={{ backgroundImage: `url('${currentWallpaper}')` }}
     >
       <MenuBar />
       {/* Bounds container for windows - only constrains top (below menu bar) */}
