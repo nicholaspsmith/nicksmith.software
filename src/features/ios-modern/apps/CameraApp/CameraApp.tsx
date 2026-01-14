@@ -154,6 +154,19 @@ export function CameraApp() {
     };
   }, [startCamera]);
 
+  // Debug: expose showSwap() function to browser console
+  useEffect(() => {
+    // @ts-expect-error - Debug function for browser console
+    window.showSwap = () => {
+      setShowCameraToggle(true);
+      console.log('Camera swap button enabled');
+    };
+    return () => {
+      // @ts-expect-error - Debug function cleanup
+      delete window.showSwap;
+    };
+  }, []);
+
   return (
     <div className={styles.app}>
       <StatusBar variant="light" />
@@ -283,9 +296,10 @@ function CloseIcon() {
 
 function FlipCameraIcon() {
   return (
-    <svg className={styles.flipIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M16 3h5v5M8 21H3v-5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M21 3l-7 7M3 21l7-7" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <img
+      src="/icons/ios/swap.png?v=2"
+      alt="Switch camera"
+      className={styles.flipIcon}
+    />
   );
 }
