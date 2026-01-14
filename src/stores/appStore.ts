@@ -223,9 +223,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
     // Developer folder contents
     developer: [
       { id: 'link-learn-python', label: 'Learn Python', icon: '/icons/compass.png', type: 'link' as const, url: 'https://web-beta-sooty-25.vercel.app/' },
-      { id: 'link-retro-portfolio', label: 'Retro Portfolio', icon: '/icons/finder.png', type: 'link' as const, url: 'https://github.com/nicholaspsmith/nicksmith.software' },
       { id: 'link-lance-context', label: 'lance-context', icon: '/icons/lance-context-logo.svg', type: 'link' as const, url: 'https://github.com/nicholaspsmith/lance-context' },
-      { id: 'link-loopi', label: 'Loopi', icon: '/icons/loopi-logo.svg', type: 'link' as const, url: 'https://github.com/nicholaspsmith/Loopi' },
+      { id: 'link-loopi', label: 'Loopi', icon: '/icons/loopi-logo.svg', type: 'link' as const, url: 'https://loopi.nicholaspsmith.com' },
       { id: 'link-vidsnatch', label: 'VidSnatch', icon: '/icons/vidsnatch-logo.png', type: 'link' as const, url: 'https://github.com/nicholaspsmith/VidSnatch' },
       { id: 'link-centrifugue', label: 'Centrifugue', icon: '/icons/centrifugue-logo.svg', type: 'link' as const, url: 'https://github.com/nicholaspsmith/Centrifugue' },
       { id: 'link-obsidian-c-scribe', label: 'Obsidian C-Scribe', icon: '/icons/c-scribe.png', type: 'link' as const, url: 'https://github.com/nicholaspsmith/Obsidian-C-Scribe' },
