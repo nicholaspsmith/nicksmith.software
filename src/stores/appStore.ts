@@ -19,9 +19,11 @@ export interface DynamicDesktopIcon {
   id: string;
   label: string;
   icon: string; // Icon path or type
-  type: 'folder' | 'smart-folder' | 'burn-folder' | 'document' | 'image';
+  type: 'folder' | 'smart-folder' | 'burn-folder' | 'document' | 'image' | 'link';
   /** Document ID for document icons (links to documentStore) */
   documentId?: string;
+  /** External URL for link icons */
+  url?: string;
   /** Date created timestamp */
   dateCreated?: number;
   /** Date modified timestamp */
@@ -217,6 +219,10 @@ export const useAppStore = create<AppStore>((set, get) => ({
       { id: 'pic-disaster-girl', label: 'Disaster Girl', icon: '/pictures/Disaster_Girl.jpg', type: 'image' as const },
       { id: 'pic-body-massage', label: 'Body Massage', icon: '/pictures/body-massage-gi-joe.gif', type: 'image' as const },
       { id: 'pic-gi-joe-computer', label: 'GI Joe Computer', icon: '/pictures/gi-joe-psa-computer.gif', type: 'image' as const },
+    ],
+    // Developer folder contents
+    developer: [
+      { id: 'link-learn-python', label: 'Learn Python', icon: '/icons/compass.png', type: 'link' as const, url: 'https://web-beta-sooty-25.vercel.app/' },
     ],
   },
   isDraggingMacintoshHD: false,

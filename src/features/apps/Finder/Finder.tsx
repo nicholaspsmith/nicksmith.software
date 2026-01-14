@@ -50,6 +50,8 @@ interface ContentItem {
   dataUrl?: string;
   /** Optional document ID for opening in TextEdit */
   documentId?: string;
+  /** Optional external URL for link items */
+  url?: string;
   /** If true, item is greyed out and non-interactive */
   disabled?: boolean;
 }
@@ -331,6 +333,7 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
       else if (icon.type === 'smart-folder') contentIcon = 'folder';
       else if (icon.type === 'burn-folder') contentIcon = 'folder';
       else if (icon.type === 'image') contentIcon = 'picture-file';
+      else if (icon.type === 'link') contentIcon = icon.icon;
       else if (icon.id === 'terminal') contentIcon = 'terminal';
       else if (icon.id === 'about') contentIcon = 'about-doc';
       else if (icon.id === 'projects') contentIcon = 'projects-doc';
@@ -345,6 +348,8 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
         documentId: icon.documentId,
         // For images, use the icon path as the dataUrl for thumbnail
         dataUrl: icon.type === 'image' ? icon.icon : undefined,
+        // For links, include the URL
+        url: icon.url,
       };
     });
   };
@@ -451,6 +456,15 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
           statusText: `${allMoviesItems.length} item${allMoviesItems.length !== 1 ? 's' : ''}`,
         };
       }
+      case 'developer': {
+        const developerItems = dynamicIconsToContentItems('developer');
+        return {
+          title: 'Developer',
+          sidebarItems: SIDEBAR_ITEMS,
+          contentItems: developerItems,
+          statusText: `${developerItems.length} item${developerItems.length !== 1 ? 's' : ''}`,
+        };
+      }
       case 'trash': {
         // Convert trashed icons to content items
         const trashContents: ContentItem[] = trashedIcons.map((icon) => ({
@@ -501,6 +515,12 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
         clearAppSelection();
       }
     } else {
+      // Check for external links (open in new tab)
+      if (item.url) {
+        window.open(item.url, '_blank', 'noopener,noreferrer');
+        clearAppSelection();
+        return;
+      }
       // Check for music files
       if (item.icon === 'music-file') {
         openITunes(item.name);
