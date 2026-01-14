@@ -27,6 +27,13 @@
   z-index: 100;
 }
 
+/* Fixed notch width for tablet screens */
+@media (min-width: 768px) {
+  .frame::after {
+    width: 280px;
+  }
+}
+
 .content {
   width: 100%;
   height: 100%;
