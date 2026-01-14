@@ -330,6 +330,7 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
       if (icon.type === 'folder') contentIcon = 'folder';
       else if (icon.type === 'smart-folder') contentIcon = 'folder';
       else if (icon.type === 'burn-folder') contentIcon = 'folder';
+      else if (icon.type === 'image') contentIcon = 'picture-file';
       else if (icon.id === 'terminal') contentIcon = 'terminal';
       else if (icon.id === 'about') contentIcon = 'about-doc';
       else if (icon.id === 'projects') contentIcon = 'projects-doc';
@@ -342,6 +343,8 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
         icon: contentIcon,
         type: icon.type === 'folder' || icon.type === 'smart-folder' || icon.type === 'burn-folder' ? 'folder' as const : 'file' as const,
         documentId: icon.documentId,
+        // For images, use the icon path as the dataUrl for thumbnail
+        dataUrl: icon.type === 'image' ? icon.icon : undefined,
       };
     });
   };

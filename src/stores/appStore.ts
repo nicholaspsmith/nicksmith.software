@@ -19,7 +19,7 @@ export interface DynamicDesktopIcon {
   id: string;
   label: string;
   icon: string; // Icon path or type
-  type: 'folder' | 'smart-folder' | 'burn-folder' | 'document';
+  type: 'folder' | 'smart-folder' | 'burn-folder' | 'document' | 'image';
   /** Document ID for document icons (links to documentStore) */
   documentId?: string;
   /** Date created timestamp */
@@ -212,6 +212,12 @@ export const useAppStore = create<AppStore>((set, get) => ({
       { id: 'doc-english-vocab', label: 'English Vocab List', icon: '/icons/document.png', type: 'document', documentId: 'english-vocab' },
       { id: 'doc-math-homework', label: 'Math Homework Ch 5', icon: '/icons/document.png', type: 'document', documentId: 'math-homework' },
     ],
+    // Pre-populated meme images in Pictures folder (2004-2005 era)
+    pictures: [
+      { id: 'pic-disaster-girl', label: 'Disaster Girl', icon: '/pictures/Disaster_Girl.jpg', type: 'image' as const },
+      { id: 'pic-body-massage', label: 'Body Massage', icon: '/pictures/body-massage-gi-joe.gif', type: 'image' as const },
+      { id: 'pic-gi-joe-computer', label: 'GI Joe Computer', icon: '/pictures/gi-joe-psa-computer.gif', type: 'image' as const },
+    ],
   },
   isDraggingMacintoshHD: false,
   isHoveringOverTrash: false,
@@ -329,7 +335,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     const newIcon: DynamicDesktopIcon = {
       id,
       label,
-      icon: '/icons/TextEditIcon.png',
+      icon: '/icons/textedit.png',
       type: 'document',
       documentId,
     };
