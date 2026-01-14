@@ -226,6 +226,7 @@ const FOLDER_TO_SIDEBAR_MAP: Record<string, string> = {
   music: 'music',
   pictures: 'pictures',
   users: 'user', // Users folder maps to user home
+  developer: 'developer',
 };
 
 /**
