@@ -50,6 +50,7 @@ const WINDOW_TITLES: Record<string, string> = {
   itunes: 'iTunes',
   quicktime: 'QuickTime Player',
   preview: 'Preview',
+  doom: 'DOOM',
 };
 
 /**
@@ -92,6 +93,8 @@ const WINDOW_SIZE_CONFIGS: Record<string, WindowSizeConfig> = {
   quicktime: { width: 640, height: 480, minWidth: 320, minHeight: 240 },
   // Preview - image viewer
   preview: { width: 400, height: 400, minWidth: 200, minHeight: 200 },
+  // DOOM - game window
+  doom: { width: 640, height: 480, minWidth: 400, minHeight: 300 },
 };
 
 /**
@@ -218,6 +221,8 @@ interface WindowStore {
   openQuickTime: (mediaFile?: string) => string;
   /** Open Preview with an image */
   openPreview: (imageDataUrl: string, title?: string) => string;
+  /** Open DOOM game */
+  openDoom: () => string;
   /** Set the thumbnail for a minimized window */
   setThumbnail: (id: string, thumbnail: string) => void;
 }
@@ -766,6 +771,51 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
         previousBounds: null,
         restoredFromMinimized: false,
         imageDataUrl,
+      }],
+      activeWindowId: id,
+      maxZIndex: newZIndex,
+    }));
+    return id;
+  },
+
+  openDoom: () => {
+    const { windows, maxZIndex } = get();
+
+    // DOOM is single-instance
+    const existingWindow = windows.find((w) => w.app === 'doom' && w.state !== 'closed');
+    if (existingWindow) {
+      get().focusWindow(existingWindow.id);
+      if (existingWindow.state === 'minimized') {
+        get().restoreWindow(existingWindow.id);
+      }
+      return existingWindow.id;
+    }
+
+    // Create new DOOM window
+    const id = crypto.randomUUID();
+    const newZIndex = maxZIndex + 1;
+    const app = 'doom';
+    const parentApp = getParentApp(app);
+    const sizeConfig = getWindowSizeConfig(app);
+
+    set((state) => ({
+      windows: [...state.windows, {
+        id,
+        app,
+        parentApp,
+        title: 'DOOM',
+        x: 100 + (windows.length * 30),
+        y: 100 + (windows.length * 30),
+        width: sizeConfig.width,
+        height: sizeConfig.height,
+        minWidth: sizeConfig.minWidth,
+        minHeight: sizeConfig.minHeight,
+        zIndex: newZIndex,
+        state: 'open',
+        isZoomed: false,
+        isShaded: false,
+        previousBounds: null,
+        restoredFromMinimized: false,
       }],
       activeWindowId: id,
       maxZIndex: newZIndex,

@@ -34,6 +34,8 @@ import { Contact } from '@/features/apps/Contact';
 import { ITunesApp } from '@/features/apps/iTunes';
 import { QuickTime } from '@/features/apps/QuickTime';
 import { Preview } from '@/features/apps/Preview';
+// Games
+import { Doom } from '@/features/apps/Doom';
 
 // Lazy load Terminal to reduce initial bundle size (xterm.js is ~300KB)
 const TerminalApp = lazy(() =>
@@ -276,6 +278,8 @@ function WindowContent({ app, documentId, isEditing, windowId, mediaFile, imageD
       return <QuickTime initialVideo={mediaFile} />;
     case 'preview':
       return imageDataUrl ? <Preview imageDataUrl={imageDataUrl} /> : null;
+    case 'doom':
+      return <Doom />;
     default:
       return null;
   }

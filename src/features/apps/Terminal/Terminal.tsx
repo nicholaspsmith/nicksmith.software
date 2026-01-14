@@ -3,6 +3,7 @@ import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 import { useAppStore } from '@/stores/appStore';
+import { useWindowStore } from '@/stores/windowStore';
 import styles from './Terminal.module.css';
 
 // Flag to track if crash should be triggered (set by rm command)
@@ -206,6 +207,23 @@ rm: KERNEL PANIC - NOT SYNCING
 rm: Attempting to halt...`;
     }
     return `rm: cannot remove '${args[0] || ''}': This is a virtual filesystem`;
+  },
+
+  doom: () => {
+    // Open DOOM game window
+    setTimeout(() => {
+      useWindowStore.getState().openDoom();
+    }, 100);
+    return `
+\x1b[31m██████╗  ██████╗  ██████╗ ███╗   ███╗\x1b[0m
+\x1b[31m██╔══██╗██╔═══██╗██╔═══██╗████╗ ████║\x1b[0m
+\x1b[31m██║  ██║██║   ██║██║   ██║██╔████╔██║\x1b[0m
+\x1b[31m██║  ██║██║   ██║██║   ██║██║╚██╔╝██║\x1b[0m
+\x1b[31m██████╔╝╚██████╔╝╚██████╔╝██║ ╚═╝ ██║\x1b[0m
+\x1b[31m╚═════╝  ╚═════╝  ╚═════╝ ╚═╝     ╚═╝\x1b[0m
+
+Launching DOOM...
+Note: You'll need to upload a DOOM.WAD file to play.`;
   },
 };
 

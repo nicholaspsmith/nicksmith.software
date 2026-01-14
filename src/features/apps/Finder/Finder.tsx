@@ -134,7 +134,7 @@ const APPLICATION_ITEMS: ContentItem[] = [
   { id: 'installer', name: 'Installer', icon: 'app-installer', type: 'file', disabled: true },
   { id: 'internet-connect', name: 'Internet Connect', icon: 'app-internetconnect', type: 'file', disabled: true },
   { id: 'filevault', name: 'FileVault', icon: 'app-filevault', type: 'file', disabled: true },
-  { id: 'doom', name: 'DOOM', icon: 'app-doom', type: 'file', disabled: true },
+  { id: 'doom', name: 'DOOM', icon: 'app-doom', type: 'file' },
 ];
 
 /** View mode types */
@@ -238,6 +238,7 @@ const OPENABLE_ITEMS: Record<string, string> = {
   projects: 'projects',
   resume: 'resume',
   contact: 'contact',
+  doom: 'doom',
 };
 
 export interface FinderProps {
