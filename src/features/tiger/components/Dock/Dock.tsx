@@ -114,8 +114,10 @@ export function Dock() {
   // Check if QuickTime has any running windows (for showing indicator)
   const hasQuickTimeWindows = runningApps.some((w) => w.parentApp === 'quicktime');
 
-  // Get only minimized windows for thumbnails
-  const minimizedWindows = windows.filter((w) => w.state === 'minimized');
+  // Get minimized windows and windows that should keep their dock slot
+  // isMinimizing: dock grows as window minimizes (slot appears)
+  // keepDockSlot: dock slot remains for 500ms after restore starts (for smooth animation)
+  const minimizedWindows = windows.filter((w) => w.state === 'minimized' || w.isMinimizing || w.keepDockSlot);
 
   const handleDefaultIconClick = (e: React.MouseEvent, iconId: string) => {
     e.stopPropagation();
@@ -261,12 +263,6 @@ export function Dock() {
     }
   };
 
-  const handleMinimizedWindowClick = (e: React.MouseEvent, windowId: string) => {
-    e.stopPropagation();
-    triggerBounce(windowId);
-    restoreWindow(windowId);
-  };
-
   const handleTrashClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     openTrashWindow();
@@ -362,8 +358,8 @@ export function Dock() {
                       <img
                         src={icon.id === 'finder' && isCorrupted ? '/Reference/Sad-Mac.png' : icon.icon}
                         alt=""
-                        width={48}
-                        height={48}
+                        width={icon.id === 'system-preferences' ? 53 : 48}
+                        height={icon.id === 'system-preferences' ? 53 : 48}
                         draggable={false}
                         aria-hidden="true"
                       />
@@ -426,31 +422,49 @@ export function Dock() {
             <div className={styles.separator} aria-hidden="true" />
           )}
 
-          {/* Minimized window thumbnails */}
+          {/* Minimized window slots - empty placeholders, actual windows render themselves */}
           <AnimatePresence mode="popLayout">
             {minimizedWindows.map((window) => {
-              const isBouncing = bouncingIcons.has(window.id);
+              // Windows that are minimizing get timed animation to match genie effect (~900ms)
+              const isCurrentlyMinimizing = window.isMinimizing;
+              // Use variants to have different transitions for enter vs exit
+              const dockSlotVariants = {
+                initial: { scale: 0, opacity: 0, width: 0 },
+                animate: {
+                  scale: 1,
+                  opacity: 1,
+                  width: 'auto',
+                  transition: isCurrentlyMinimizing
+                    ? { duration: 0.9, ease: 'easeOut' as const }
+                    : { type: 'spring' as const, stiffness: 400, damping: 25 },
+                },
+                exit: {
+                  scale: 0,
+                  opacity: 0,
+                  width: 0,
+                  // Exit animation matches minimize animation timing (0.9s)
+                  transition: { duration: 0.9, ease: 'easeIn' as const },
+                },
+              };
               return (
                 <motion.div
                   key={window.id}
                   className={styles.iconWrapper}
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0, opacity: 0 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  variants={dockSlotVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
                 >
-                  <motion.button
+                  {/* Portal target - Window component will portal minimized content here */}
+                  <div
                     className={styles.dockIcon}
-                    onClick={(e) => handleMinimizedWindowClick(e, window.id)}
-                    animate={isBouncing ? bounceAnimation : { y: 0 }}
-                    aria-label={`Restore ${window.title}`}
                     data-label={window.title}
-                    data-testid={`dock-icon-${window.id}`}
+                    data-testid={`dock-slot-${window.id}`}
+                    id={`dock-slot-${window.id}`}
                   >
-                    <div className={styles.iconImage}>
-                      <MinimizedWindowThumbnail app={window.app} title={window.title} />
-                    </div>
-                  </motion.button>
+                    {/* Window component renders minimized content here via portal */}
+                    <div className={styles.iconImage} />
+                  </div>
                 </motion.div>
               );
             })}
@@ -507,47 +521,6 @@ function AppIcon({ parentAppId }: { parentAppId: string }) {
 
   // Fallback: generic document icon
   return <img src="/icons/document.png" alt="" width={48} height={48} draggable={false} aria-hidden="true" />;
-}
-
-/**
- * Minimized window thumbnail - looks like a mini version of the window
- */
-function MinimizedWindowThumbnail({ app, title }: { app: string; title: string }) {
-  const colors: Record<string, string> = {
-    about: '#FF9500',
-    projects: '#28C940',
-    resume: '#4CA1E4',
-    contact: '#FF5F57',
-    terminal: '#1A1A1A',
-  };
-
-  const color = colors[app] || '#808080';
-
-  return (
-    <svg viewBox="0 0 64 48" width="64" height="48" aria-hidden="true">
-      {/* Window shadow */}
-      <rect x="4" y="4" width="56" height="42" rx="4" fill="rgba(0,0,0,0.2)" />
-      {/* Window frame */}
-      <rect x="2" y="2" width="56" height="42" rx="4" fill="white" stroke="#999" strokeWidth="0.5" />
-      {/* Title bar */}
-      <rect x="2" y="2" width="56" height="12" rx="4" fill="#E8E8E8" />
-      <rect x="2" y="10" width="56" height="4" fill="#E8E8E8" />
-      {/* Traffic lights (smaller) */}
-      <circle cx="10" cy="8" r="2.5" fill="#FF5F57" />
-      <circle cx="18" cy="8" r="2.5" fill="#FFBD2E" />
-      <circle cx="26" cy="8" r="2.5" fill="#28C940" />
-      {/* Title text (truncated) */}
-      <text x="34" y="11" fontSize="6" fill="#333" fontFamily="system-ui">
-        {title.length > 8 ? title.slice(0, 8) + '...' : title}
-      </text>
-      {/* Content area with app color accent */}
-      <rect x="4" y="16" width="52" height="26" fill="white" />
-      <rect x="6" y="18" width="48" height="3" fill={color} rx="1" />
-      <rect x="6" y="24" width="40" height="2" fill="#ddd" rx="1" />
-      <rect x="6" y="28" width="44" height="2" fill="#ddd" rx="1" />
-      <rect x="6" y="32" width="36" height="2" fill="#ddd" rx="1" />
-    </svg>
-  );
 }
 
 /**
