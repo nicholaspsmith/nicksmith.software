@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useWindowStore } from '@/stores/windowStore';
+import { useSoundStore } from '@/stores/soundStore';
 import styles from './QuickTime.module.css';
 import videoManifest from '@/generated/video-manifest.json';
 
@@ -87,6 +88,14 @@ export function QuickTime({ initialVideo }: QuickTimeProps) {
       video.pause();
     }
   }, [isPlaying, currentVideoIndex]);
+
+  // Sync with global volume from soundStore
+  const globalVolume = useSoundStore((s) => s.volume);
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.volume = globalVolume;
+    }
+  }, [globalVolume]);
 
   const handlePlayPause = () => {
     setIsPlaying(!isPlaying);
