@@ -6,7 +6,7 @@ export interface TrafficLightsProps {
   /** Panel mode: minimize/zoom disabled, close is grey with X on hover */
   isPanel?: boolean;
   onClose?: () => void;
-  onMinimize?: () => void;
+  onMinimize?: (event?: { shiftKey?: boolean }) => void;
   onZoom?: () => void;
 }
 
@@ -102,7 +102,12 @@ export function TrafficLights({
       <button
         type="button"
         className={`${styles.button} ${styles.minimize} ${isPanel ? styles.panelDisabled : ''}`}
-        onClick={(e) => handleClick(e, onMinimize, isPanel)}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (!isPanel && onMinimize) {
+            onMinimize({ shiftKey: e.shiftKey });
+          }
+        }}
         aria-label="Minimize window"
         aria-disabled={isPanel}
         data-testid="traffic-light-minimize"

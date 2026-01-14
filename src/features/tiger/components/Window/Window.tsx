@@ -1,11 +1,31 @@
-import { useCallback, useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Rnd } from 'react-rnd';
 import { motion } from 'motion/react';
 import { useWindowStore } from '@/stores/windowStore';
 import { SACRED } from '../../constants/sacred';
 import { WindowChrome } from '../WindowChrome';
 import { windowVariants } from '@/animations/aqua';
+import { applyGenieEffect, applyGenieExpandEffect } from '@/components/GenieEffect';
 import styles from './Window.module.css';
+
+/** Dock thumbnail size for scaling */
+const DOCK_THUMBNAIL_SIZE = 48;
+
+/**
+ * Get the actual position of a dock slot by querying the DOM
+ * Returns the center position of the slot (both X and Y), or null if not found
+ */
+function getDockSlotPosition(windowId: string): { x: number; y: number } | null {
+  const slot = document.querySelector(`[data-testid="dock-slot-${windowId}"]`);
+  if (!slot) return null;
+
+  const rect = slot.getBoundingClientRect();
+  return {
+    x: rect.left + rect.width / 2,
+    y: rect.top + rect.height / 2,
+  };
+}
 
 export interface WindowProps {
   id: string;
@@ -22,103 +42,123 @@ export interface WindowProps {
  *
  * Uses react-rnd for smooth 60fps drag and resize interactions.
  * Connects to windowStore for position/size persistence and z-index management.
- * Uses motion for open/close/minimize animations.
- *
- * Animation lifecycle:
- * - Mount: closed → opening → open
- * - Close: open → closing → (removed from DOM)
- * - Minimize: open → minimizing (genie effect) → (hidden, thumbnail in dock)
+ * Uses motion for open/close animations.
+ * Uses applyGenieEffect for minimize animation (transforms actual window element).
  */
 export function Window({ id, title, children, isStartupWindow = false, onTitleBarContextMenu }: WindowProps) {
-  // ============================================
-  // ALL HOOKS MUST BE CALLED BEFORE ANY RETURN
-  // ============================================
+  const windowRef = useRef<HTMLDivElement>(null);
 
   const windowState = useWindowStore((s) => s.windows.find((w) => w.id === id));
-  const windows = useWindowStore((s) => s.windows);
   const activeWindowId = useWindowStore((s) => s.activeWindowId);
   const updatePosition = useWindowStore((s) => s.updatePosition);
   const updateSize = useWindowStore((s) => s.updateSize);
   const focusWindow = useWindowStore((s) => s.focusWindow);
   const closeWindow = useWindowStore((s) => s.closeWindow);
+  const startMinimizing = useWindowStore((s) => s.startMinimizing);
   const minimizeWindowAction = useWindowStore((s) => s.minimizeWindow);
+  const restoreWindow = useWindowStore((s) => s.restoreWindow);
+  const setThumbnail = useWindowStore((s) => s.setThumbnail);
   const zoomWindow = useWindowStore((s) => s.zoomWindow);
   const shadeWindow = useWindowStore((s) => s.shadeWindow);
-  const clearRestoredFlag = useWindowStore((s) => s.clearRestoredFlag);
+  const completeRestore = useWindowStore((s) => s.completeRestore);
 
-  // Animation state: starts as 'opening' (or 'startupOpening' for startup window)
-  const [animationState, setAnimationState] = useState<'opening' | 'startupOpening' | 'open' | 'closing' | 'minimizing' | 'restoring'>(
+  // Animation state for open/close (minimize/restore use direct DOM manipulation via genie effect)
+  const [animationState, setAnimationState] = useState<'opening' | 'startupOpening' | 'open' | 'closing'>(
     isStartupWindow ? 'startupOpening' : 'opening'
   );
 
-  // Track dock target position for minimize animation
-  const [dockTarget, setDockTarget] = useState<{ x: number; y: number } | null>(null);
+  // Track if genie restore animation is in progress (local state for restore animation)
+  const [genieRestoreRunning, setGenieRestoreRunning] = useState(false);
 
-  // Calculate minimized window index for dock position
-  const minimizedCount = useMemo(
-    () => windows.filter((w) => w.state === 'minimized').length,
-    [windows]
-  );
+  // Use store state for isMinimizing to ensure atomic updates with state changes
+  // This prevents brief flash when transitioning from minimizing to minimized
+  const isMinimizingFromStore = windowState?.isMinimizing ?? false;
+
+  // Track the dock slot element for portal rendering
+  const [dockSlotElement, setDockSlotElement] = useState<HTMLElement | null>(null);
+  // Store position captured at restore trigger (before dock slot exits)
+  const restoreFromPositionRef = useRef<{ x: number; y: number } | null>(null);
+  // Store shift key state captured at restore trigger (for slow motion)
+  const restoreShiftKeyRef = useRef<boolean>(false);
+
+  // Find dock slot element when minimized (for portal rendering)
+  useEffect(() => {
+    if (windowState?.state === 'minimized' || windowState?.isMinimizing) {
+      // Poll for the dock slot element (it may not exist immediately during minimize animation)
+      const findSlot = () => {
+        const slot = document.getElementById(`dock-slot-${id}`);
+        if (slot && slot !== dockSlotElement) {
+          setDockSlotElement(slot);
+        }
+      };
+      findSlot();
+      // Use MutationObserver to detect when dock slot is added/removed
+      const observer = new MutationObserver(findSlot);
+      observer.observe(document.body, { childList: true, subtree: true });
+      return () => observer.disconnect();
+    } else if (!windowState?.isRestoring) {
+      setDockSlotElement(null);
+    }
+  }, [windowState?.state, windowState?.isMinimizing, windowState?.isRestoring, id, dockSlotElement]);
 
   const isFocused = activeWindowId === id;
+  const isMinimized = windowState?.state === 'minimized';
+  const isRestoring = windowState?.isRestoring ?? false;
 
-  // Detect when window is restored from minimized and trigger restore animation
+  // Detect when window is restored from minimized and trigger genie expand animation
   useEffect(() => {
-    if (windowState?.restoredFromMinimized) {
-      setAnimationState('restoring');
+    if (windowState?.restoredFromMinimized && windowRef.current && !genieRestoreRunning) {
+      setGenieRestoreRunning(true);
+
+      // Use the position captured when user clicked (before dock slot exited)
+      const slotPos = restoreFromPositionRef.current;
+      if (!slotPos) {
+        // Fallback - just complete restore without animation
+        setGenieRestoreRunning(false);
+        completeRestore(id);
+        return;
+      }
+
+      // Capture current window content for animation (if we have a stored thumbnail, use it)
+      const thumbnailDataUrl = windowState.thumbnail || '';
+
+      // Get shift key state captured at click time (for slow motion)
+      const speedMultiplier = restoreShiftKeyRef.current ? 0.25 : 1;
+
+      // Wait for DOM layout to settle before starting animation
+      // This ensures getBoundingClientRect() returns correct values in genie effect
+      requestAnimationFrame(() => {
+        if (!windowRef.current) {
+          setGenieRestoreRunning(false);
+          completeRestore(id);
+          return;
+        }
+
+        // Run genie expand animation (with shift key slow motion support)
+        // Pass explicit target dimensions to ensure animation goes to correct size
+        // Offset thumbX by ~50px to compensate for dock shift during exit animation
+        // (dock is centered and shifts right as the slot shrinks during exit)
+        applyGenieExpandEffect(windowRef.current, {
+          thumbX: slotPos.x + 50,
+          thumbY: slotPos.y,
+          thumbWidth: DOCK_THUMBNAIL_SIZE,
+          thumbnailDataUrl,
+          targetWidth: windowState.width,
+          targetHeight: windowState.height,
+          speedMultiplier,
+          onComplete: () => {
+            setGenieRestoreRunning(false);
+            restoreFromPositionRef.current = null;
+            restoreShiftKeyRef.current = false;
+            completeRestore(id);
+          },
+        });
+      });
     }
-  }, [windowState?.restoredFromMinimized]);
+  }, [windowState?.restoredFromMinimized, windowState?.thumbnail, id, completeRestore, genieRestoreRunning]);
 
-  // Calculate animation value for genie effect
-  const animateValue = useMemo(() => {
-    if (animationState === 'minimizing' && dockTarget && windowState) {
-      // Calculate where the window needs to move to reach the dock
-      // Window bottom center needs to reach dockTarget
-      const windowBottomY = windowState.y + windowState.height;
-      const windowCenterX = windowState.x + windowState.width / 2;
-
-      const deltaX = dockTarget.x - windowCenterX;
-      const deltaY = dockTarget.y - windowBottomY;
-
-      // Genie effect: scale down while moving to dock
-      // The window shrinks horizontally more than vertically for the genie look
-      return {
-        scaleX: [1, 0.5, 0.15, 0.08],
-        scaleY: [1, 0.6, 0.3, 0.08],
-        x: [0, deltaX * 0.3, deltaX * 0.7, deltaX],
-        y: [0, deltaY * 0.4, deltaY * 0.8, deltaY],
-        opacity: [1, 1, 0.8, 0],
-        transition: {
-          duration: 0.5,
-          times: [0, 0.3, 0.7, 1],
-          ease: 'easeInOut' as const,
-        },
-      };
-    }
-
-    if (animationState === 'restoring' && dockTarget && windowState) {
-      // Restore from dock: expand back to position
-      return {
-        scaleX: 1,
-        scaleY: 1,
-        x: 0,
-        y: 0,
-        opacity: 1,
-        transition: {
-          duration: 0.4,
-          ease: 'easeOut' as const,
-        },
-      };
-    }
-
-    // Use variant name for other states (opening, open, closing)
-    return animationState;
-  }, [animationState, dockTarget, windowState]);
-
-  // ALL useCallback hooks must be before any conditional return
   const handleDragStop = useCallback(
     (_e: unknown, d: { x: number; y: number }) => {
-      // Clamp y position to not go above menu bar (safety net)
       const clampedY = Math.max(d.y, SACRED.menuBarHeight);
       updatePosition(id, d.x, clampedY);
     },
@@ -142,9 +182,6 @@ export function Window({ id, title, children, isStartupWindow = false, onTitleBa
   );
 
   const handleMouseDown = useCallback((e: MouseEvent) => {
-    // Don't focus window when interacting with resize handles
-    // This allows resizing inactive windows without changing focus
-    // Resize handles have cursor styles containing 'resize' and very high z-index
     const target = e.target as HTMLElement;
     const style = window.getComputedStyle(target);
     if (style.cursor.includes('resize') && style.zIndex === '9999') {
@@ -153,7 +190,6 @@ export function Window({ id, title, children, isStartupWindow = false, onTitleBa
     focusWindow(id);
   }, [id, focusWindow]);
 
-  // Stop click propagation to prevent Desktop from clearing focus
   const handleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
   }, []);
@@ -162,24 +198,48 @@ export function Window({ id, title, children, isStartupWindow = false, onTitleBa
     setAnimationState('closing');
   }, []);
 
-  const handleMinimize = useCallback(() => {
-    // Calculate dock target position for genie effect
-    if (windowState) {
-      const dockHeight = SACRED.dockHeight;
-      // Calculate the dock position (centered dock, thumbnail area)
-      const thumbnailWidth = 66;
-      const baseOffset = 163;
-      const targetX = window.innerWidth / 2 + baseOffset + (minimizedCount * thumbnailWidth);
-      const targetY = window.innerHeight - dockHeight / 2;
-      setDockTarget({ x: targetX, y: targetY });
+  const handleMinimize = useCallback((event?: { shiftKey?: boolean }) => {
+    // Use store state to prevent double-click during animation
+    if (!windowState || !windowRef.current || isMinimizingFromStore) return;
 
-      // Update store IMMEDIATELY so dock grows right away
-      minimizeWindowAction(id);
+    // Reserve dock slot immediately (dock grows with animation)
+    // This also sets windowState.isMinimizing = true in the store
+    startMinimizing(id);
 
-      // Start genie animation (window continues rendering during animation)
-      setAnimationState('minimizing');
-    }
-  }, [windowState, minimizedCount, minimizeWindowAction, id]);
+    // Wait a frame for the dock slot to be created, then query its position
+    requestAnimationFrame(() => {
+      const slotPos = getDockSlotPosition(id);
+      if (!slotPos || !windowRef.current) {
+        // Fallback if slot not found - clear minimizing state
+        minimizeWindowAction(id);
+        return;
+      }
+
+      // Slow motion if shift key is held (25% speed)
+      const speedMultiplier = event?.shiftKey ? 0.25 : 1;
+
+      // Apply genie effect to the ACTUAL window element
+      applyGenieEffect(windowRef.current, {
+        thumbX: slotPos.x,
+        thumbY: slotPos.y,
+        thumbWidth: DOCK_THUMBNAIL_SIZE,
+        speedMultiplier,
+        onComplete: (thumbnailDataUrl) => {
+          // Store the thumbnail and mark window as minimized
+          if (thumbnailDataUrl) {
+            setThumbnail(id, thumbnailDataUrl);
+          }
+          // Hide the element to prevent flash before state updates
+          // The genie effect restores the element's appearance, so we need to hide it again
+          if (windowRef.current) {
+            windowRef.current.style.visibility = 'hidden';
+          }
+          // minimizeWindowAction atomically sets state='minimized' and isMinimizing=false
+          minimizeWindowAction(id);
+        },
+      });
+    });
+  }, [windowState, minimizeWindowAction, id, setThumbnail, isMinimizingFromStore, startMinimizing]);
 
   const handleZoom = useCallback(() => {
     zoomWindow(id);
@@ -191,25 +251,14 @@ export function Window({ id, title, children, isStartupWindow = false, onTitleBa
 
   const handleAnimationComplete = useCallback(() => {
     if (animationState === 'opening' || animationState === 'startupOpening') {
-      // Transition to stable 'open' state after opening animation
       setAnimationState('open');
-    } else if (animationState === 'restoring') {
-      // Transition to stable 'open' state after restore animation, clear the flag
-      setAnimationState('open');
-      clearRestoredFlag(id);
     } else if (animationState === 'closing') {
       closeWindow(id);
-    } else if (animationState === 'minimizing') {
-      // Genie animation complete - window is now hidden
-      // Reset to 'open' so next time we render it starts fresh
-      setAnimationState('open');
-      setDockTarget(null);
     }
-  }, [animationState, id, closeWindow, clearRestoredFlag]);
+  }, [animationState, id, closeWindow]);
 
-  // Listen for keyboard shortcut events to trigger animations
+  // Listen for keyboard shortcut events
   useEffect(() => {
-    // Skip in test environment where window may not have addEventListener
     if (typeof window === 'undefined' || !window.addEventListener) return;
 
     const handleCloseRequest = (e: CustomEvent<{ windowId: string }>) => {
@@ -233,24 +282,22 @@ export function Window({ id, title, children, isStartupWindow = false, onTitleBa
     };
   }, [id, handleClose, handleMinimize]);
 
-  // ============================================
-  // EARLY RETURNS MUST COME AFTER ALL HOOKS
-  // ============================================
+  // Don't render if window not found
+  if (!windowState) {
+    return null;
+  }
 
-  // Don't render if window not found or minimized (but keep rendering during minimize animation)
-  if (!windowState || (windowState.state === 'minimized' && animationState !== 'minimizing')) {
+  // When minimized but dock slot element not yet found, don't render anything
+  // This prevents a brief flash at the wrong position
+  if (isMinimized && !dockSlotElement && !isRestoring) {
     return null;
   }
 
   const titleId = `window-title-${id}`;
   const isShaded = windowState.isShaded;
-
-  // When shaded, collapse to just title bar height
   const displayHeight = isShaded ? SACRED.titleBarHeight : windowState.height;
 
-  // Resize handle styles with proper z-index and size for all corners/edges
-  // Uses official Tiger resize cursors from CSS variables
-  // Finder windows have larger bottom-right to cover the visual resize grip
+  // Resize handle styles
   const isFinderWindow = windowState.parentApp === 'finder';
   const bottomRightStyle = isFinderWindow
     ? { cursor: 'var(--aqua-cursor-resize-se)', zIndex: 9999, width: '22px', height: '22px', right: '-1px', bottom: '-1px' }
@@ -266,56 +313,133 @@ export function Window({ id, title, children, isStartupWindow = false, onTitleBa
     topLeft: { cursor: 'var(--aqua-cursor-resize-nw)', zIndex: 9999, width: '14px', height: '14px', left: '-5px', top: '-5px' },
   };
 
-  return (
-    <Rnd
-      position={{ x: windowState.x, y: windowState.y }}
-      size={{ width: windowState.width, height: displayHeight }}
-      minWidth={windowState.minWidth ?? SACRED.windowMinWidth}
-      minHeight={isShaded ? SACRED.titleBarHeight : (windowState.minHeight ?? SACRED.windowMinHeight)}
-      style={{ zIndex: windowState.zIndex }}
-      dragHandleClassName="window-drag-handle"
-      bounds="#window-bounds"
-      onDragStop={handleDragStop}
-      onResizeStop={handleResizeStop}
-      onMouseDown={handleMouseDown}
-      enableResizing={!isShaded && windowState.app !== 'about-this-mac'}
-      resizeHandleStyles={resizeHandleStyles}
-      data-testid={`window-${id}`}
-    >
-      <motion.div
-        className={`${styles.window} ${isShaded ? styles.shaded : ''}`}
-        data-testid="window-content"
-        role="dialog"
-        aria-labelledby={titleId}
-        aria-modal="false"
-        variants={windowVariants}
-        initial={animationState === 'restoring' ? 'minimized' : 'closed'}
-        animate={animateValue}
-        onAnimationComplete={handleAnimationComplete}
-        onClick={handleClick}
-        style={
-          animationState === 'minimizing' || animationState === 'restoring'
-            ? { originY: 1, originX: 0.5, pointerEvents: 'none' }
-            : undefined
+  // Use store state (isMinimizingFromStore) for atomic check - prevents flash on state transition
+  const showMinimizedInDock = isMinimized && dockSlotElement && !isMinimizingFromStore;
+
+  // Minimized window content to render in dock slot (via portal)
+  const minimizedContent = (
+    <div
+      className={styles.minimizedWindow}
+      style={{
+        width: windowState.width,
+        height: windowState.height,
+        transform: `scale(${DOCK_THUMBNAIL_SIZE / Math.max(windowState.width, windowState.height)})`,
+        transformOrigin: 'top left',
+        // Position to center the scaled content in the 48x48 dock slot
+        position: 'absolute',
+        left: (DOCK_THUMBNAIL_SIZE - (windowState.width * DOCK_THUMBNAIL_SIZE / Math.max(windowState.width, windowState.height))) / 2,
+        top: (DOCK_THUMBNAIL_SIZE - (windowState.height * DOCK_THUMBNAIL_SIZE / Math.max(windowState.width, windowState.height))) / 2,
+        cursor: isRestoring ? 'default' : 'pointer',
+        pointerEvents: isRestoring ? 'none' : 'auto',
+        // Hide once genie animation starts (genie slices provide the visual)
+        opacity: genieRestoreRunning ? 0 : 1,
+        transition: 'opacity 0.05s',
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (!isRestoring) {
+          // Capture dock position BEFORE triggering restore (dock slot will exit)
+          const currentPos = getDockSlotPosition(id);
+          if (currentPos) {
+            restoreFromPositionRef.current = currentPos;
+          }
+          // Capture shift key state for slow motion animation
+          restoreShiftKeyRef.current = e.shiftKey;
+          restoreWindow(id);
         }
-      >
+      }}
+      data-testid={`minimized-window-${id}`}
+      title={title}
+    >
+      {/* Inner content has pointer-events: none to block interaction with window elements */}
+      {/* The outer container handles clicks for restore functionality */}
+      <div className={styles.window} style={{ pointerEvents: 'none' }}>
         <WindowChrome
           title={title}
           titleId={titleId}
-          isFocused={isFocused}
+          isFocused={false}
           isShaded={isShaded}
           compact={windowState.app === 'about-this-mac'}
           isPanel={windowState.app === 'about-this-mac'}
-          className="window-drag-handle"
-          onClose={handleClose}
-          onMinimize={handleMinimize}
-          onZoom={handleZoom}
-          onShade={handleShade}
-          onContextMenu={onTitleBarContextMenu}
+          onClose={() => {}}
+          onMinimize={() => {}}
+          onZoom={() => {}}
+          onShade={() => {}}
         >
           {children}
         </WindowChrome>
-      </motion.div>
-    </Rnd>
+      </div>
+    </div>
+  );
+
+  // Portal the minimized window into the dock slot element
+  const minimizedWindowElement = (showMinimizedInDock || isRestoring) && dockSlotElement
+    ? createPortal(minimizedContent, dockSlotElement)
+    : null;
+
+  // If minimized (not restoring), only render the minimized element
+  if (showMinimizedInDock && !isRestoring) {
+    return minimizedWindowElement;
+  }
+
+  // During restore, render both minimized element (visible at dock) and Rnd (for genie animation)
+  return (
+    <>
+      {/* During restore, show minimized window at dock position until genie takes over */}
+      {isRestoring && minimizedWindowElement}
+      <Rnd
+        position={{ x: windowState.x, y: windowState.y }}
+        size={{ width: windowState.width, height: displayHeight }}
+        minWidth={windowState.minWidth ?? SACRED.windowMinWidth}
+        minHeight={isShaded ? SACRED.titleBarHeight : (windowState.minHeight ?? SACRED.windowMinHeight)}
+        style={{ zIndex: windowState.zIndex }}
+        dragHandleClassName="window-drag-handle"
+        bounds="#window-bounds"
+        onDragStop={handleDragStop}
+        onResizeStop={handleResizeStop}
+        onMouseDown={handleMouseDown}
+        enableResizing={!isShaded && windowState.app !== 'about-this-mac' && !isMinimizingFromStore && !isRestoring}
+        disableDragging={isMinimizingFromStore || isRestoring}
+        resizeHandleStyles={resizeHandleStyles}
+        data-testid={`window-${id}`}
+      >
+        <motion.div
+          ref={windowRef}
+          className={`${styles.window} ${isShaded ? styles.shaded : ''}`}
+          data-testid="window-content"
+          role="dialog"
+          aria-labelledby={titleId}
+          aria-modal="false"
+          variants={windowVariants}
+          initial="closed"
+          animate={animationState}
+          onAnimationComplete={handleAnimationComplete}
+          onClick={handleClick}
+          style={isRestoring ? {
+            pointerEvents: 'none',
+            // Hide window content until genie animation starts (genie creates overlay for visual)
+            // This prevents flash of full window before genie takes over
+            visibility: genieRestoreRunning ? 'visible' : 'hidden',
+          } : undefined}
+        >
+          <WindowChrome
+            title={title}
+            titleId={titleId}
+            isFocused={isFocused}
+            isShaded={isShaded}
+            compact={windowState.app === 'about-this-mac'}
+            isPanel={windowState.app === 'about-this-mac'}
+            className="window-drag-handle"
+            onClose={handleClose}
+            onMinimize={handleMinimize}
+            onZoom={handleZoom}
+            onShade={handleShade}
+            onContextMenu={onTitleBarContextMenu}
+          >
+            {children}
+          </WindowChrome>
+        </motion.div>
+      </Rnd>
+    </>
   );
 }
