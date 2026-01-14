@@ -229,8 +229,8 @@ export function ITunesApp({ initialTrack }: ITunesProps) {
 
         <div className={styles.display}>
           <div className={styles.trackInfo}>
-            <span className={styles.trackTitle}>{currentTrack.title}</span>
-            <span className={styles.trackArtist}>{currentTrack.artist}</span>
+            <span className={styles.trackTitle}>{isRickrolling ? 'YOU GOT RICK ROLLED' : currentTrack.title}</span>
+            <span className={styles.trackArtist}>{isRickrolling ? 'Rick Astley' : currentTrack.artist}</span>
           </div>
           <div className={styles.progressContainer}>
             <span className={styles.time}>{formatTime(currentTime)}</span>
