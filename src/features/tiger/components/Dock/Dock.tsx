@@ -396,7 +396,7 @@ export function Dock() {
                   >
                     <div className={styles.iconImage}>
                       <img
-                        src={icon.id === 'finder' && isCorrupted ? '/Reference/Sad-Mac.png' : icon.icon}
+                        src={icon.id === 'finder' && isCorrupted ? '/icons/sad-mac.png' : icon.icon}
                         alt=""
                         draggable={false}
                         aria-hidden="true"

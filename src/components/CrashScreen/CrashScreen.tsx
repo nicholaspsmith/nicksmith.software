@@ -49,7 +49,7 @@ export function CrashScreen({ onComplete }: CrashScreenProps) {
     <div className={styles.overlay}>
       {showSadMac && (
         <img
-          src="/Reference/Sad-Mac.png"
+          src="/icons/sad-mac.png"
           alt="Sad Mac"
           className={styles.sadMac}
         />
