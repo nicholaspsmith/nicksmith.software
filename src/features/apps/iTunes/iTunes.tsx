@@ -54,6 +54,9 @@ export function ITunesApp({ initialTrack }: ITunesProps) {
 
   const currentTrack = PLAYLIST[currentTrackIndex];
 
+  // Easter egg: Check if playing "Mr Brightside" for rickroll
+  const isRickrolling = isPlaying && currentTrack.title.toLowerCase().includes('brightside');
+
   // Update window title when track changes
   useEffect(() => {
     const windows = useWindowStore.getState().windows;
@@ -178,6 +181,23 @@ export function ITunesApp({ initialTrack }: ITunesProps) {
   return (
     <div className={styles.itunes}>
       <audio ref={audioRef} src={currentTrack.src} preload="metadata" />
+
+      {/* Rickroll easter egg */}
+      {isRickrolling && (
+        <img
+          src="/rickroll/rick-astley.gif"
+          alt=""
+          style={{
+            position: 'fixed',
+            bottom: 0,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 999999,
+            pointerEvents: 'none',
+            maxHeight: '50vh',
+          }}
+        />
+      )}
 
       {/* Player controls header */}
       <div className={styles.header}>
