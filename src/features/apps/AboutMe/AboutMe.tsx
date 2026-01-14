@@ -7,7 +7,11 @@ import styles from './AboutMe.module.css';
  * Displays photo and bio in Tiger-styled window.
  * Designed for readability and quick scanning.
  */
-export function AboutMe() {
+interface AboutMeProps {
+  variant?: 'desktop' | 'mobile';
+}
+
+export function AboutMe({ variant = 'desktop' }: AboutMeProps) {
   const openWindow = useWindowStore((state) => state.openWindow);
 
   const handleProjectsClick = (e: React.MouseEvent) => {
@@ -39,7 +43,7 @@ export function AboutMe() {
             intelligence dashboards or large-scale CMS migrations.
           </p>
           <p>
-            This portfolio is my tribute to Mac OS X Tiger, an OS that shaped my
+            This portfolio is my tribute to {variant === 'mobile' ? 'iOS' : 'Mac OS X Tiger'}, an OS that shaped my
             appreciation for thoughtful design. I'm currently exploring AI-assisted
             development and working on <a href="#projects" onClick={handleProjectsClick}>several projects</a>, including
             Loopi, an open-source spaced repetition learning app, and lance-context,

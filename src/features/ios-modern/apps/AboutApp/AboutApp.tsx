@@ -27,7 +27,7 @@ export function AboutApp() {
       <NavigationBar title="About Me" onBack={closeApp} backLabel="Home" />
       <div className={styles.content}>
         <Suspense fallback={<LoadingSpinner />}>
-          <AboutMe />
+          <AboutMe variant="mobile" />
         </Suspense>
       </div>
     </div>
