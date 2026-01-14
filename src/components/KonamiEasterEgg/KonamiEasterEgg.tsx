@@ -40,13 +40,13 @@ export function KonamiEasterEgg() {
     if (isVisible) {
       // Update gif key to restart animation
       gifKeyRef.current = Date.now();
-      // Play the hadouken sound after 500ms delay
+      // Play the hadouken sound after 800ms delay
       audioTimeout = setTimeout(() => {
         audioRef.current = new Audio('/konami/hadouken.mp3');
         audioRef.current.play().catch(() => {
           // Ignore autoplay errors
         });
-      }, 500);
+      }, 800);
     }
 
     return () => {
