@@ -88,6 +88,9 @@ interface AppStore {
   // Trashed icons (in Trash folder)
   trashedIcons: TrashedIcon[];
 
+  // Folder contents (icons dragged into Finder folders)
+  folderContents: Record<string, DynamicDesktopIcon[]>;
+
   // Macintosh HD drag state (for eject icon in Dock)
   isDraggingMacintoshHD: boolean;
 
@@ -151,6 +154,10 @@ interface AppStore {
   /** Load trashed icons from localStorage (called on startup) */
   loadTrashFromStorage: () => void;
 
+  // Folder actions
+  /** Move an icon to a folder (removes from desktop, adds to folder) */
+  moveToFolder: (folderId: string, iconId: string) => void;
+
   // Clipboard actions
   /** Copy an icon to clipboard */
   copyToClipboard: (icon: ClipboardItem) => void;
@@ -198,6 +205,14 @@ export const useAppStore = create<AppStore>((set, get) => ({
   draggingIconId: null,
   dynamicIcons: [],
   trashedIcons: [],
+  folderContents: {
+    // Pre-populated homework documents in Documents folder
+    documents: [
+      { id: 'doc-history-essay', label: 'History Essay - Civil War', icon: '/icons/document.png', type: 'document', documentId: 'history-essay' },
+      { id: 'doc-english-vocab', label: 'English Vocab List', icon: '/icons/document.png', type: 'document', documentId: 'english-vocab' },
+      { id: 'doc-math-homework', label: 'Math Homework Ch 5', icon: '/icons/document.png', type: 'document', documentId: 'math-homework' },
+    ],
+  },
   isDraggingMacintoshHD: false,
   isHoveringOverTrash: false,
   isDraggingIcon: false,
@@ -558,6 +573,65 @@ export const useAppStore = create<AppStore>((set, get) => ({
     } catch {
       console.warn('Failed to update trash in localStorage');
     }
+  },
+
+  moveToFolder: (folderId, iconId) => {
+    const { dynamicIcons, iconPositions } = get();
+
+    // Built-in desktop icon configurations (for moving built-in icons to folders)
+    const BUILT_IN_ICONS: Record<string, DynamicDesktopIcon> = {
+      about: { id: 'about', label: 'About Me', icon: '/icons/AlertNoteIcon.png', type: 'document' },
+      projects: { id: 'projects', label: 'Projects', icon: '/icons/ADCReferenceLibraryIcon.png', type: 'document' },
+      resume: { id: 'resume', label: 'Resume', icon: '/icons/pdf.png', type: 'document' },
+      contact: { id: 'contact', label: 'Contact', icon: '/icons/AddressBook.png', type: 'document' },
+      terminal: { id: 'terminal', label: 'Terminal', icon: '/icons/terminal.png', type: 'document' },
+    };
+
+    // Find the icon (could be dynamic or built-in)
+    let iconToMove: DynamicDesktopIcon | undefined = dynamicIcons.find((icon) => icon.id === iconId);
+    let isBuiltIn = false;
+
+    // Check if it's a built-in icon
+    if (!iconToMove && BUILT_IN_ICONS[iconId]) {
+      iconToMove = BUILT_IN_ICONS[iconId];
+      isBuiltIn = true;
+    }
+
+    // Can't move Macintosh HD to folders
+    if (iconId === 'macintosh-hd' || !iconToMove) {
+      console.warn(`Cannot move icon to folder: ${iconId}`);
+      return;
+    }
+
+    // Play a sound effect
+    playSound('moveToTrash');
+
+    // Remove from desktop (either from dynamicIcons or add to a "hidden built-in" list)
+    // For built-in icons, we'll track them in folderContents and filter them from desktop
+    set((state) => {
+      const updatedDynamicIcons = isBuiltIn
+        ? state.dynamicIcons
+        : state.dynamicIcons.filter((icon) => icon.id !== iconId);
+
+      // Add to folder contents
+      const currentFolderContents = state.folderContents[folderId] || [];
+      const updatedFolderContents = {
+        ...state.folderContents,
+        [folderId]: [...currentFolderContents, iconToMove!],
+      };
+
+      // Remove position (no longer needed on desktop)
+      const { [iconId]: _removedPos, ...remainingPositions } = iconPositions;
+
+      return {
+        dynamicIcons: updatedDynamicIcons,
+        folderContents: updatedFolderContents,
+        iconPositions: remainingPositions,
+      };
+    });
+
+    // Clear selection
+    set({ selectedIconIds: [] });
   },
 
   copyToClipboard: (icon) => {
