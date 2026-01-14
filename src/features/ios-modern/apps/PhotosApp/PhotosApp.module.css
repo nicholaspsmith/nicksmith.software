@@ -12,7 +12,29 @@
   padding-top: 44px; /* Account for navigation bar */
 }
 
-/* Override Projects styles for mobile context */
-.content :global(.projects) {
+/* Override Projects styles for mobile context - larger text */
+.content :global([data-testid="projects-content"]) {
   padding: 16px;
+}
+
+.content :global([data-testid="projects-content"]) h1 {
+  font-size: 24px;
+}
+
+.content :global([data-testid="projects-content"]) > p {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.content :global([data-testid="projects-content"]) h2 {
+  font-size: 17px;
+}
+
+.content :global([data-testid="projects-content"]) article p {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.content :global([data-testid="projects-content"]) span {
+  font-size: 12px;
 }

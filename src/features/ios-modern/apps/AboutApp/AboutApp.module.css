@@ -12,7 +12,25 @@
   padding-top: 44px; /* Account for navigation bar */
 }
 
-/* Override AboutMe styles for mobile context */
-.content :global(.about-me) {
+/* Override AboutMe styles for mobile context - larger text */
+.content :global([data-testid="about-me-content"]) {
   padding: 16px;
+}
+
+.content :global([data-testid="about-me-content"]) h1 {
+  font-size: 24px;
+}
+
+.content :global([data-testid="about-me-content"]) p {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.content :global([data-testid="about-me-content"]) h2 {
+  font-size: 18px;
+}
+
+.content :global([data-testid="about-me-content"]) li {
+  font-size: 15px;
+  line-height: 1.5;
 }

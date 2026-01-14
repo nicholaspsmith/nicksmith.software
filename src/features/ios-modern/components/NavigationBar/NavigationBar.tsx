@@ -12,6 +12,8 @@ interface NavigationBarProps {
   transparent?: boolean;
   /** Whether to use large title style */
   largeTitle?: boolean;
+  /** Whether to use solid white style (no blur, fully opaque) */
+  solid?: boolean;
 }
 
 /**
@@ -29,11 +31,13 @@ export function NavigationBar({
   backLabel = 'Back',
   transparent = false,
   largeTitle = false,
+  solid = false,
 }: NavigationBarProps) {
   const classNames = [
     styles.navBar,
     transparent && styles.transparent,
     largeTitle && styles.largeTitle,
+    solid && styles.solid,
   ]
     .filter(Boolean)
     .join(' ');

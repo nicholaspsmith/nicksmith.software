@@ -16,15 +16,9 @@ interface Track {
 
 /**
  * Playlist loaded from generated manifest (same as iTunes)
- * Rickroll easter egg: "Never Gonna Give You Up" is labeled as "Mr Brightside"
+ * Rickroll easter egg: Playing "Mr. Brightside" triggers a rickroll
  */
-const PLAYLIST: Track[] = musicManifest.map((track) => {
-  // Easter egg: Rename Rick Astley's song to look like The Killers
-  if (track.title === 'Never Gonna Give You Up' && track.artist === 'Rick Astley') {
-    return { ...track, title: 'Mr Brightside', artist: 'The Killers' };
-  }
-  return track;
-});
+const PLAYLIST: Track[] = musicManifest;
 
 type View = 'list' | 'player';
 
@@ -42,8 +36,8 @@ export function MusicApp() {
 
   const currentTrack = PLAYLIST[currentTrackIndex];
 
-  // Easter egg: Check if playing the fake "Mr Brightside" (actually Rick Astley)
-  const isRickrolling = isPlaying && currentTrack.title === 'Mr Brightside' && currentTrack.artist === 'The Killers';
+  // Easter egg: Check if playing "Mr. Brightside" for rickroll
+  const isRickrolling = isPlaying && currentTrack.title === 'Mr. Brightside';
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -131,6 +125,7 @@ export function MusicApp() {
         title={view === 'list' ? 'Music' : (isRickrolling ? 'YOU GOT RICK ROLLED' : 'Now Playing')}
         onBack={view === 'player' ? () => setView('list') : closeApp}
         backLabel={view === 'player' ? 'Library' : 'Home'}
+        solid
       />
 
       <audio ref={audioRef} src={currentTrack.src} preload="metadata" />
@@ -184,7 +179,7 @@ export function MusicApp() {
 
           <div className={styles.trackInfo}>
             <h2 className={styles.trackTitle}>{isRickrolling ? 'YOU GOT RICK ROLLED' : currentTrack.title}</h2>
-            <p className={styles.trackArtist}>{isRickrolling ? 'Rick Astley' : currentTrack.artist}</p>
+            <p className={styles.trackArtist}>{isRickrolling ? 'haha!' : currentTrack.artist}</p>
           </div>
 
           <div className={styles.progressContainer}>

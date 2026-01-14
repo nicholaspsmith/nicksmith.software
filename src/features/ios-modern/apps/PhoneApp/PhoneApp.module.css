@@ -11,3 +11,25 @@
   -webkit-overflow-scrolling: touch;
   padding-top: 44px; /* Account for navigation bar */
 }
+
+/* Override Contact styles for mobile context - larger text */
+.content :global([data-testid="contact-content"]) {
+  padding: 16px;
+}
+
+.content :global([data-testid="contact-content"]) h1 {
+  font-size: 24px;
+}
+
+.content :global([data-testid="contact-content"]) > p {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.content :global([data-testid="contact-content"]) strong {
+  font-size: 17px;
+}
+
+.content :global([data-testid="contact-content"]) a span:last-child {
+  font-size: 14px;
+}
