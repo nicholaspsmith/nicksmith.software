@@ -4,24 +4,27 @@ import { useIOSStore } from '../../stores/iosStore';
 import { StatusBar } from '../../components/StatusBar';
 import { NavigationBar } from '../../components/NavigationBar';
 import styles from './MusicApp.module.css';
+import musicManifest from '@/generated/music-manifest.json';
 
 interface Track {
   id: string;
   title: string;
   artist: string;
   src: string;
+  filename: string;
 }
 
 /**
- * Playlist of tracks from public/music
+ * Playlist loaded from generated manifest (same as iTunes)
+ * Rickroll easter egg: "Never Gonna Give You Up" is labeled as "Mr Brightside"
  */
-const PLAYLIST: Track[] = [
-  { id: '1', title: 'Never Gonna Give You Up', artist: 'Rick Astley', src: '/music/Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).mp3' },
-  { id: '2', title: 'Be My Lover', artist: 'La Bouche', src: '/music/La Bouche - Be My Lover (Official Video).mp3' },
-  { id: '3', title: 'Another Night', artist: 'Real McCoy', src: '/music/Real McCoy - Another Night (Videoclip).mp3' },
-  { id: '4', title: 'Rhythm Is A Dancer', artist: 'SNAP!', src: '/music/SNAP! - Rhythm Is A Dancer (Official Music Video).mp3' },
-  { id: '5', title: 'Underneath It All', artist: 'No Doubt ft. Lady Saw', src: '/music/No Doubt - Underneath It All (Closed Captioned) ft. Lady Saw.mp3' },
-];
+const PLAYLIST: Track[] = musicManifest.map((track) => {
+  // Easter egg: Rename Rick Astley's song to look like The Killers
+  if (track.title === 'Never Gonna Give You Up' && track.artist === 'Rick Astley') {
+    return { ...track, title: 'Mr Brightside', artist: 'The Killers' };
+  }
+  return track;
+});
 
 type View = 'list' | 'player';
 
@@ -38,6 +41,9 @@ export function MusicApp() {
   const [duration, setDuration] = useState(0);
 
   const currentTrack = PLAYLIST[currentTrackIndex];
+
+  // Easter egg: Check if playing the fake "Mr Brightside" (actually Rick Astley)
+  const isRickrolling = isPlaying && currentTrack.title === 'Mr Brightside' && currentTrack.artist === 'The Killers';
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -122,12 +128,29 @@ export function MusicApp() {
     <div className={styles.app}>
       <StatusBar variant="dark" />
       <NavigationBar
-        title={view === 'list' ? 'Music' : 'Now Playing'}
+        title={view === 'list' ? 'Music' : (isRickrolling ? 'YOU GOT RICK ROLLED' : 'Now Playing')}
         onBack={view === 'player' ? () => setView('list') : closeApp}
         backLabel={view === 'player' ? 'Library' : 'Home'}
       />
 
       <audio ref={audioRef} src={currentTrack.src} preload="metadata" />
+
+      {/* Rickroll easter egg */}
+      {isRickrolling && (
+        <img
+          src="/rickroll/rick-astley.gif"
+          alt=""
+          style={{
+            position: 'fixed',
+            bottom: 0,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 999999,
+            pointerEvents: 'none',
+            maxHeight: '40vh',
+          }}
+        />
+      )}
 
       {view === 'list' ? (
         <div className={styles.listContent}>
@@ -160,8 +183,8 @@ export function MusicApp() {
           </div>
 
           <div className={styles.trackInfo}>
-            <h2 className={styles.trackTitle}>{currentTrack.title}</h2>
-            <p className={styles.trackArtist}>{currentTrack.artist}</p>
+            <h2 className={styles.trackTitle}>{isRickrolling ? 'YOU GOT RICK ROLLED' : currentTrack.title}</h2>
+            <p className={styles.trackArtist}>{isRickrolling ? 'Rick Astley' : currentTrack.artist}</p>
           </div>
 
           <div className={styles.progressContainer}>
