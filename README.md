@@ -42,6 +42,8 @@ npm run test
 
 ## Acknowledgments
 
+- [genie.js](https://github.com/nicholaspsmith/genie.js) - Window minimize genie effect, originally created by [Hakan Bilgin](https://github.com/hbi99) (c) 2013
+- [macos-dock-animation-with-css](https://github.com/nicholaspsmith/macos-dock-animation-with-css) - Dock magnification effect by [frontend.fyi](https://www.frontend.fyi/) ([YouTube tutorial](https://youtu.be/_ZcIFTvLm64))
 - [ios-in-web](https://github.com/NWylynko/ios-in-web) by [@NWylynko](https://github.com/NWylynko) - iOS 15+ icons and design inspiration
 
 ## License
