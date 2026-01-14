@@ -71,6 +71,7 @@ export function Dock() {
   const trashedIcons = useAppStore((s) => s.trashedIcons);
   const isHoveringOverTrash = useAppStore((s) => s.isHoveringOverTrash);
   const emptyTrash = useAppStore((s) => s.emptyTrash);
+  const isCorrupted = useAppStore((s) => s.isCorrupted);
 
   // Track which icons are currently bouncing
   const [bouncingIcons, setBouncingIcons] = useState<Set<string>>(new Set());
@@ -359,7 +360,7 @@ export function Dock() {
                   >
                     <div className={styles.iconImage}>
                       <img
-                        src={icon.icon}
+                        src={icon.id === 'finder' && isCorrupted ? '/Reference/Sad-Mac.png' : icon.icon}
                         alt=""
                         width={48}
                         height={48}

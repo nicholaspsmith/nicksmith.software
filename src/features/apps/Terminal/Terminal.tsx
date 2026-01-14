@@ -2,7 +2,11 @@ import { useEffect, useRef, useCallback } from 'react';
 import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
+import { useAppStore } from '@/stores/appStore';
 import styles from './Terminal.module.css';
+
+// Flag to track if crash should be triggered (set by rm command)
+let pendingCrash = false;
 
 /**
  * Commands available in the terminal
@@ -186,10 +190,20 @@ Saving session...
 (This is a web terminal - you can't really exit!)`,
 
   rm: (args: string[]) => {
-    if (args.includes('-rf') && args.includes('/')) {
-      return `Nice try! 😈
-But this is a sandboxed web terminal.
-No filesystems were harmed in the making of this portfolio.`;
+    // Check for rm -rf / (various formats)
+    const hasRf = args.includes('-rf') || args.includes('-fr') ||
+                  (args.includes('-r') && args.includes('-f'));
+    const hasRoot = args.includes('/');
+
+    if (hasRf && hasRoot) {
+      // Trigger crash easter egg
+      pendingCrash = true;
+      return `rm: removing all files in '/'...
+rm: cannot remove '/System': Operation not permitted
+rm: cannot remove '/Library': Operation not permitted
+rm: WARNING: CRITICAL SYSTEM FILES DELETED
+rm: KERNEL PANIC - NOT SYNCING
+rm: Attempting to halt...`;
     }
     return `rm: cannot remove '${args[0] || ''}': This is a virtual filesystem`;
   },
@@ -241,6 +255,31 @@ export function Terminal() {
       // Convert \n to \r\n for proper xterm.js line breaks
       const formattedOutput = output.replace(/\n/g, '\r\n');
       xtermRef.current?.write('\r\n' + formattedOutput);
+
+      // Check if crash was triggered (rm -rf / easter egg)
+      if (pendingCrash) {
+        pendingCrash = false;
+        const term = xtermRef.current;
+        // After 500ms, fetch IP and show FBI warning
+        setTimeout(() => {
+          fetch('https://api.ipify.org?format=json')
+            .then((res) => res.json())
+            .then((data) => {
+              const ip = data.ip || 'UNKNOWN';
+              term?.write(`\r\n\r\n\x1b[31m*** WARNING ***\x1b[0m\r\nYour IP Address \x1b[33m${ip}\x1b[0m has been reported to the FBI's Internet Crime Complaint Center (IC3)`);
+            })
+            .catch(() => {
+              term?.write(`\r\n\r\n\x1b[31m*** WARNING ***\x1b[0m\r\nYour IP Address has been reported to the FBI's Internet Crime Complaint Center (IC3)`);
+            })
+            .finally(() => {
+              // Trigger crash after 2 seconds so user can read FBI warning
+              setTimeout(() => {
+                useAppStore.getState().triggerCrash();
+              }, 2000);
+            });
+        }, 500);
+        return; // Don't write prompt
+      }
     } else {
       xtermRef.current?.write(`\r\nCommand not found: ${cmd}. Type 'help' for available commands.`);
     }

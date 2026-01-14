@@ -100,6 +100,10 @@ interface AppStore {
   // Restart state (for restart screen overlay)
   isRestarting: boolean;
 
+  // Crash state (rm -rf / easter egg)
+  isCrashing: boolean;
+  isCorrupted: boolean;
+
   // Alert dialog state
   alertOpen: boolean;
   alertConfig: AlertConfig | null;
@@ -173,6 +177,10 @@ interface AppStore {
   // Restart actions
   triggerRestart: () => void;
 
+  // Crash actions (rm -rf / easter egg)
+  triggerCrash: () => void;
+  completeCrash: () => void;
+
   // Alert actions
   showAlert: (config: AlertConfig) => void;
   hideAlert: () => void;
@@ -194,6 +202,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
   isHoveringOverTrash: false,
   isDraggingIcon: false,
   isRestarting: false,
+  isCrashing: false,
+  isCorrupted: false,
   alertOpen: false,
   alertConfig: null,
   clipboard: null,
@@ -716,6 +726,14 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   triggerRestart: () => {
     set({ isRestarting: true });
+  },
+
+  triggerCrash: () => {
+    set({ isCrashing: true });
+  },
+
+  completeCrash: () => {
+    set({ isCrashing: false, isCorrupted: true, startupComplete: false });
   },
 
   showAlert: (config) => {

@@ -16,6 +16,8 @@ import { AlertDialog } from '@/features/tiger/components/AlertDialog';
 import { IOS, IOS_BREAKPOINT } from '@/features/ios-modern';
 import { RebootTransition } from '@/components/RebootTransition';
 import { RestartScreen } from '@/components/RestartScreen';
+import { CrashScreen } from '@/components/CrashScreen';
+import { KonamiEasterEgg } from '@/components/KonamiEasterEgg';
 import { SACRED } from '@/features/tiger/constants/sacred';
 import { playSound } from '@/utils/sounds';
 import { Finder } from '@/features/apps/Finder';
@@ -892,10 +894,12 @@ export function App() {
   const prefersReducedMotion = useReducedMotion();
   // Track viewport for responsive experience
   const viewport = useViewport();
-  // Startup and restart state
+  // Startup, restart, and crash state
   const startupComplete = useAppStore((s) => s.startupComplete);
   const completeStartup = useAppStore((s) => s.completeStartup);
   const isRestarting = useAppStore((s) => s.isRestarting);
+  const isCrashing = useAppStore((s) => s.isCrashing);
+  const completeCrash = useAppStore((s) => s.completeCrash);
 
   // Track if startup sound has played to avoid replay on re-renders
   const hasPlayedStartupSound = useRef(false);
@@ -952,13 +956,19 @@ export function App() {
 
       {/* Tiger boot/restart screen - only for desktop mode */}
       <AnimatePresence>
-        {mode === 'desktop' && !startupComplete && (
+        {mode === 'desktop' && !startupComplete && !isCrashing && (
           <RestartScreen key="boot" onComplete={handleBootComplete} duration={2000} />
         )}
         {mode === 'desktop' && isRestarting && (
           <RestartScreen key="restart" onComplete={handleRestartComplete} duration={2000} />
         )}
+        {isCrashing && (
+          <CrashScreen key="crash" onComplete={completeCrash} />
+        )}
       </AnimatePresence>
+
+      {/* Konami code easter egg */}
+      <KonamiEasterEgg />
     </MotionConfig>
   );
 }
