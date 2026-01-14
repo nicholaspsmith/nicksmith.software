@@ -1,6 +1,7 @@
 import { StatusBar } from '../StatusBar';
 import { AppIcon } from '../AppIcon';
 import { useIOSStore, type IOSAppId } from '../../stores/iosStore';
+import { useDisplayStore, getWallpaperPath } from '../../stores/displayStore';
 import styles from './HomeScreen.module.css';
 
 /**
@@ -49,10 +50,16 @@ const DOCK_APPS: AppConfig[] = [
 export function HomeScreen() {
   const openApp = useIOSStore((s) => s.openApp);
   const activeApp = useIOSStore((s) => s.activeApp);
+  const wallpaperId = useDisplayStore((s) => s.wallpaperId);
+
+  const wallpaperPath = getWallpaperPath(wallpaperId);
 
   return (
     <div className={styles.homeScreen}>
-      <div className={styles.background} />
+      <div
+        className={styles.background}
+        style={{ backgroundImage: `url(${wallpaperPath})`, filter: 'brightness(0.6)' }}
+      />
       {/* Hide status bar when app is open - app has its own */}
       {!activeApp && <StatusBar variant="light" />}
       <div className={styles.content}>

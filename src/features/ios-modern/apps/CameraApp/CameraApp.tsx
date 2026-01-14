@@ -26,7 +26,8 @@ export function CameraApp() {
   const [cameraState, setCameraState] = useState<CameraState>('loading');
   const [isCapturing, setIsCapturing] = useState(false);
   const [facingMode, setFacingMode] = useState<FacingMode>('environment');
-  const [hasMultipleCameras, setHasMultipleCameras] = useState(false);
+  // Show toggle on mobile devices (touch support as proxy for mobile)
+  const [showCameraToggle, setShowCameraToggle] = useState(false);
 
   const capturePhoto = useCallback(() => {
     if (!videoRef.current || !canvasRef.current || cameraState !== 'active') return;
@@ -101,15 +102,11 @@ export function CameraApp() {
         return;
       }
 
-      // Check for multiple cameras
-      try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = devices.filter((d) => d.kind === 'videoinput');
-        if (mounted) {
-          setHasMultipleCameras(videoDevices.length > 1);
-        }
-      } catch {
-        // Ignore enumeration errors, just won't show toggle
+      // Show camera toggle on mobile devices (they typically have front + rear cameras)
+      // Using touch support and screen size as proxy for mobile
+      const isMobile = 'ontouchstart' in window && window.innerWidth < 1024;
+      if (mounted) {
+        setShowCameraToggle(isMobile);
       }
 
       try {
@@ -230,8 +227,8 @@ export function CameraApp() {
             <div className={styles.shutterInner} />
           </motion.button>
 
-          {/* Camera toggle button - only show if device has multiple cameras */}
-          {hasMultipleCameras ? (
+          {/* Camera toggle button - show on mobile devices */}
+          {showCameraToggle ? (
             <motion.button
               className={styles.flipButton}
               onClick={switchCamera}

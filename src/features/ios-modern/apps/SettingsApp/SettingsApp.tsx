@@ -59,6 +59,8 @@ export function SettingsApp() {
   const handleItemClick = (id: string) => {
     if (id === 'about') {
       openApp('about');
+    } else if (id === 'display') {
+      openApp('display');
     }
   };
 
@@ -71,7 +73,11 @@ export function SettingsApp() {
         <div className={styles.section}>
           <div className={styles.list}>
             {SETTINGS_ITEMS.map((item) => (
-              <button key={item.id} className={styles.item}>
+              <button
+                key={item.id}
+                className={styles.item}
+                onClick={() => handleItemClick(item.id)}
+              >
                 <div className={styles.itemIcon} style={{ backgroundColor: item.color }}>
                   {item.icon}
                 </div>

@@ -3,6 +3,7 @@ import { IPhoneFrame } from './components/IPhoneFrame';
 import { BootScreen } from './components/BootScreen';
 import { HomeScreen } from './components/HomeScreen';
 import { useIOSStore, type IOSAppId } from './stores/iosStore';
+import { useDisplayStore } from './stores/displayStore';
 import { IOS_MODERN_SACRED } from './constants/sacred';
 
 // App imports
@@ -14,6 +15,7 @@ import { MailApp } from './apps/MailApp';
 import { CameraApp } from './apps/CameraApp';
 import { SafariApp } from './apps/SafariApp';
 import { SettingsApp } from './apps/SettingsApp';
+import { DisplayBrightnessApp } from './apps/DisplayBrightnessApp';
 import { PhoneApp } from './apps/PhoneApp';
 import { MessagesApp } from './apps/MessagesApp';
 import { MusicApp } from './apps/MusicApp';
@@ -32,6 +34,7 @@ const APP_COMPONENTS: Record<IOSAppId, React.ComponentType> = {
   camera: CameraApp,
   safari: SafariApp,
   settings: SettingsApp,
+  display: DisplayBrightnessApp,
   phone: PhoneApp,
   messages: MessagesApp,
   music: MusicApp,
@@ -51,12 +54,13 @@ const APP_COMPONENTS: Record<IOSAppId, React.ComponentType> = {
 export function IOS() {
   const isBooting = useIOSStore((s) => s.isBooting);
   const activeApp = useIOSStore((s) => s.activeApp);
+  const brightness = useDisplayStore((s) => s.brightness);
 
   const ActiveAppComponent = activeApp ? APP_COMPONENTS[activeApp] : null;
 
   return (
     <div className={styles.container}>
-      <IPhoneFrame>
+      <IPhoneFrame brightness={brightness}>
         {/* Home screen is always rendered but hidden when app is open */}
         <HomeScreen />
 

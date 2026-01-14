@@ -12,6 +12,7 @@ export type IOSAppId =
   | 'camera'
   | 'safari'
   | 'settings'
+  | 'display'
   | 'phone'
   | 'messages'
   | 'music';
