@@ -88,3 +88,15 @@
     margin: 0 24px 24px;
   }
 }
+
+/* 4 apps per row for tablet-sized screens */
+@media (min-width: 768px) {
+  .appGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .dock {
+    width: 480px;
+    margin: 0 auto 24px;
+  }
+}
