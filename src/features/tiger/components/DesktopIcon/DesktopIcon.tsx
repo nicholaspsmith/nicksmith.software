@@ -107,6 +107,7 @@ export function DesktopIcon({
   const startMultiDrag = useAppStore((s) => s.startMultiDrag);
   const endMultiDrag = useAppStore((s) => s.endMultiDrag);
   const moveToTrash = useAppStore((s) => s.moveToTrash);
+  const moveToFolder = useAppStore((s) => s.moveToFolder);
   const setHoveringOverTrash = useAppStore((s) => s.setHoveringOverTrash);
   const setDraggingIcon = useAppStore((s) => s.setDraggingIcon);
 
@@ -357,6 +358,53 @@ export function DesktopIcon({
         return;
       }
 
+      // Check if dropped on a Finder folder (non-trash)
+      const finderFolderContents = document.querySelectorAll('[data-testid="finder-folder-content"]');
+      let droppedOnFolder = false;
+      let targetFolderId: string | null = null;
+
+      // Folders that can accept dropped items (not system locations like macintosh-hd)
+      const droppableFolders = ['desktop', 'documents', 'pictures', 'music', 'movies', 'user'];
+
+      for (const folderContent of finderFolderContents) {
+        const folderRect = folderContent.getBoundingClientRect();
+        const folderId = folderContent.getAttribute('data-folder-id');
+
+        if (
+          folderId &&
+          droppableFolders.includes(folderId) &&
+          dropX >= folderRect.left &&
+          dropX <= folderRect.right &&
+          dropY >= folderRect.top &&
+          dropY <= folderRect.bottom
+        ) {
+          droppedOnFolder = true;
+          targetFolderId = folderId;
+          break;
+        }
+      }
+
+      // Handle folder drop (Macintosh HD cannot be moved to folders)
+      if (droppedOnFolder && targetFolderId && id !== 'macintosh-hd') {
+        // For multi-select, move all selected icons except macintosh-hd
+        if (isSelected && selectedIconIds.length > 1) {
+          for (const iconId of selectedIconIds) {
+            if (iconId !== 'macintosh-hd') {
+              moveToFolder(targetFolderId, iconId);
+            }
+          }
+        } else {
+          moveToFolder(targetFolderId, id);
+        }
+
+        // Reset transforms and end drag
+        controls.set({ x: 0, y: 0 });
+        endMultiDrag();
+        isDragging.current = false;
+        onDragEnd?.();
+        return;
+      }
+
       // Check if this is a multi-drag (this icon is selected and there are other selected icons)
       const isMultiDrag = isSelected && selectedIconIds.length > 1 && onMultiPositionChange;
 
@@ -437,7 +485,7 @@ export function DesktopIcon({
       // Call external drag end callback (e.g., for Macintosh HD eject icon)
       onDragEnd?.();
     },
-    [x, y, onPositionChange, controls, isSelected, selectedIconIds, allIconPositions, onMultiPositionChange, endMultiDrag, id, onDragEnd, moveToTrash, setHoveringOverTrash, setDraggingIcon]
+    [x, y, onPositionChange, controls, isSelected, selectedIconIds, allIconPositions, onMultiPositionChange, endMultiDrag, id, onDragEnd, moveToTrash, moveToFolder, setHoveringOverTrash, setDraggingIcon]
   );
 
   return (

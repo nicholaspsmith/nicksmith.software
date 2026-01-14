@@ -133,9 +133,8 @@ function DynamicIconImage({ icon }: { icon: { type: string; icon: string } }) {
   if (icon.type === 'burn-folder') {
     return <BurnFolderIcon />;
   }
-  if (icon.type === 'document') {
-    return <img src="/icons/document.png" alt="" width={48} height={48} draggable={false} />;
-  }
+  // Use the icon's actual image path (works for both user-created documents
+  // and built-in icons that were trashed and restored)
   return <img src={icon.icon} alt="" width={48} height={48} draggable={false} />;
 }
 
@@ -313,6 +312,7 @@ function TigerDesktop() {
   const hideAlert = useAppStore((s) => s.hideAlert);
   const dynamicIcons = useAppStore((s) => s.dynamicIcons);
   const trashedIcons = useAppStore((s) => s.trashedIcons);
+  const folderContents = useAppStore((s) => s.folderContents);
   const setDraggingMacintoshHD = useAppStore((s) => s.setDraggingMacintoshHD);
   const moveToTrash = useAppStore((s) => s.moveToTrash);
   const copyToClipboard = useAppStore((s) => s.copyToClipboard);
@@ -727,10 +727,27 @@ function TigerDesktop() {
   // Create set of trashed icon IDs for efficient filtering
   const trashedIconIds = useMemo(() => new Set(trashedIcons.map((icon) => icon.id)), [trashedIcons]);
 
-  // Filter DESKTOP_ICONS to exclude trashed icons
+  // Create set of dynamic icon IDs (includes restored built-in icons)
+  const dynamicIconIds = useMemo(() => new Set(dynamicIcons.map((icon) => icon.id)), [dynamicIcons]);
+
+  // Create set of all icon IDs that are in folders
+  const iconsInFoldersIds = useMemo(() => {
+    const ids = new Set<string>();
+    Object.values(folderContents).forEach(icons => {
+      icons.forEach(icon => ids.add(icon.id));
+    });
+    return ids;
+  }, [folderContents]);
+
+  // Filter DESKTOP_ICONS to exclude trashed icons, icons restored to dynamicIcons, and icons in folders
+  // (prevents duplicate rendering when a built-in icon is trashed then restored, or moved to a folder)
   const visibleDesktopIcons = useMemo(
-    () => DESKTOP_ICONS.filter((icon) => !trashedIconIds.has(icon.id)),
-    [trashedIconIds]
+    () => DESKTOP_ICONS.filter((icon) =>
+      !trashedIconIds.has(icon.id) &&
+      !dynamicIconIds.has(icon.id) &&
+      !iconsInFoldersIds.has(icon.id)
+    ),
+    [trashedIconIds, dynamicIconIds, iconsInFoldersIds]
   );
 
   return (
