@@ -1,6 +1,6 @@
 # Tiger Portfolio
 
-A personal portfolio website recreating the Mac OS X Tiger (10.4) desktop experience in the browser.
+A personal portfolio website recreating the Mac OS X Tiger (10.4) desktop experience in the browser and iOS 15 on mobile.
 
 **[Live Demo](https://nicksmith.software)**
 
