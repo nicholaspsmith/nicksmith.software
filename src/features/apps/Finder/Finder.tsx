@@ -2,6 +2,10 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useWindowStore } from '@/stores/windowStore';
 import { useAppStore } from '@/stores/appStore';
 import { usePhotoStore } from '@/features/ios-modern/stores/photoStore';
+import {
+  listDirectory,
+  type FileSystemEntry,
+} from '@/stores/fileSystemStore';
 import { AquaScrollbar, type AquaScrollbarHandle } from '@/features/tiger/components/AquaScrollbar';
 import { ContextMenu, type ContextMenuEntry } from '@/features/tiger/components/ContextMenu';
 import styles from './Finder.module.css';
@@ -67,6 +71,45 @@ interface FinderViewConfig {
 }
 
 /**
+ * Convert FileSystemEntry to Finder ContentItem
+ */
+function fsEntryToContentItem(entry: FileSystemEntry): ContentItem {
+  // Generate an ID from the name (lowercase, no spaces)
+  const id = entry.name.toLowerCase().replace(/\s+/g, '-').replace(/\.app$/, '');
+
+  // Map file system entry type to Finder content type
+  const type: 'folder' | 'file' = entry.type === 'directory' ? 'folder' : 'file';
+
+  // Use the icon from the entry, or derive one from the name/type
+  let icon = entry.icon || (type === 'folder' ? 'folder' : 'document');
+
+  // Map certain icon names to Finder-specific icon names
+  if (icon && !icon.startsWith('app-') && type === 'folder') {
+    // Add -folder suffix if not already present for folder icons
+    if (!icon.endsWith('-folder') && icon !== 'folder' && icon !== 'macintosh-hd') {
+      icon = `${icon}-folder`;
+    }
+  }
+
+  return {
+    id,
+    name: entry.name,
+    icon,
+    type,
+    documentId: entry.documentId,
+    url: entry.url,
+  };
+}
+
+/**
+ * Get contents of a path from the shared FILE_SYSTEM
+ */
+function getContentsFromPath(path: string): ContentItem[] {
+  const entries = listDirectory(path, false);
+  return entries.map(fsEntryToContentItem);
+}
+
+/**
  * Default sidebar items for Tiger Finder
  * Organized exactly like the real Tiger Finder reference image
  */
@@ -82,59 +125,6 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { id: 'music', label: 'Music', icon: 'music' },
   { id: 'pictures', label: 'Pictures', icon: 'pictures' },
   { id: 'trash', label: 'Trash', icon: 'trash' },
-];
-
-/**
- * Desktop icons - matches App.tsx DESKTOP_ICONS
- */
-const DESKTOP_CONTENTS: ContentItem[] = [
-  { id: 'macintosh-hd', name: 'Macintosh HD', icon: 'macintosh-hd', type: 'folder' },
-  { id: 'terminal', name: 'Terminal', icon: 'terminal', type: 'file' },
-  { id: 'about', name: 'About Me', icon: 'about-doc', type: 'file' },
-  { id: 'projects', name: 'Projects', icon: 'projects-doc', type: 'file' },
-  { id: 'resume', name: 'Resume', icon: 'resume-doc', type: 'file' },
-  { id: 'contact', name: 'Contact', icon: 'contact-doc', type: 'file' },
-];
-
-/**
- * Home folder contents
- */
-const HOME_CONTENTS: ContentItem[] = [
-  { id: 'desktop', name: 'Desktop', icon: 'desktop-folder', type: 'folder' },
-  { id: 'documents', name: 'Documents', icon: 'documents-folder', type: 'folder' },
-  { id: 'library', name: 'Library', icon: 'library-folder', type: 'folder' },
-  { id: 'movies', name: 'Movies', icon: 'movies-folder', type: 'folder' },
-  { id: 'music', name: 'Music', icon: 'music-folder', type: 'folder' },
-  { id: 'pictures', name: 'Pictures', icon: 'pictures-folder', type: 'folder' },
-  { id: 'public', name: 'Public', icon: 'public-folder', type: 'folder' },
-  { id: 'sites', name: 'Sites', icon: 'sites-folder', type: 'folder' },
-];
-
-/**
- * Macintosh HD contents (matches Tiger reference)
- */
-const HD_CONTENTS: ContentItem[] = [
-  { id: 'applications', name: 'Applications', icon: 'applications-folder', type: 'folder' },
-  { id: 'developer', name: 'Developer', icon: 'developer-folder', type: 'folder' },
-  { id: 'library', name: 'Library', icon: 'library-folder', type: 'folder' },
-  { id: 'system', name: 'System', icon: 'system-folder', type: 'folder' },
-  { id: 'users', name: 'Users', icon: 'users-folder', type: 'folder' },
-];
-
-/**
- * Applications folder contents
- * These are displayed greyed out and non-interactive (placeholder apps)
- */
-const APPLICATION_ITEMS: ContentItem[] = [
-  { id: 'safari', name: 'Safari', icon: 'app-safari', type: 'file' },
-  { id: 'address-book', name: 'Address Book', icon: 'app-addressbook', type: 'file' },
-  { id: 'preview', name: 'Preview', icon: 'app-preview', type: 'file' },
-  { id: 'disk-utility', name: 'Disk Utility', icon: 'app-diskutility', type: 'file' },
-  { id: 'network-utility', name: 'Network Utility', icon: 'app-networkutility', type: 'file' },
-  { id: 'installer', name: 'Installer', icon: 'app-installer', type: 'file' },
-  { id: 'internet-connect', name: 'Internet Connect', icon: 'app-internetconnect', type: 'file' },
-  { id: 'filevault', name: 'FileVault', icon: 'app-filevault', type: 'file' },
-  { id: 'doom', name: 'DOOM', icon: 'app-doom', type: 'file' },
 ];
 
 /** View mode types */
@@ -204,12 +194,13 @@ function fuzzyMatch(query: string, text: string): boolean {
  * Get all searchable items across all locations
  */
 function getAllSearchableItems(): ContentItem[] {
-  return [
-    ...DESKTOP_CONTENTS,
-    ...HOME_CONTENTS,
-    ...HD_CONTENTS,
-  ].filter((item, index, arr) =>
-    // Remove duplicates by id
+  const items = [
+    ...getContentsFromPath('/Users/nick/Desktop'),
+    ...getContentsFromPath('/Users/nick'),
+    ...getContentsFromPath('/'),
+  ];
+  // Remove duplicates by id
+  return items.filter((item, index, arr) =>
     arr.findIndex(i => i.id === item.id) === index
   );
 }
@@ -373,16 +364,19 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
     }
 
     switch (selectedSidebarItem) {
-      case 'macintosh-hd':
+      case 'macintosh-hd': {
+        const hdContents = getContentsFromPath('/');
         return {
           title: 'Macintosh HD',
           sidebarItems: SIDEBAR_ITEMS,
-          contentItems: HD_CONTENTS,
-          statusText: '5 items, 1.91 GB available',
+          contentItems: hdContents,
+          statusText: `${hdContents.length} items, 1.91 GB available`,
         };
+      }
       case 'user': {
+        const homeContents = getContentsFromPath('/Users/nick');
         const userDynamicItems = dynamicIconsToContentItems('user');
-        const allUserItems = [...HOME_CONTENTS, ...userDynamicItems];
+        const allUserItems = [...homeContents, ...userDynamicItems];
         return {
           title: 'nick',
           sidebarItems: SIDEBAR_ITEMS,
@@ -391,8 +385,9 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
         };
       }
       case 'desktop': {
+        const desktopContents = getContentsFromPath('/Users/nick/Desktop');
         const desktopDynamicItems = dynamicIconsToContentItems('desktop');
-        const allDesktopItems = [...DESKTOP_CONTENTS, ...desktopDynamicItems];
+        const allDesktopItems = [...desktopContents, ...desktopDynamicItems];
         return {
           title: 'Desktop',
           sidebarItems: SIDEBAR_ITEMS,
@@ -400,14 +395,16 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
           statusText: `${allDesktopItems.length} item${allDesktopItems.length !== 1 ? 's' : ''}, 1.91 GB available`,
         };
       }
-      case 'applications':
-        // Applications folder shows greyed-out placeholder apps
+      case 'applications': {
+        // Applications folder contents from shared FILE_SYSTEM
+        const appContents = getContentsFromPath('/Applications');
         return {
           title: 'Applications',
           sidebarItems: SIDEBAR_ITEMS,
-          contentItems: APPLICATION_ITEMS,
-          statusText: `${APPLICATION_ITEMS.length} items`,
+          contentItems: appContents,
+          statusText: `${appContents.length} items`,
         };
+      }
       case 'documents': {
         // Documents folder shows dynamic contents (dropped icons)
         const docItems = dynamicIconsToContentItems('documents');
@@ -484,13 +481,15 @@ export function Finder({ location = 'home', initialSearch = '' }: FinderProps) {
             : `${trashContents.length} item${trashContents.length !== 1 ? 's' : ''}`,
         };
       }
-      default:
+      default: {
+        const defaultHomeContents = getContentsFromPath('/Users/nick');
         return {
           title: 'nick',
           sidebarItems: SIDEBAR_ITEMS,
-          contentItems: HOME_CONTENTS,
-          statusText: '8 items, 1.91 GB available',
+          contentItems: defaultHomeContents,
+          statusText: `${defaultHomeContents.length} items, 1.91 GB available`,
         };
+      }
     }
   };
 
