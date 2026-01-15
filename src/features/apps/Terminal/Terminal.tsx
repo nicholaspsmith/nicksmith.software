@@ -4,10 +4,19 @@ import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 import { useAppStore } from '@/stores/appStore';
 import { useWindowStore } from '@/stores/windowStore';
+import { useFileSystemStore } from '@/stores/fileSystemStore';
 import styles from './Terminal.module.css';
 
 // Flag to track if crash should be triggered (set by rm command)
 let pendingCrash = false;
+
+/**
+ * Get the current terminal prompt string
+ */
+function getPrompt(): string {
+  const path = useFileSystemStore.getState().getPromptPath();
+  return `nick@imacg5:${path}$`;
+}
 
 /**
  * Commands available in the terminal
@@ -25,9 +34,11 @@ const COMMANDS: Record<string, CommandHandler> = {
   clear     - Clear the terminal
   date      - Show current date
   whoami    - Display current user
+  cd        - Change directory
   pwd       - Print working directory
   ls        - List directory contents
   cat       - View file contents
+  open      - Open file or folder
   echo      - Echo text back
   doom      - Play DOOM
 `,
@@ -58,22 +69,151 @@ Type 'open projects' to view in Projects window.
 `,
   date: () => new Date().toString(),
   whoami: () => 'nick',
-  pwd: () => '/Users/nick',
+  cd: (args: string[]) => {
+    const fs = useFileSystemStore.getState();
+    const target = args[0] || '';
+    const result = fs.cd(target);
+    if (!result.success) {
+      return result.error || 'cd: error changing directory';
+    }
+    return ''; // Success - no output
+  },
+  pwd: () => {
+    const fs = useFileSystemStore.getState();
+    return fs.pwd();
+  },
   ls: (args: string[]) => {
-    const showAll = args.includes('-a') || args.includes('-la') || args.includes('-al');
-    const files = ['Documents', 'Downloads', 'Desktop', 'Projects'];
-    const hidden = ['.bash_profile', '.gitconfig', '.zshrc'];
-    return (showAll ? [...hidden, ...files] : files).join('  ');
+    const fs = useFileSystemStore.getState();
+    // Parse flags and path
+    const showAll = args.some(a => a === '-a' || a === '-la' || a === '-al' || a === '-l');
+    const showLong = args.some(a => a === '-l' || a === '-la' || a === '-al');
+    // Get path argument (first non-flag arg)
+    const pathArg = args.find(a => !a.startsWith('-'));
+
+    // Check if path exists
+    if (pathArg && !fs.exists(pathArg)) {
+      return `ls: ${pathArg}: No such file or directory`;
+    }
+
+    const entries = fs.ls(pathArg, { all: showAll });
+
+    if (entries.length === 0) {
+      return ''; // Empty directory
+    }
+
+    if (showLong) {
+      // Long format with type indicator
+      return entries.map(e => {
+        const typeChar = e.type === 'directory' ? 'd' : '-';
+        const permissions = e.type === 'directory' ? 'rwxr-xr-x' : 'rw-r--r--';
+        return `${typeChar}${permissions}  nick  staff  ${e.name}`;
+      }).join('\n');
+    }
+
+    // Simple format - just names
+    return entries.map(e => e.name).join('  ');
   },
   cat: (args: string[]) => {
+    const fs = useFileSystemStore.getState();
     const file = args[0];
     if (!file) return 'usage: cat <filename>';
+
+    // Check for special files
     if (file === '.bash_profile' || file === '.zshrc') {
       return `# Welcome to Nick's Terminal
-export PS1="\\u@macbook:\\w\\$ "
+export PS1="\\u@imacg5:\\w\\$ "
 alias ll="ls -la"`;
     }
-    return `cat: ${file}: No such file or directory`;
+
+    // Check if file exists
+    const entry = fs.getEntry(file);
+    if (!entry) {
+      return `cat: ${file}: No such file or directory`;
+    }
+    if (entry.type === 'directory') {
+      return `cat: ${file}: Is a directory`;
+    }
+
+    // Return placeholder content based on file type
+    if (entry.documentId) {
+      return `[Document: ${entry.name}]\nOpen this file in TextEdit to view contents.`;
+    }
+    return `[File: ${entry.name}]`;
+  },
+  open: (args: string[]) => {
+    const fs = useFileSystemStore.getState();
+    const windowStore = useWindowStore.getState();
+    const path = args[0];
+
+    if (!path) {
+      return 'usage: open <file or folder>';
+    }
+
+    // Check if file/folder exists
+    const entry = fs.getEntry(path);
+    if (!entry) {
+      return `open: ${path}: No such file or directory`;
+    }
+
+    // Handle directories - open in Finder
+    if (entry.type === 'directory') {
+      // Map directory names to Finder locations
+      const dirName = entry.name.toLowerCase();
+      if (dirName === 'macintosh hd' || path === '/') {
+        setTimeout(() => windowStore.openWindow('finder-hd'), 0);
+      } else {
+        setTimeout(() => windowStore.openWindow('finder-home'), 0);
+      }
+      return '';
+    }
+
+    // Handle applications (.app files)
+    if (entry.type === 'application') {
+      const appName = entry.name.toLowerCase().replace(/\.app$/, '');
+      // Map app names to window IDs
+      const appMap: Record<string, string> = {
+        'doom': 'doom',
+        'terminal': 'terminal',
+        'safari': 'safari',
+        'itunes': 'itunes',
+        'quicktime': 'quicktime',
+        'preview': 'preview',
+      };
+      const windowId = appMap[appName];
+      if (windowId) {
+        if (windowId === 'doom') {
+          setTimeout(() => windowStore.openDoom(), 0);
+        } else {
+          setTimeout(() => windowStore.openWindow(windowId), 0);
+        }
+        return `Opening ${entry.name}...`;
+      }
+      return `open: ${entry.name}: Application not available`;
+    }
+
+    // Handle files with documentId (opens in TextEdit or appropriate app)
+    if (entry.documentId) {
+      // Map known document IDs to window IDs
+      const docMap: Record<string, string> = {
+        'about': 'about',
+        'projects': 'projects',
+        'resume': 'resume',
+        'contact': 'contact',
+      };
+      const windowId = docMap[entry.documentId];
+      if (windowId) {
+        setTimeout(() => windowStore.openWindow(windowId), 0);
+        return `Opening ${entry.name}...`;
+      }
+    }
+
+    // Handle links
+    if (entry.url) {
+      setTimeout(() => window.open(entry.url, '_blank', 'noopener,noreferrer'), 0);
+      return `Opening ${entry.name} in browser...`;
+    }
+
+    return `open: ${entry.name}: Cannot open this file type`;
   },
   echo: (args: string[]) => args.join(' '),
 
@@ -243,7 +383,7 @@ export function Terminal() {
 
   const writePrompt = useCallback(() => {
     if (xtermRef.current) {
-      xtermRef.current.write('\r\nnick@imacg5:~$');
+      xtermRef.current.write('\r\n' + getPrompt() + ' ');
     }
   }, []);
 
@@ -356,7 +496,7 @@ export function Terminal() {
 
     // Welcome message
     term.write('Last login: ' + new Date().toLocaleString() + ' on ttys000\r\n');
-    term.write('nick@imacg5:~$');
+    term.write(getPrompt() + ' ');
 
     // Handle input - store disposer for cleanup
     const onDataDisposer = term.onData((data) => {
@@ -381,7 +521,7 @@ export function Terminal() {
             const cmd = historyRef.current[historyIndexRef.current] || '';
             // Clear current line
             term.write('\r\x1b[K');
-            term.write('nick@imacg5:~$');
+            term.write(getPrompt() + ' ');
             term.write(cmd);
             commandBufferRef.current = cmd;
           }
@@ -391,13 +531,13 @@ export function Terminal() {
             historyIndexRef.current++;
             const cmd = historyRef.current[historyIndexRef.current] || '';
             term.write('\r\x1b[K');
-            term.write('nick@imacg5:~$');
+            term.write(getPrompt() + ' ');
             term.write(cmd);
             commandBufferRef.current = cmd;
           } else if (historyIndexRef.current === historyRef.current.length - 1) {
             historyIndexRef.current = historyRef.current.length;
             term.write('\r\x1b[K');
-            term.write('nick@imacg5:~$');
+            term.write(getPrompt() + ' ');
             commandBufferRef.current = '';
           }
         }
