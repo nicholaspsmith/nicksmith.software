@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { NavigationBar } from '../../components/NavigationBar';
 import { StatusBar } from '../../components/StatusBar';
 import { useIOSStore } from '../../stores/iosStore';
@@ -15,10 +16,31 @@ function CloseIcon() {
   );
 }
 
+function FullscreenCloseIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M2 2L14 14M14 2L2 14" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function GalleryApp() {
   const closeApp = useIOSStore((s) => s.closeApp);
   const photos = usePhotoStore((s) => s.photos);
   const deletePhoto = usePhotoStore((s) => s.deletePhoto);
+  const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null);
+
+  const selectedPhoto = selectedPhotoId
+    ? photos.find((p) => p.id === selectedPhotoId)
+    : null;
+
+  const handlePhotoClick = (photoId: string) => {
+    setSelectedPhotoId(photoId);
+  };
+
+  const handleCloseFullscreen = () => {
+    setSelectedPhotoId(null);
+  };
 
   return (
     <div className={styles.app}>
@@ -41,10 +63,14 @@ export function GalleryApp() {
                   src={photo.dataUrl}
                   alt={`Photo taken at ${new Date(photo.timestamp).toLocaleString()}`}
                   className={styles.photo}
+                  onClick={() => handlePhotoClick(photo.id)}
                 />
                 <button
                   className={styles.deleteButton}
-                  onClick={() => deletePhoto(photo.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deletePhoto(photo.id);
+                  }}
                   aria-label="Delete photo"
                 >
                   <CloseIcon />
@@ -54,6 +80,24 @@ export function GalleryApp() {
           </div>
         )}
       </div>
+
+      {selectedPhoto && (
+        <div className={styles.fullscreenOverlay} onClick={handleCloseFullscreen}>
+          <button
+            className={styles.fullscreenClose}
+            onClick={handleCloseFullscreen}
+            aria-label="Close fullscreen"
+          >
+            <FullscreenCloseIcon />
+          </button>
+          <img
+            src={selectedPhoto.dataUrl}
+            alt={`Photo taken at ${new Date(selectedPhoto.timestamp).toLocaleString()}`}
+            className={styles.fullscreenPhoto}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }

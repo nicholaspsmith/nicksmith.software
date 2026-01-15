@@ -85,3 +85,54 @@
 .photoItem:active .deleteButton {
   opacity: 1;
 }
+
+/* Fullscreen photo view */
+.fullscreenOverlay {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fullscreenClose {
+  position: absolute;
+  top: 50px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: #fff;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 101;
+  transition: background 0.2s;
+}
+
+.fullscreenClose:hover,
+.fullscreenClose:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.fullscreenPhoto {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
