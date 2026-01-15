@@ -146,17 +146,9 @@ function DynamicIconImage({ icon }: { icon: { type: string; icon: string } }) {
 function TerminalLoading() {
   return (
     <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
       height: '100%',
-      background: '#0a0a0a',
-      color: '#33ff33',
-      fontFamily: 'Monaco, "Courier New", monospace',
-      fontSize: 13,
-    }}>
-      Loading Terminal...
-    </div>
+      background: '#ffffff',
+    }} />
   );
 }
 
@@ -377,9 +369,12 @@ function TigerDesktop() {
     };
   }, []);
 
-  // Open About Me window on first load (centered on screen)
+  // Open About Me window on first load (centered on screen) with slight delay
   useEffect(() => {
-    openWindow('about');
+    const timer = setTimeout(() => {
+      openWindow('about');
+    }, 500);
+    return () => clearTimeout(timer);
   }, [openWindow]);
 
   // Recalculate icon positions when window resize completes
