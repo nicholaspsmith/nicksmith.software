@@ -55,7 +55,7 @@
 }
 
 /* ========================================
- * xterm.js Custom Scrollbar Override
+ * term.js Custom Scrollbar Override
  * xterm uses Monaco-style custom scrollbar with classes:
  * .scrollbar.vertical.fade (or .invisible)
  * The slider/thumb is a child div inside .scrollbar
@@ -107,7 +107,7 @@
 
 /* Scrollbar thumb/slider - Aqua texture */
 .terminal :global(.xterm .xterm-scrollable-element > .scrollbar > .slider) {
-  background: url('/textures/scrollbar-texture-vertical.png') repeat-y center !important;
+  background: url("/textures/scrollbar-texture-vertical.png") repeat-y center !important;
   background-size: 11px auto !important;
   border-radius: 5px !important;
   border: 1px solid #2a6cb0 !important;
@@ -118,6 +118,11 @@
   width: 11px !important;
 }
 
-.terminal :global(.xterm .xterm-scrollable-element > .scrollbar > .slider:hover) {
+.terminal
+  :global(.xterm .xterm-scrollable-element > .scrollbar > .slider:hover) {
   filter: brightness(1.1) !important;
+}
+
+.terminal :global(.xterm-screen) {
+  padding: 5px;
 }

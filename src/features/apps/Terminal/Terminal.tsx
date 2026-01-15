@@ -99,7 +99,7 @@ Hint: Try 'help' for available commands.`,
 Try 'help' for what's available!`,
 
   neofetch: () => `
-\x1b[32m                    'c.         \x1b[36mnick\x1b[0m@\x1b[36mmacbook\x1b[0m
+\x1b[32m                    'c.         nick@imacg5
 \x1b[32m                 ,xNMM.         \x1b[0m-----------------
 \x1b[32m               .OMMMMo          \x1b[33mOS:\x1b[0m Mac OS X Tiger (web)
 \x1b[32m               OMMM0,           \x1b[33mHost:\x1b[0m nicksmith.software
@@ -243,7 +243,7 @@ export function Terminal() {
 
   const writePrompt = useCallback(() => {
     if (xtermRef.current) {
-      xtermRef.current.write('\r\n\x1b[36mnick@macbook\x1b[0m:\x1b[33m~\x1b[0m$ ');
+      xtermRef.current.write('\r\nnick@imacg5:~$');
     }
   }, []);
 
@@ -311,11 +311,11 @@ export function Terminal() {
     // Create terminal with Tiger-style theming
     const term = new XTerm({
       theme: {
-        background: '#0a0a0a',
-        foreground: '#33ff33',
-        cursor: '#33ff33',
-        cursorAccent: '#0a0a0a',
-        selectionBackground: '#33ff3350',
+        background: '#ffffff',
+        foreground: '#000000',
+        cursor: '#000000',
+        cursorAccent: '#ffffff',
+        selectionBackground: '#00000030',
         black: '#000000',
         red: '#ff5f57',
         green: '#33ff33',
@@ -356,7 +356,7 @@ export function Terminal() {
 
     // Welcome message
     term.write('Last login: ' + new Date().toLocaleString() + ' on ttys000\r\n');
-    term.write('\x1b[36mnick@macbook\x1b[0m:\x1b[33m~\x1b[0m$ ');
+    term.write('nick@imacg5:~$');
 
     // Handle input - store disposer for cleanup
     const onDataDisposer = term.onData((data) => {
@@ -381,7 +381,7 @@ export function Terminal() {
             const cmd = historyRef.current[historyIndexRef.current] || '';
             // Clear current line
             term.write('\r\x1b[K');
-            term.write('\x1b[36mnick@macbook\x1b[0m:\x1b[33m~\x1b[0m$ ');
+            term.write('nick@imacg5:~$');
             term.write(cmd);
             commandBufferRef.current = cmd;
           }
@@ -391,13 +391,13 @@ export function Terminal() {
             historyIndexRef.current++;
             const cmd = historyRef.current[historyIndexRef.current] || '';
             term.write('\r\x1b[K');
-            term.write('\x1b[36mnick@macbook\x1b[0m:\x1b[33m~\x1b[0m$ ');
+            term.write('nick@imacg5:~$');
             term.write(cmd);
             commandBufferRef.current = cmd;
           } else if (historyIndexRef.current === historyRef.current.length - 1) {
             historyIndexRef.current = historyRef.current.length;
             term.write('\r\x1b[K');
-            term.write('\x1b[36mnick@macbook\x1b[0m:\x1b[33m~\x1b[0m$ ');
+            term.write('nick@imacg5:~$');
             commandBufferRef.current = '';
           }
         }
